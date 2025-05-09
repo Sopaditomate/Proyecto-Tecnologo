@@ -1,0 +1,382 @@
+/* ===== ESTILOS PARA AUTENTICACIÓN ===== */
+
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap");
+
+/* Reset básico */
+*,
+html {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  background-color: #fffbeb;
+}
+
+/* Variables de color */
+:root {
+  --circle-profile: #f8f0dd;
+  --primary-color: #8b4513;
+  --primary-dark: #5c3317;
+  --primary-light: #a05a2c;
+  --error-color: #e53935;
+  --success-color: #43a047;
+  --text-color: #333333;
+  --text-light: #666666;
+  --border-color: #dddddd;
+  --background-color: #fffbeb;
+  --card-background: #ffffff;
+}
+
+/* ===== CABECERA DE PERFIL ===== */
+.profile-icon {
+  width: 80px;
+  height: 80px;
+}
+
+#section-header-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  z-index: 1;
+}
+
+.header-icon-profile {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.circle-icon-profile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  background-color: var(--circle-profile);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0.5rem;
+  border: 2px solid var(--color-amber-300);
+}
+
+/* ===== TÍTULOS ===== */
+.title-head {
+  font-family: "Dancing Script", cursive;
+  letter-spacing: 1px;
+  margin-top: 15px;
+  text-align: center;
+  font-size: 1.8rem;
+  color: var(--primary-dark);
+}
+
+.subtittle-head {
+  font-size: 14px;
+  margin-top: 10px;
+  text-align: center;
+  color: var(--text-light);
+  max-width: 90%;
+}
+
+/* ===== CONTENEDOR DEL FORMULARIO ===== */
+#section-login {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--card-background);
+  border-radius: 15px;
+  margin: 5vh auto;
+  padding: 2rem;
+  border: solid 1px var(--border-color);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.form-login {
+  width: 100%;
+  max-width: 400px;
+  padding: 1rem;
+}
+
+/* ===== VALIDACIÓN DE CAMPOS ===== */
+.input-error {
+  border-bottom: 2px solid var(--error-color) !important;
+}
+
+.error-message {
+  font-size: 12px;
+  color: var(--error-color);
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+/* ===== CAMPOS DE ENTRADA ===== */
+input {
+  text-align: left;
+  width: 100%;
+  margin-bottom: 20px;
+  border: none;
+  border-bottom: 2px solid var(--primary-dark);
+  font-size: 15px;
+  margin-top: 10px;
+  padding: 8px 4px;
+  background-color: transparent;
+  transition: border-color 0.3s ease;
+}
+
+input::placeholder {
+  text-align: left;
+  color: var(--text-light);
+}
+
+input:focus {
+  outline: none;
+  border-bottom: 2px solid var(--primary-light);
+}
+
+#container-email-password {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+/* ===== CHECKBOX "RECORDAR DATOS" ===== */
+.input-checkbox {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+.div-checkbox-p {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 10px;
+}
+
+.div-checkbox-p p {
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+/* ===== OPCIONES ADICIONALES ===== */
+#container-checkbox-forgot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.link-forgot-your-password {
+  color: #3366cc;
+  font-size: 14px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.link-forgot-your-password:hover {
+  text-decoration: underline;
+  color: #1a4aa1;
+}
+
+/* ===== BOTONES ===== */
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-login {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-register {
+  background-color: var(--primary-dark);
+  color: white;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* ===== VALIDACIÓN DE CONTRASEÑA ===== */
+.text-error-password-1-input,
+.requirements-error-password-1-input {
+  font-size: 12px;
+  list-style-type: none;
+  margin-top: 2px;
+}
+
+/* ===== BOTONES CON ICONOS ===== */
+.btn-login,
+.btn-register {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.img-registered {
+  width: 20px;
+  height: 20px;
+}
+
+/* ===== MENSAJE DE CONFIRMACIÓN ===== */
+#registration-confirmed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: var(--color-card-bg);
+  border-radius: 10px;
+  border: 1px solid var(--color-amber-200);
+  box-shadow: 0 4px 12px var(--color-card-shadow);
+}
+
+#registration-confirmed p {
+  color: var(--color-amber-900);
+  margin-bottom: 0.5rem;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+#registration-confirmed p:first-child {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--color-amber-800);
+  margin-bottom: 1rem;
+}
+
+.img-success {
+  width: 60px;
+  height: 60px;
+  margin: 1rem 0;
+}
+
+#div-space-last-input {
+  height: 20px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .form-login {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .circle-icon-profile {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profile-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .title-head {
+    font-size: 1.5rem;
+  }
+
+  #section-login {
+    padding: 0 20px;
+    max-width: 350px;
+    margin: 3vh auto;
+  }
+  .form-login {
+    width: 100%;
+    max-width: 100%;
+    padding: 15px;
+  }
+
+  #container-checkbox-forgot {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 400px) {
+  #section-login {
+    padding: 1rem;
+  }
+
+  input {
+    font-size: 14px;
+  }
+
+  .btn-login,
+  .btn-register {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .title-head {
+    font-size: 1.3rem;
+  }
+
+  #registration-confirmed p {
+    font-size: 14px;
+  }
+
+  #registration-confirmed p:first-child {
+    font-size: 16px;
+  }
+
+  .img-success {
+    width: 50px;
+    height: 50px;
+  }
+
+  .img-registered {
+    width: 16px;
+    height: 16px;
+  }
+}

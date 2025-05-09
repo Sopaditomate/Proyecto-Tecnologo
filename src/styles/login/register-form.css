@@ -1,0 +1,93 @@
+.register-form-container {
+  width: 100%;
+}
+
+.register-form-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.register-form-column {
+  flex: 1;
+  min-width: 250px;
+}
+
+.container-icons-input {
+  position: relative;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.icons-input {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.input-email-user,
+.input-input {
+  flex: 1;
+  padding-left: 5px;
+}
+
+.password-requirements {
+  margin-top: -1rem;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+}
+
+.requirements-error-password-1-input {
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.requirements-error-password-1-input li {
+  margin-bottom: 0.25rem;
+}
+
+.div-password-no-match {
+  width: 100%;
+}
+
+.password-no-match-2 {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+/* Ajustes para el formulario de registro */
+#section-login.register-page {
+  max-width: 800px;
+  padding: 2rem;
+}
+
+.register-page .form-login {
+  max-width: 700px;
+}
+
+@media (max-width: 768px) {
+  .register-form-columns {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .register-form-column {
+    width: 100%;
+  }
+
+  #section-login.register-page {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 769px) {
+  #section-login.register-page {
+    max-width: 800px;
+  }
+
+  .register-page .form-login {
+    max-width: 700px;
+  }
+}
