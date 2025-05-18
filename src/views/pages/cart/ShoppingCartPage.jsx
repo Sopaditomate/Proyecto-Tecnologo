@@ -4,7 +4,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../../../models/CartContext";
+<<<<<<< HEAD
 import "../../../styles/shoppingCart/shopping-cart.css";
+=======
+import "../cart/shopping-cart.css";
+>>>>>>> feature/homepage-redesign
 
 export function ShoppingCartPage() {
   // Obtener funciones y datos del carrito desde el contexto

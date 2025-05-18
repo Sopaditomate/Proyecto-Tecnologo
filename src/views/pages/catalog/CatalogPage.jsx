@@ -8,7 +8,11 @@ import {
   getFilteredProducts,
   getAllCategories,
 } from "../../../controllers/ProductController";
+<<<<<<< HEAD
 import "../../../styles/catalog/catalog.css";
+=======
+import "../catalog/catalog.css";
+>>>>>>> feature/homepage-redesign
 
 export function CatalogPage() {
   // Estados para búsqueda y filtrado

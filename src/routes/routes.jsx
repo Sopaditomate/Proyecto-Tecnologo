@@ -1,16 +1,15 @@
 "use client";
-
 // Configuración de rutas de la aplicación
 import React from "react";
 import { Fragment } from "react";
-import { Header } from "../views/components/common/Header";
-import { Footer } from "../views/components/common/Footer";
+import { Header } from "../views/components/common/header/Header";
+import { Footer } from "../views/components/common/footer/Footer";
 import { HomePage } from "../views/pages/home/HomePage";
 import { CatalogPage } from "../views/pages/catalog/CatalogPage";
 import { ShoppingCartPage } from "../views/pages/cart/ShoppingCartPage";
-import { LoginPage } from "../views/pages/auth/LoginPage";
-import { RegisterPage } from "../views/pages/auth/RegisterPage";
-import { ForgotPasswordPage } from "../views/pages/auth/ForgotPasswordPage";
+import { LoginPage } from "../views/pages/auth/login/LoginPage";
+import { RegisterPage } from "../views/pages/auth/register/RegisterPage";
+import { ForgotPasswordPage } from "../views/pages/auth/login/ForgotPasswordPage";
 import {
   defaultIcons,
   getHeaderItems,
@@ -137,7 +136,10 @@ export const AppRoutes = [
     element: (
       <PageLayout
         config={{
-          itemHeader: [{ name: "Carrito de Compras" }],
+          itemHeader: [
+            { name: "Carrito de Compras" },
+            { name: "Catalogo", path: "/catalogo" },
+          ],
           itemMenu: [
             {
               name: "Ver Catalogo",
