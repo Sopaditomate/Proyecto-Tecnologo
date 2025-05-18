@@ -2,7 +2,7 @@
 
 // Página de catálogo de productos
 import { useState, useEffect } from "react";
-import { PageTitle } from "../../components/common/PageTitle";
+import { PageTitle } from "../catalog/PageTitle";
 import { ProductCard } from "../../components/products/ProductCard";
 import {
   getFilteredProducts,
