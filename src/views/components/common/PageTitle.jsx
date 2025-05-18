@@ -1,9 +1,5 @@
 // Componente para títulos de página con subtítulo
-<<<<<<< HEAD
-import "../../../styles/catalog/product-title.css"
-=======
 import "../../../views/pages/catalog/product-title.css"
->>>>>>> feature/homepage-redesign
 
 export function PageTitle({ title, subtitle }) {
   return (

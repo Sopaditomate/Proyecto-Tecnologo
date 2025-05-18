@@ -2,11 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useCart } from "../../../models/CartContext";
-<<<<<<< HEAD
-import "../../../styles/catalog/quick-view-modal.css";
-=======
 import "../../../views/pages/catalog/quick-view-modal.css";
->>>>>>> feature/homepage-redesign
 
 export function QuickViewModal({ product, onClose }) {
   // Obtener función para añadir al carrito
