@@ -139,7 +139,16 @@ export function AppRoutes() {
         path="/admin"
         element={
           <ProtectedRoute requireAdmin={true}>
-            <AdminDashboard />
+            <PageLayout
+            config={{
+              itemHeader: getHeaderItems("login"),
+              itemMenu: getMenuItems("login"),
+              iconMenu: defaultIcons.iconMenu,
+              icon1: defaultIcons.icon1,
+              link: "/",
+            }}>
+              <AdminDashboard />
+            </PageLayout>
           </ProtectedRoute>
         }
       />

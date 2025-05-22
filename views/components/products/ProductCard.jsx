@@ -22,7 +22,12 @@ export function ProductCard({ product }) {
       <div id="center-product">
         <div className="img-container">
           <img
-            src={product.image || "/placeholder.svg"}
+          //Se agrega interpolacion a la ruta para referenciar las imagenes correctamente
+            src={
+              product.image
+                ? `/images/${product.image}`
+                : "/images/url_imagen_integral.jpg"
+            }
             alt={product.nameProduct}
             className="img-product"
           />
