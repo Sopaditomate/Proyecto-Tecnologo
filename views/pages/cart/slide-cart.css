@@ -27,7 +27,7 @@
 .slide-cart {
   position: fixed;
   top: 0;
-  right: -400px;
+  right: -500px;
   width: 100vw;
   max-width: 400px;
   height: 100vh;
