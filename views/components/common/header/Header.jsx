@@ -16,7 +16,7 @@ export function Header({
 }) {
   // ====== CONTEXTOS Y ESTADOS ======
   const { cartLength, openCart } = useCart();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const [toggle, setToggle] = useState(false); // menú hamburguesa
   const [scrolled, setScrolled] = useState(false); // efecto scroll header
   const [profileOpen, setProfileOpen] = useState(false); // dropdown perfil
@@ -84,6 +84,7 @@ export function Header({
   // ====== RENDER PERFIL DE USUARIO ======
   const renderUserProfile = () => {
     if (!isAuthenticated) return null;
+
     return (
       <div
         ref={profileRef}
@@ -98,26 +99,36 @@ export function Header({
           alt="Perfil"
           className="header-profile-avatar"
         />
+        
         <span className="header-profile-name">
-          {user?.nombres || "Usuario"}
+          {
+            // Cambiar el nombre según el rol con interpolacion de variables o expresiones
+            isAdmin
+              ? `Administrador ${user?.nombres}` 
+              : user?.nombres ? `Cliente ${user.nombres}` : "Usuario"
+          }
         </span>
-        <div className="header-profile-dropdown">
-          <div
-            className="header-profile-dropdown-item"
-            onClick={() => navigate("/profile")}
-          >
-            Mi Perfil
+
+        {/* Opciones del desplegable: solo mostrar para clientes, no para admins */}
+        {!isAdmin && (
+          <div className="header-profile-dropdown">
+            <div
+              className="header-profile-dropdown-item"
+              onClick={() => navigate("/profile")}
+            >
+              Mi Perfil
+            </div>
+            <div
+              className="header-profile-dropdown-item"
+              onClick={() => navigate("/orders")}
+            >
+              Mis Pedidos
+            </div>
+            <div className="header-profile-dropdown-item" onClick={handleLogout}>
+              Cerrar Sesión
+            </div>
           </div>
-          <div
-            className="header-profile-dropdown-item"
-            onClick={() => navigate("/orders")}
-          >
-            Mis Pedidos
-          </div>
-          <div className="header-profile-dropdown-item" onClick={handleLogout}>
-            Cerrar Sesión
-          </div>
-        </div>
+        )}
       </div>
     );
   };
