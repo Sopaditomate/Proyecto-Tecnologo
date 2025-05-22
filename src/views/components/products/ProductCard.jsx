@@ -24,7 +24,7 @@ export function ProductCard({ product }) {
         <div id="center-product">
           <div className="img-container">
             <img
-              src={product.image || "/placeholder.svg"}
+              src={product.image || "/images/croissantdechocolate.jpg"}
               alt={product.nameProduct}
               className="img-product"
             />
