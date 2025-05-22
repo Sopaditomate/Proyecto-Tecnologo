@@ -1,0 +1,822 @@
+/* =========================
+   IMPORTS Y VARIABLES
+   ========================= */
+@import url("../../../styles/variables.css");
+@import url("../../../styles/global.css");
+
+/* =========================
+   HEADER GENERAL
+   ========================= */
+#header {
+  /* Fondo degradado y sombra */
+  background: linear-gradient(
+    to right,
+    rgba(78, 29, 5, 0.98),
+    rgba(120, 53, 15, 0.98),
+    rgba(78, 29, 5, 0.98)
+  );
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+#header.scrolled {
+  /* Sombra y fondo al hacer scroll */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(
+    to right,
+    rgba(78, 29, 5, 0.95),
+    rgba(120, 53, 15, 0.95),
+    rgba(78, 29, 5, 0.95)
+  );
+}
+
+header {
+  /* Header sticky y estilos generales */
+  position: sticky;
+  top: 0;
+  color: #fffbeb;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+}
+
+#div-header {
+  /* Contenedor principal del header */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  z-index: 25;
+}
+
+#header-disabled {
+  /* Contenedor de acciones (perfil, carrito, etc) */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10%;
+  z-index: 1;
+  width: 100%;
+}
+
+#disabled-text {
+  /* Texto deshabilitado */
+  opacity: 0.5;
+  transition: all 0.6s ease;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* =========================
+   DECORACIÓN Y LOGO
+   ========================= */
+.header-wheat-decoration {
+  /* Decoración de trigo (opcional) */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.1;
+}
+
+.wheat-icon {
+  /* Iconos de trigo */
+  position: absolute;
+  font-size: 1.5rem;
+  opacity: 0.7;
+}
+
+.wheat-icon.left {
+  top: 10px;
+  left: 20px;
+  transform: rotate(-15deg);
+}
+
+.wheat-icon.right {
+  top: 10px;
+  right: 20px;
+  transform: rotate(15deg);
+}
+
+#container-logo-inicio {
+  /* Contenedor del logo */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.logo-container {
+  /* Contenedor circular para el logo */
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.logo-shine {
+  /* Oculta el efecto de brillo en el logo */
+  display: none;
+}
+
+@keyframes shine {
+  /* Animación de brillo vacía */
+  0%,
+  100% {
+    transform: translateX(0) rotate(45deg);
+  }
+}
+
+.logo-link {
+  /* Espaciado del logo */
+  margin-left: 34px;
+  width: 80px;
+}
+
+.logo-image,
+#img-lovebites {
+  /* Imagen del logo */
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--color-amber-300);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+#container-logo-inicio:hover .logo-image,
+#container-logo-inicio:hover #img-lovebites {
+  /* Efecto hover en el logo */
+  transform: scale(1.05);
+  border-color: var(--color-amber-400);
+}
+
+/* =========================
+   BARRA MORADA (opcional)
+   ========================= */
+#color-purple {
+  background: var(--purple-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: auto;
+  min-height: 3rem;
+  padding: 0.5rem 1rem;
+  z-index: 5;
+  border-bottom: 1px solid #e8dacb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+#color-purple::before {
+  /* Fondo decorativo */
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23d4a373' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* =========================
+   ICONOS Y BOTONES
+   ========================= */
+#menu-icon {
+  position: absolute;
+}
+
+#close-icon {
+  position: relative;
+  transition: transform 0.3s ease-in-out;
+}
+
+.icon-header {
+  /* Icono del menú hamburguesa */
+  width: 30px;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
+  position: relative;
+  top: 2px;
+  border-radius: 50%;
+  box-sizing: content-box;
+  padding: 5px;
+}
+
+.icon-header:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  transform: scale(1.1);
+}
+
+.shoppin-car-header {
+  /* Icono del carrito */
+  width: 30px;
+  height: 30px;
+  display: block;
+  padding: 5px;
+  box-sizing: content-box;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.shoppin-car-header:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  transform: scale(1.1);
+}
+
+.shoppin-car-header:active {
+  background-color: rgba(255, 255, 255, 0.25);
+  transform: scale(0.95);
+}
+
+.btn-back {
+  /* Botón de volver */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.btn-back:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.arrow-left {
+  width: 15px;
+  height: 12px;
+  transition: transform 0.3s ease;
+}
+
+.btn-back:hover .arrow-left {
+  transform: translateX(-3px);
+}
+
+.menu-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.rotate {
+  transform: rotate(180deg);
+}
+
+/* =========================
+   TEXTO DEL LOGO
+   ========================= */
+.logo-text-header {
+  font-family: "Dancing Script", cursive;
+  font-size: 1.2rem;
+  color: var(--color-amber-300);
+  background: linear-gradient(
+    to right,
+    var(--color-amber-300),
+    var(--color-amber-100),
+    var(--color-amber-300)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.menu-icon {
+  width: 25px;
+}
+
+/* =========================
+   MENÚ LATERAL (HAMBURGUESA)
+   ========================= */
+.menu-list {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(135deg, rgb(69, 26, 3) 0%, rgb(120, 53, 15) 100%);
+  padding: 2rem 1.5rem;
+  color: white;
+  width: 0;
+  opacity: 0;
+  visibility: visible;
+  transform: translateX(-100%);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  z-index: 24;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.menu-list.actives {
+  width: 240px;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.overlay {
+  /* Fondo oscuro al abrir menú */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(3px);
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 10;
+}
+
+.menu-list ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: flex-start;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.menu-item {
+  /* Estilo de cada item del menú */
+  list-style: none;
+  height: 100%;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: color 0.15s, background 0.15s, box-shadow 0.15s;
+  transition-delay: calc(var(--i) * 0.1s);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  background-color: transparent;
+  box-shadow: none;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  top: 0;
+  color: white;
+  font-weight: 500;
+}
+
+.menu-item::before {
+  /* Línea vertical decorativa */
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: var(--color-amber-300, #fbbf24);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.menu-item:hover::before,
+.menu-item.active-menu-item::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.menu-item:hover {
+  background: transparent;
+  color: var(--color-amber-300);
+}
+
+.active-menu-item {
+  background-color: transparent;
+  border-left: none;
+  font-weight: 600;
+}
+
+.menu-list.actives li {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.div-link-menu {
+  width: 100%;
+  display: block;
+}
+
+/* =========================
+   NAVEGACIÓN (DESKTOP)
+   ========================= */
+.header-nav-links {
+  z-index: 1;
+  display: none;
+  position: relative;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.header-nav-links::before {
+  display: none; /* Eliminar el efecto de brillo en la navegación */
+}
+
+.nav-link {
+  color: var(--color-amber-100);
+  font-weight: 500;
+  position: relative;
+  padding: 0.5rem 1.2rem;
+  transition: all 0.3s ease;
+  z-index: 1;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.active-nav-link .nav-link {
+  color: var(--color-amber-300);
+  font-weight: 600;
+}
+
+.active-indicator {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  background-color: var(--color-amber-300);
+  border-radius: 50%;
+}
+
+.nav-link:hover {
+  color: var(--color-amber-300);
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-amber-300);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 70%;
+}
+
+/* =========================
+   CARRITO
+   ========================= */
+.cart-container {
+  position: relative;
+}
+
+.cart-link {
+  display: block;
+  position: relative;
+  z-index: 20;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--color-amber-500);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.cart-badge-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-amber-500);
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* =========================
+   BARRA DE ANUNCIOS
+   ========================= */
+.announcement-bar {
+  width: 100%;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-amber-900);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  line-height: 1.4;
+  gap: 10px;
+}
+
+.announcement-icon {
+  font-size: 1.2rem;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.announcement-bar p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: auto;
+}
+
+/* =========================
+   MENÚ FOOTER
+   ========================= */
+.menu-footer {
+  display: none;
+}
+
+/* =========================
+   TÍTULOS DE SECCIÓN
+   ========================= */
+.menu-title {
+  font-size: 0.8rem;
+  color: var(--color-amber-300);
+  margin-bottom: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-top: 50px;
+}
+
+/* =========================
+   BOTÓN VER MENOS
+   ========================= */
+.menu-collapse-button {
+  color: #00c16e;
+  font-size: 0.9rem;
+  margin-top: 15px;
+  cursor: pointer;
+  align-self: flex-start;
+  padding: 5px 0;
+  font-weight: 500;
+  display: none;
+}
+
+.menu-collapse-button.visible {
+  display: block;
+}
+
+/* =========================
+   CERRAR SESIÓN
+   ========================= */
+.cerrar-sesion {
+  position: relative;
+  top: auto;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 15px;
+  color: var(--color-amber-300);
+}
+
+.cerrar-sesion-footer {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.cerrar-sesion-item {
+  color: var(--color-amber-300);
+}
+
+/* =========================
+   FLECHAS MENÚ
+   ========================= */
+.menu-arrow {
+  color: var(--color-amber-300);
+  font-size: 1rem;
+}
+
+/* =========================
+   OCULTAR ICONOS MENÚ
+   ========================= */
+.menu-icon {
+  display: none;
+}
+
+.text-cerrar-sesion {
+  margin-left: 8px;
+  font-size: 18px;
+  margin-top: 15rem;
+}
+
+.header-nav-links {
+  z-index: 1;
+  display: none;
+  position: relative;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* =========================
+   PERFIL DE USUARIO
+   ========================= */
+.header-profile-container {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  position: relative;
+  cursor: pointer;
+  right: 3rem;
+}
+
+.header-profile-dropdown {
+  right: 0;
+  left: auto;
+  min-width: 160px;
+}
+
+/* Cuando el menú burger está abierto, deshabilita el perfil */
+.header-profile-container.disabled,
+.menu-list.actives ~ #div-header .header-profile-container {
+  pointer-events: none;
+  opacity: 0.5;
+  filter: grayscale(0.7);
+}
+
+/* Oculta el perfil de usuario cuando el menú hamburguesa está abierto */
+.menu-list.actives ~ #div-header .header-profile-container,
+.header-profile-container.disabled {
+  display: none !important;
+}
+
+/* =========================
+   MEDIA QUERIES
+   ========================= */
+@media (max-width: 480px) {
+  .disabled-logo,
+  #disabled-logo {
+    opacity: 0;
+    transition: all 0.6s ease;
+  }
+
+  .announcement-bar {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+  }
+
+  .announcement-icon {
+    display: none;
+  }
+
+  #div-header {
+    padding: 0.5rem 1rem;
+  }
+
+  .logo-text-header {
+    font-size: 1.3rem;
+  }
+
+  .logo-link {
+    margin-left: 15px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+  .disabled-logo,
+  #disabled-logo {
+    opacity: 0;
+    transition: all 0.7s ease;
+  }
+
+  .announcement-bar {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 1100px) {
+  .header-nav-links .nav-link:nth-child(5) {
+    display: none;
+  }
+}
+
+@media (max-width: 950px) {
+  .header-nav-links .nav-link:nth-child(4) {
+    display: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .header-nav-links .nav-link:nth-child(3) {
+    display: none;
+  }
+}
+
+@media (max-width: 650px) {
+  .header-nav-links {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .header-nav-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5em 1rem;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .nav-link {
+    white-space: nowrap;
+  }
+}
+
+/* Oculta completamente el nombre de usuario en móvil */
+@media (max-width: 600px) {
+  .header-profile-name {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+/* =========================
+   ENLACES GENERALES
+   ========================= */
+a {
+  color: white;
+  text-decoration: none;
+}
