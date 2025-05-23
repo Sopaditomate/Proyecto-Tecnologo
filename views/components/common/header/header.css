@@ -7,6 +7,83 @@
 /* =========================
    HEADER GENERAL
    ========================= */
+
+/* =========================
+   MODAL CONFIRMACIÓN LOGOUT
+   ========================= */
+.logout-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.logout-confirm-modal {
+  background: #fff;
+  color: #78350f;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 2.2rem 2rem 1.5rem 2rem;
+  min-width: 300px;
+  max-width: 90vw;
+  text-align: center;
+  animation: modalFadeIn 0.25s ease;
+}
+
+.logout-confirm-modal p {
+  font-size: 1.18rem;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.logout-confirm-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.btn-confirm-logout,
+.btn-cancel-logout {
+  padding: 0.6rem 1.6rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.19s, color 0.19s, box-shadow 0.19s;
+  outline: none;
+}
+
+.btn-confirm-logout {
+  background: #ef4444;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.10);
+}
+.btn-confirm-logout:hover {
+  background: #b91c1c;
+}
+
+.btn-cancel-logout {
+  background: #f3f4f6;
+  color: #78350f;
+  box-shadow: 0 2px 8px rgba(120, 53, 15, 0.08);
+}
+.btn-cancel-logout:hover {
+  background: #fde68a;
+  color: #78350f;
+}
+
+@keyframes modalFadeIn {
+  from { transform: translateY(40px) scale(0.96); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
 #header {
   /* Fondo degradado y sombra */
   background: linear-gradient(
