@@ -8,22 +8,36 @@ const pool = mysql.createPool({
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
   database: process.env.DB_NAME || "lovebites",
+  port: parseInt(process.env.DB_PORT) || 13692,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  connectTimeout: 10000, // 10 segundos de timeout
+  ssl: {
+    rejectUnauthorized: false // Necesario para conexiones SSL
+  }
 });
 
 // Función para probar la conexión
-export async function testConnection() {
+async function testConnection() {
   try {
+    console.log('🔍 Testing database connection with config:', {
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD 
+    });
+    
     const connection = await pool.getConnection();
-    console.log("Conexión a la base de datos establecida correctamente");
+    console.log("✅ Database connection successful!");
     connection.release();
     return true;
   } catch (error) {
-    console.error("Error al conectar a la base de datos:", error);
+    console.error("❌ Database connection failed:", error.message);
     return false;
   }
 }
 
+export { testConnection };
 export default pool;

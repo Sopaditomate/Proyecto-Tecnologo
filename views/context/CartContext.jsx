@@ -19,11 +19,25 @@ export function CartProvider({ children }) {
   const isInitialLoad = useRef(true);
   const isCartFromUserAction = useRef(false);
 
+  // Cargar carrito desde localStorage si no hay usuario
+  useEffect(() => {
+    if (!user && !loading) {
+      const localCart = localStorage.getItem("cart");
+      setCart(localCart ? JSON.parse(localCart) : []);
+      isInitialLoad.current = false;
+    }
+  }, [user, loading]);
+
+  // Guardar carrito en localStorage si no hay usuario
+  useEffect(() => {
+    if (!user && !loading && !isInitialLoad.current) {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }, [cart, user, loading]);
+
   // Cargar carrito del backend cuando cambia el usuario autenticado
   useEffect(() => {
     if (loading) return;
-
-    console.log("Usuario autenticado:", user);
 
     const fetchCart = async () => {
       if (user && user.id) {
@@ -31,24 +45,34 @@ export function CartProvider({ children }) {
           const res = await axios.get(`${API_URL}/cart`, {
             withCredentials: true,
           });
-          console.log("Respuesta del backend /cart:", res.data);
-          setCart(Array.isArray(res.data.items) ? res.data.items : []);
-          console.log(
-            "Carrito en el frontend tras cargar:",
-            Array.isArray(res.data.items) ? res.data.items : []
-          );
+          // Fusionar carrito local con el del backend solo si el backend está vacío
+          const localCart = localStorage.getItem("cart");
+          const localItems = localCart ? JSON.parse(localCart) : [];
+          let mergedCart = res.data.items;
+          if (
+            (!res.data.items || res.data.items.length === 0) &&
+            localItems.length > 0
+          ) {
+            mergedCart = localItems;
+            // Guardar el carrito fusionado en el backend
+            await axios.post(
+              `${API_URL}/cart`,
+              { items: mergedCart },
+              { withCredentials: true }
+            );
+          }
+          setCart(Array.isArray(mergedCart) ? mergedCart : []);
+          localStorage.removeItem("cart"); // Limpia el carrito local después de fusionar
           isInitialLoad.current = false;
         } catch (e) {
           setCart([]);
           isInitialLoad.current = false;
         }
       } else if (!user && !loading) {
-        setCart([]);
-        isInitialLoad.current = false;
+        // Ya se maneja arriba
       }
     };
     fetchCart();
-    // eslint-disable-next-line
   }, [user, loading]);
 
   // Sincronizar carrito con backend solo si el cambio fue por acción del usuario
@@ -64,7 +88,6 @@ export function CartProvider({ children }) {
         .catch(() => {});
       isCartFromUserAction.current = false;
     }
-    // eslint-disable-next-line
   }, [cart, user]);
 
   // Funciones para modificar el carrito (marcan que el cambio es por acción del usuario)
