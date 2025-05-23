@@ -2,20 +2,33 @@ import mysql from "mysql2/promise";
 import dotenv from "dotenv";
 dotenv.config();
 
+// Configuración de la conexión a la base de datos
+const dbConfig = {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: Number(process.env.DB_PORT),
+  ssl: { rejectUnauthorized: false }
+};
+
+
+
 // Crear pool de conexiones a la base de datos
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "lovebites",
-  port: parseInt(process.env.DB_PORT) || 13692,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  connectTimeout: 10000, // 10 segundos de timeout
-  ssl: {
-    rejectUnauthorized: false // Necesario para conexiones SSL
-  }
+const pool = mysql.createPool(dbConfig);
+
+// Manejador de eventos de error del pool
+pool.on('connection', (connection) => {
+  console.log('Nueva conexión establecida con la base de datos');
+  
+  connection.on('error', (err) => {
+    console.error('Error en la conexión a la base de datos:', err);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+      console.log('Reconectando a la base de datos...');
+    } else {
+      throw err;
+    }
+  });
 });
 
 // Función para probar la conexión

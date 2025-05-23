@@ -59,11 +59,22 @@ export function Header({
 
   const handleToggle = () => setToggle((prev) => !prev);
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const handleLogout = async () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutConfirm(false);
     setToggle(false);
     await new Promise((res) => setTimeout(res, 100));
     await logout();
     navigate("/");
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutConfirm(false);
   };
 
   const handleMenuItemClick = (item) => {
@@ -110,7 +121,7 @@ export function Header({
         </span>
 
         {/* Opciones del desplegable: solo mostrar para clientes, no para admins */}
-        {!isAdmin && (
+        {!isAdmin && isAuthenticated && (
           <div className="header-profile-dropdown">
             <div
               className="header-profile-dropdown-item"
@@ -249,7 +260,7 @@ export function Header({
             {showAllItems ? "Ver menos" : "Ver más"}
           </div>
         )}
-        {cerrarSesionItem && (
+        {cerrarSesionItem && isAuthenticated && (
           <div className="cerrar-sesion-footer">
             <li className="menu-item cerrar-sesion-item" onClick={handleLogout}>
               <span className="menu-item-text">Cerrar sesión</span>
@@ -278,6 +289,18 @@ export function Header({
           </div>
         </div>
       </nav>
-    </header>
+    {/* Modal de confirmación para cerrar sesión */}
+    {showLogoutConfirm && (
+      <div className="logout-confirm-overlay">
+        <div className="logout-confirm-modal">
+          <p>¿Seguro que quieres cerrar sesión?</p>
+          <div className="logout-confirm-buttons">
+            <button className="btn-confirm-logout" onClick={confirmLogout}>Sí</button>
+            <button className="btn-cancel-logout" onClick={cancelLogout}>No</button>
+          </div>
+        </div>
+      </div>
+    )}
+  </header>
   );
 }
