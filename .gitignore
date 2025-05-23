@@ -1,3 +1,18 @@
+# Archivos de entorno
+.env
+.env.local
+.env.*.local
+
+# Archivos de base de datos
+*.sql
+*.sqlite
+*.db
+
+# Dependencias
+node_modules/
+/.pnp
+.pnp.*
+
 # Logs
 logs
 *.log
@@ -7,9 +22,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-#dist
-dist-ssr
+# Directorios de compilación
+/dist
+/dist-ssr
+/.vite
+/build
+
+# Archivos de entorno de desarrollo local
 *.local
 
 # Editor directories and files
@@ -23,4 +42,56 @@ dist-ssr
 *.sln
 *.sw?
 
+# Despliegue
 .vercel
+.netlify
+
+# Archivos de sistema operativo
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Archivos de caché
+.cache/
+.parcel-cache/
+.temp/
+.tmp/
+
+# Archivos de entorno de pruebas
+/coverage
+.nyc_output/
+
+# Archivos de entorno de desarrollo
+*.pem
+*.crt
+*.key
+
+# Archivos de entorno de producción
+build/
+.next/
+out/
+
+# Archivos de entorno de Docker
+.docker/
+
+# Archivos de entorno de VS Code
+.vscode/settings.json
+.vscode/launch.json
+
+# Archivos de entorno de Windows
+[Dd]esktop.ini
+
+# Archivos de entorno de Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Archivos de entorno de Linux
+*~
+.Trash-*
+
+# Archivos temporales
+*.swp
+*.swo
+*~
