@@ -93,56 +93,57 @@ export function Header({
   };
 
   // ====== RENDER PERFIL DE USUARIO ======
-  const renderUserProfile = () => {
-    if (!isAuthenticated) return null;
+ const renderUserProfile = () => {
+  if (!isAuthenticated) return null;
 
-    return (
-      <div
-        ref={profileRef}
-        className={`header-profile-container${toggle ? " disabled" : ""} ${
-          profileOpen ? " open" : ""
-        }`}
-        onClick={() => !toggle && setProfileOpen((prev) => !prev)}
-        style={{ marginLeft: "1rem" }}
-      >
-        <img
-          src="/assets/profileiconwhite.svg"
-          alt="Perfil"
-          className="header-profile-avatar"
-        />
-        
-        <span className="header-profile-name">
-          {
-            // Cambiar el nombre según el rol con interpolacion de variables o expresiones
-            isAdmin
-              ? `Administrador ${user?.nombres}` 
-              : user?.nombres ? `Cliente ${user.nombres}` : "Usuario"
-          }
-        </span>
+  return (
+    <div
+      ref={profileRef}
+      className={`header-profile-container${toggle ? " disabled" : ""} ${
+        profileOpen ? " open" : ""
+      }`}
+      onClick={() => !toggle && setProfileOpen((prev) => !prev)}
+      style={{ marginLeft: "1rem" }}
+    >
+      <img
+        src="/assets/profileiconwhite.svg"
+        alt="Perfil"
+        className="header-profile-avatar"
+      />
+      
+      <span className="header-profile-name">
+        {
+          // Cambiar el nombre según el rol con interpolación de variables o expresiones
+          isAdmin
+            ? `Administrador ${user?.nombres}` 
+            : user?.nombres ? `Cliente ${user.nombres}` : "Usuario"
+        }
+      </span>
 
-        {/* Opciones del desplegable: solo mostrar para clientes, no para admins */}
-        {!isAdmin && isAuthenticated && (
-          <div className="header-profile-dropdown">
-            <div
-              className="header-profile-dropdown-item"
-              onClick={() => navigate("/profile")}
-            >
-              Mi Perfil
-            </div>
-            <div
-              className="header-profile-dropdown-item"
-              onClick={() => navigate("/orders")}
-            >
-              Mis Pedidos
-            </div>
-            <div className="header-profile-dropdown-item" onClick={handleLogout}>
-              Cerrar Sesión
-            </div>
+      {/* Opciones del desplegable: solo mostrar para clientes, no para admins */}
+      {!isAdmin && isAuthenticated && (
+        <div className="header-profile-dropdown">
+          <div
+            className="header-profile-dropdown-item"
+            onClick={() => navigate("/profile")}
+          >
+            Mi Perfil
           </div>
-        )}
-      </div>
-    );
-  };
+          <div
+            className="header-profile-dropdown-item"
+            onClick={() => navigate("/orders")}
+          >
+            Mis Pedidos
+          </div>
+          <div className="header-profile-dropdown-item" onClick={handleLogout}>
+            Cerrar Sesión
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
   // ====== MENÚ LATERAL ======
   const menuItems = itemMenu.filter((item) => item.name !== "Cerrar Sesion");

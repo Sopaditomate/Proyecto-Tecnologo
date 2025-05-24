@@ -25,7 +25,8 @@
   color: var(--color-amber-100, #fef3c7);
   font-size: 1rem;
   letter-spacing: 0.01em;
-  max-width: 120px;
+  width: auto; /* con esto los nombres se veran independientemente de su longitud */
+  max-width: 600px; /* se aumento el tamaño para que el nombre se adaptara */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
