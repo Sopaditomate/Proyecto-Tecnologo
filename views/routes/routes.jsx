@@ -17,6 +17,14 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "../routes/ProtectedRoute.jsx";
 import { AdminDashboard } from "../pages/admin/AdminDashboard";
 
+//Importaciones de los modulos de Admin
+import { AdminInventory } from "../pages/admin/inventory/InventoryManagement.jsx";
+import { AdminOrders } from "../pages/admin/orders/OrderManagement.jsx";
+import { AdminProductions } from "../pages/admin/production/ProductionManagement.jsx";
+import { AdminProducts } from "../pages/admin/products/ProductManagement.jsx";
+import { AdminUsers } from "../pages/admin/users/UserManagement.jsx";
+
+
 // Componente de layout para las páginas
 const PageLayout = ({ children, config }) => {
   const {
@@ -141,8 +149,8 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin={true}>
             <PageLayout
             config={{
-              itemHeader: getHeaderItems("login"),
-              itemMenu: getMenuItems("login"),
+              itemHeader: getHeaderItems("admin"),
+              itemMenu: getMenuItems("admin"),
               iconMenu: defaultIcons.iconMenu,
               icon1: defaultIcons.icon1,
               link: "/",
@@ -152,7 +160,103 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      { /* ruta para la gestion de usuarios */ }
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageLayout
+            config={{
+              itemHeader: getHeaderItems("admin"),
+              itemMenu: getMenuItems("admin"),
+              iconMenu: defaultIcons.iconMenu,
+              icon1: defaultIcons.icon1,
+              link: "/",
+            }}>
+              <AdminUsers />
+            </PageLayout>
+          </ProtectedRoute>
+        }
+      />
+      { /* ruta para la gestion de productos y recetas */ }
+      <Route
+        path="/admin/products"
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageLayout
+              config={{
+                itemHeader: getHeaderItems("admin"),
+                itemMenu: getMenuItems("admin"),
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
+              <AdminProducts />
+            </PageLayout>
+          </ProtectedRoute>
+        }
+      />
+      { /* ruta para la gestion de pedidos*/ }
+      <Route
+        path="/admin/orders"
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageLayout
+              config={{
+                itemHeader: getHeaderItems("admin"),
+                itemMenu: getMenuItems("admin"),
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
+              <AdminOrders />
+            </PageLayout>
+          </ProtectedRoute>
+        }
+      />
+      { /* ruta para la gestion del inventario o existencias*/ }
+      <Route
+        path="/admin/inventory"
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageLayout
+              config={{
+                itemHeader: getHeaderItems("admin"),
+                itemMenu: getMenuItems("admin"),
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
+              <AdminInventory />
+            </PageLayout>
+          </ProtectedRoute>
+        }
+      />
+      { /* ruta para produccion del admin*/ }
+      <Route
+        path="/admin/productions"
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageLayout
+              config={{
+                itemHeader: getHeaderItems("admin"),
+                itemMenu: getMenuItems("admin"),
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
+              <AdminProductions />
+            </PageLayout>
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
+    
   );
 }

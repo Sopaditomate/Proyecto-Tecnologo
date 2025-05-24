@@ -25,6 +25,7 @@ export const defaultIcons = {
 };
 
 // Obtener elementos del encabezado según el tipo de página
+//aun falta por trabajar
 export const getHeaderItems = (type) => {
   // Elementos comunes en todas las páginas
   const commonItems = [
@@ -40,28 +41,80 @@ export const getHeaderItems = (type) => {
 };
 
 // Obtener elementos del menú según el tipo de página
-export const getMenuItems = (type) => {
-  switch (type) {
-    case "catalog":
+export const getMenuItems = (UserType) => {
+  switch (UserType) {
+    case "catalog": //se hizo un pequeño cambio en catalogo respecto a las rutas y es que quito la parte de cuenta 
       return [
-        { name: "Inicio", path: "/" },
-        { name: "Cuenta" },
-        { name: "Catalogo", path: "/catalogo" },
-        { name: "Servicios" },
-        { name: "Contacto" },
-        { name: "Cerrar Sesion" },
+        { 
+          name: "Inicio", 
+          path: "/" 
+        },
+        { 
+          name: "Catalogo", 
+          path: "/catalogo" 
+        },
+        { 
+          name: "Servicios" 
+        },
+        { 
+          name: "Contacto" 
+        },
+        { 
+          name: "Cerrar Sesion" 
+        },
       ];
     case "login":
       return [
-        { name: "Inicio", icon: "/assets/house.svg", path: "/" },
+        { name: "Inicio", 
+          icon: "/assets/house.svg", 
+          path: "/" 
+        },
         {
           name: "Catalogo",
           path: "/catalogo",
           icon: "/assets/baguette-catalog.svg",
         },
-        { name: "Cuenta", icon: "/assets/profileiconwhite.svg" },
-        { name: "Contacto", icon: "/assets/contact.svg" },
-        { name: "Cerrar Sesion", icon: "/assets/log-out.svg" },
+        { name: "Cuenta", 
+          icon: "/assets/profileiconwhite.svg" 
+        },
+        { name: "Contacto", 
+          icon: "/assets/contact.svg" 
+        },
+        { 
+          name: "Cerrar Sesion", 
+          icon: "/assets/log-out.svg" 
+        },
+      ];
+    case "admin": //opciones para el modulo de admin
+      return [
+        { 
+          name: "Panel", 
+          path: "/admin" 
+        },
+        { 
+          name: "Gestión de Usuarios", 
+          path: "/admin/users" 
+        },
+        { 
+          name: "Gestión de Pedidos", 
+          path: "/admin/orders" 
+        },
+        { 
+          name: "Productos", 
+          path: "/admin/products" 
+        },
+        { 
+          name: "Inventario", 
+          path: "/admin/inventory" 
+        },
+        { 
+          name: "Producción", 
+          path: "/admin/productions" 
+        },
+        { 
+          name: "Cerrar Sesion", 
+          icon: "/assets/log-out.svg" 
+        },
       ];
     default:
       return menuItems;
