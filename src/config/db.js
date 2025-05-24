@@ -9,22 +9,20 @@ const dbConfig = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: Number(process.env.DB_PORT),
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false },
 };
-
-
 
 // Crear pool de conexiones a la base de datos
 const pool = mysql.createPool(dbConfig);
 
 // Manejador de eventos de error del pool
-pool.on('connection', (connection) => {
-  console.log('Nueva conexión establecida con la base de datos');
-  
-  connection.on('error', (err) => {
-    console.error('Error en la conexión a la base de datos:', err);
-    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-      console.log('Reconectando a la base de datos...');
+pool.on("connection", (connection) => {
+  console.log("Nueva conexión establecida con la base de datos");
+
+  connection.on("error", (err) => {
+    console.error("Error en la conexión a la base de datos:", err);
+    if (err.code === "PROTOCOL_CONNECTION_LOST") {
+      console.log("Reconectando a la base de datos...");
     } else {
       throw err;
     }
@@ -34,14 +32,14 @@ pool.on('connection', (connection) => {
 // Función para probar la conexión
 async function testConnection() {
   try {
-    console.log('🔍 Testing database connection with config:', {
+    console.log("🔍 Testing database connection with config:", {
       host: process.env.DB_HOST,
       port: process.env.DB_PORT,
       database: process.env.DB_NAME,
       user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD 
+      password: process.env.DB_PASSWORD,
     });
-    
+
     const connection = await pool.getConnection();
     console.log("✅ Database connection successful!");
     connection.release();

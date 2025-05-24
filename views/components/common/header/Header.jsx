@@ -93,57 +93,65 @@ export function Header({
   };
 
   // ====== RENDER PERFIL DE USUARIO ======
- const renderUserProfile = () => {
-  if (!isAuthenticated) return null;
+  const renderUserProfile = () => {
+    if (!isAuthenticated) return null;
 
-  return (
-    <div
-      ref={profileRef}
-      className={`header-profile-container${toggle ? " disabled" : ""} ${
-        profileOpen ? " open" : ""
-      }`}
-      onClick={() => !toggle && setProfileOpen((prev) => !prev)}
-      style={{ marginLeft: "1rem" }}
-    >
-      <img
-        src="/assets/profileiconwhite.svg"
-        alt="Perfil"
-        className="header-profile-avatar"
-      />
-      
-      <span className="header-profile-name">
-        {
-          // Cambiar el nombre según el rol con interpolación de variables o expresiones
-          isAdmin
-            ? `Administrador ${user?.nombres}` 
-            : user?.nombres ? `Cliente ${user.nombres}` : "Usuario"
-        }
-      </span>
+    return (
+      <div
+        ref={profileRef}
+        className={`header-profile-container${toggle ? " disabled" : ""} ${
+          profileOpen ? " open" : ""
+        }`}
+        onClick={() => !toggle && setProfileOpen((prev) => !prev)}
+        style={{ marginLeft: "1rem" }}
+      >
+        <img
+          src="/assets/profileiconwhite.svg"
+          alt="Perfil"
+          className="header-profile-avatar"
+        />
 
-      {/* Opciones del desplegable: solo mostrar para clientes, no para admins */}
-      {!isAdmin && isAuthenticated && (
-        <div className="header-profile-dropdown">
-          <div
-            className="header-profile-dropdown-item"
-            onClick={() => navigate("/profile")}
-          >
-            Mi Perfil
-          </div>
-          <div
-            className="header-profile-dropdown-item"
-            onClick={() => navigate("/orders")}
-          >
-            Mis Pedidos
-          </div>
-          <div className="header-profile-dropdown-item" onClick={handleLogout}>
-            Cerrar Sesión
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+        <span className="header-profile-name">
+          {
+            // Cambiar el nombre según el rol con interpolacion de variables o expresiones
+            isAdmin
+              ? `Administrador ${user?.nombres}`
+              : user?.nombres
+              ? `Cliente ${user.nombres}`
+              : "Usuario"
+          }
+        </span>
 
+        {/* Opciones del desplegable: mostrar para ambos (admin y usuario) */}
+        {isAuthenticated && (
+          <div className="header-profile-dropdown">
+            {!isAdmin && (
+              <>
+                <div
+                  className="header-profile-dropdown-item"
+                  onClick={() => navigate("/profile")}
+                >
+                  Mi Perfil
+                </div>
+                <div
+                  className="header-profile-dropdown-item"
+                  onClick={() => navigate("/orders")}
+                >
+                  Mis Pedidos
+                </div>
+              </>
+            )}
+            <div
+              className="header-profile-dropdown-item"
+              onClick={handleLogout}
+            >
+              Cerrar Sesión
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // ====== MENÚ LATERAL ======
   const menuItems = itemMenu.filter((item) => item.name !== "Cerrar Sesion");
@@ -151,7 +159,14 @@ export function Header({
     (item) => item.name === "Cerrar Sesion"
   );
   const maxItems = 6;
-  const visibleItems = showAllItems ? menuItems : menuItems.slice(0, maxItems);
+  let visibleItems = showAllItems ? menuItems : menuItems.slice(0, maxItems);
+  // Si el usuario NO está autenticado, agrega 'Iniciar sesión' como sección
+  if (!isAuthenticated) {
+    visibleItems = [
+      { name: "Iniciar sesión", path: "/login" },
+      ...visibleItems,
+    ];
+  }
 
   // ====== RENDER HEADER ======
   return (
@@ -261,13 +276,25 @@ export function Header({
             {showAllItems ? "Ver menos" : "Ver más"}
           </div>
         )}
-        {cerrarSesionItem && isAuthenticated && (
+        {!isAuthenticated ? (
           <div className="cerrar-sesion-footer">
-            <li className="menu-item cerrar-sesion-item" onClick={handleLogout}>
-              <span className="menu-item-text">Cerrar sesión</span>
+            <Link to="/login" className="menu-item cerrar-sesion-item">
+              <span className="menu-item-text">Iniciar sesión</span>
               <span className="menu-arrow">›</span>
-            </li>
+            </Link>
           </div>
+        ) : (
+          cerrarSesionItem && (
+            <div className="cerrar-sesion-footer">
+              <li
+                className="menu-item cerrar-sesion-item"
+                onClick={handleLogout}
+              >
+                <span className="menu-item-text">Cerrar sesión</span>
+                <span className="menu-arrow">›</span>
+              </li>
+            </div>
+          )
         )}
         {/* Footer social */}
         <div className="menu-footer">
@@ -290,18 +317,22 @@ export function Header({
           </div>
         </div>
       </nav>
-    {/* Modal de confirmación para cerrar sesión */}
-    {showLogoutConfirm && (
-      <div className="logout-confirm-overlay">
-        <div className="logout-confirm-modal">
-          <p>¿Seguro que quieres cerrar sesión?</p>
-          <div className="logout-confirm-buttons">
-            <button className="btn-confirm-logout" onClick={confirmLogout}>Sí</button>
-            <button className="btn-cancel-logout" onClick={cancelLogout}>No</button>
+      {/* Modal de confirmación para cerrar sesión */}
+      {showLogoutConfirm && (
+        <div className="logout-confirm-overlay">
+          <div className="logout-confirm-modal">
+            <p>¿Seguro que quieres cerrar sesión?</p>
+            <div className="logout-confirm-buttons">
+              <button className="btn-confirm-logout" onClick={confirmLogout}>
+                Sí
+              </button>
+              <button className="btn-cancel-logout" onClick={cancelLogout}>
+                No
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
-  </header>
+      )}
+    </header>
   );
 }
