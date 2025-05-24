@@ -8,24 +8,28 @@ dotenv.config();
 
 const app = express();
 
+const allowedOrigins = ["http://127.0.0.1:53885/", "http://localhost:5173"];
+
 // Configuración de CORS
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  origin: allowedOrigins,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 // Middleware de CORS
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Probar la conexión al inicio
 const initializeDatabase = async () => {
   console.log("🔌 Testing database connection...");
   const isConnected = await testConnection();
   if (!isConnected) {
-    console.error("❌ Failed to connect to the database. Please check your connection settings in .env");
+    console.error(
+      "❌ Failed to connect to the database. Please check your connection settings in .env"
+    );
     process.exit(1);
   }
 };
@@ -41,8 +45,8 @@ app.use((req, res, next) => {
 
 // Manejo de errores
 app.use((err, req, res, next) => {
-  console.error('Error en el servidor:', err);
-  res.status(500).json({ error: 'Error interno del servidor' });
+  console.error("Error en el servidor:", err);
+  res.status(500).json({ error: "Error interno del servidor" });
 });
 
 app.use(express.json());
