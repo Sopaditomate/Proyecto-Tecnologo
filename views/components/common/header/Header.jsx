@@ -110,32 +110,41 @@ export function Header({
           alt="Perfil"
           className="header-profile-avatar"
         />
-        
+
         <span className="header-profile-name">
           {
             // Cambiar el nombre según el rol con interpolacion de variables o expresiones
             isAdmin
-              ? `Administrador ${user?.nombres}` 
-              : user?.nombres ? `Cliente ${user.nombres}` : "Usuario"
+              ? `Administrador ${user?.nombres}`
+              : user?.nombres
+              ? `Cliente ${user.nombres}`
+              : "Usuario"
           }
         </span>
 
-        {/* Opciones del desplegable: solo mostrar para clientes, no para admins */}
-        {!isAdmin && isAuthenticated && (
+        {/* Opciones del desplegable: mostrar para ambos (admin y usuario) */}
+        {isAuthenticated && (
           <div className="header-profile-dropdown">
+            {!isAdmin && (
+              <>
+                <div
+                  className="header-profile-dropdown-item"
+                  onClick={() => navigate("/profile")}
+                >
+                  Mi Perfil
+                </div>
+                <div
+                  className="header-profile-dropdown-item"
+                  onClick={() => navigate("/orders")}
+                >
+                  Mis Pedidos
+                </div>
+              </>
+            )}
             <div
               className="header-profile-dropdown-item"
-              onClick={() => navigate("/profile")}
+              onClick={handleLogout}
             >
-              Mi Perfil
-            </div>
-            <div
-              className="header-profile-dropdown-item"
-              onClick={() => navigate("/orders")}
-            >
-              Mis Pedidos
-            </div>
-            <div className="header-profile-dropdown-item" onClick={handleLogout}>
               Cerrar Sesión
             </div>
           </div>
@@ -150,7 +159,14 @@ export function Header({
     (item) => item.name === "Cerrar Sesion"
   );
   const maxItems = 6;
-  const visibleItems = showAllItems ? menuItems : menuItems.slice(0, maxItems);
+  let visibleItems = showAllItems ? menuItems : menuItems.slice(0, maxItems);
+  // Si el usuario NO está autenticado, agrega 'Iniciar sesión' como sección
+  if (!isAuthenticated) {
+    visibleItems = [
+      { name: "Iniciar sesión", path: "/login" },
+      ...visibleItems,
+    ];
+  }
 
   // ====== RENDER HEADER ======
   return (
@@ -260,13 +276,25 @@ export function Header({
             {showAllItems ? "Ver menos" : "Ver más"}
           </div>
         )}
-        {cerrarSesionItem && isAuthenticated && (
+        {!isAuthenticated ? (
           <div className="cerrar-sesion-footer">
-            <li className="menu-item cerrar-sesion-item" onClick={handleLogout}>
-              <span className="menu-item-text">Cerrar sesión</span>
+            <Link to="/login" className="menu-item cerrar-sesion-item">
+              <span className="menu-item-text">Iniciar sesión</span>
               <span className="menu-arrow">›</span>
-            </li>
+            </Link>
           </div>
+        ) : (
+          cerrarSesionItem && (
+            <div className="cerrar-sesion-footer">
+              <li
+                className="menu-item cerrar-sesion-item"
+                onClick={handleLogout}
+              >
+                <span className="menu-item-text">Cerrar sesión</span>
+                <span className="menu-arrow">›</span>
+              </li>
+            </div>
+          )
         )}
         {/* Footer social */}
         <div className="menu-footer">
@@ -289,18 +317,22 @@ export function Header({
           </div>
         </div>
       </nav>
-    {/* Modal de confirmación para cerrar sesión */}
-    {showLogoutConfirm && (
-      <div className="logout-confirm-overlay">
-        <div className="logout-confirm-modal">
-          <p>¿Seguro que quieres cerrar sesión?</p>
-          <div className="logout-confirm-buttons">
-            <button className="btn-confirm-logout" onClick={confirmLogout}>Sí</button>
-            <button className="btn-cancel-logout" onClick={cancelLogout}>No</button>
+      {/* Modal de confirmación para cerrar sesión */}
+      {showLogoutConfirm && (
+        <div className="logout-confirm-overlay">
+          <div className="logout-confirm-modal">
+            <p>¿Seguro que quieres cerrar sesión?</p>
+            <div className="logout-confirm-buttons">
+              <button className="btn-confirm-logout" onClick={confirmLogout}>
+                Sí
+              </button>
+              <button className="btn-cancel-logout" onClick={cancelLogout}>
+                No
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
-  </header>
+      )}
+    </header>
   );
 }
