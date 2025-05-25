@@ -26,10 +26,18 @@ import { AdminUsers } from "../pages/admin/users/UserManagement.jsx";
 
 
 // Componente de layout para las páginas
+import { useAuth } from "../context/AuthContext";
 const PageLayout = ({ children, config }) => {
+  const { isAdmin } = useAuth();
+  // Detecta el tipo de menú dinámicamente según el rol
+  let menuType = "catalog";
+  if (isAdmin) menuType = "admin";
+  // Si el config fuerza un tipo, úsalo
+  if (config && config.menuType) menuType = config.menuType;
+
+  const itemHeader = getHeaderItems(menuType);
+  const itemMenu = getMenuItems(menuType);
   const {
-    itemHeader = [],
-    itemMenu = [],
     iconMenu,
     icon1,
     icon2,
@@ -149,8 +157,7 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin={true}>
             <PageLayout
             config={{
-              itemHeader: getHeaderItems("admin"),
-              itemMenu: getMenuItems("admin"),
+              menuType: "admin",
               iconMenu: defaultIcons.iconMenu,
               icon1: defaultIcons.icon1,
               link: "/",
@@ -168,8 +175,7 @@ export function AppRoutes() {
           <ProtectedRoute requireAdmin={true}>
             <PageLayout
             config={{
-              itemHeader: getHeaderItems("admin"),
-              itemMenu: getMenuItems("admin"),
+              menuType: "admin",
               iconMenu: defaultIcons.iconMenu,
               icon1: defaultIcons.icon1,
               link: "/",

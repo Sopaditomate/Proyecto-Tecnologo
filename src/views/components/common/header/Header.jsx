@@ -102,7 +102,7 @@ export function Header({
         <div className="menu-toggle-container">
           {iconMenu && (
             <img
-              src={toggle ? "/assets/close.svg" : "/assets/hamburgermenu.svg"}
+              src={toggle ? "/assets/close.svg" : iconMenu}
               className={`icon-header ${toggle ? "rotate" : ""}`}
               id={toggle ? "close-icon" : "hamburger-icon"}
               onClick={handleToggle}
