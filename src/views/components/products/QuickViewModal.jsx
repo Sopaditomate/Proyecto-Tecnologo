@@ -6,7 +6,7 @@ import "../../../views/pages/catalog/quick-view-modal.css";
 
 export function QuickViewModal({ product, onClose }) {
   // Obtener función para añadir al carrito
-  const { addProductToCart } = useCart();
+  const { addProductToCart, showAddToCartNotification } = useCart();
   // Estados para controlar cantidad y pestañas
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
@@ -43,6 +43,7 @@ export function QuickViewModal({ product, onClose }) {
     for (let i = 0; i < quantity; i++) {
       addProductToCart(product);
     }
+    showAddToCartNotification(); // Mostrar notificación solo una vez
     handleClose();
   };
 

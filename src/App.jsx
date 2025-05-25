@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "../views/context/AuthContext";
 import { CartProvider } from "../views/context/CartContext";
 import { AppRoutes } from "./routes/routes";
+import { ToastContainer } from 'react-toastify';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <CartProvider>
         {/* Configura el enrutador para la navegación */}
         <Router>
+          <ToastContainer />
           <main>
             <Routes>
               {/* Mapea todas las rutas definidas en AppRoutes */}
