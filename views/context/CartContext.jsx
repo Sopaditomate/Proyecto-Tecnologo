@@ -4,6 +4,9 @@ import { useState, createContext, useContext, useEffect, useRef } from "react";
 import axios from "axios";
 import { products } from "./ProductsData.js";
 import { useAuth } from "./AuthContext";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "../../src/styles/toastify.css";
 
 export const CartContext = createContext();
 
@@ -107,6 +110,55 @@ export function CartProvider({ children }) {
     });
   };
 
+  // Función para mostrar la notificación de producto añadido
+  const showAddToCartNotification = () => {
+    toast.success("¡Producto añadido al carrito!", {
+      className: "toastify-add",
+      position: "top-right",
+      autoClose: 10,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+      progress: undefined,
+      theme: "colored",
+      closeButton: false,
+    });
+  };
+
+  // Función para mostrar la notificación de producto eliminado
+  const showRemoveFromCartNotification = (product) => {
+    toast.success(
+      `Producto eliminado: ${product?.nameProduct || "(sin nombre)"}`,
+      {
+        position: "bottom-center",
+        autoClose: 100,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+        theme: "colored",
+        closeButton: false,
+      }
+    );
+  };
+
+  // Función para mostrar la notificación al vaciar el carrito
+  const showClearCartNotification = () => {
+    toast.success("Carrito vaciado", {
+      position: "bottom-center",
+      autoClose: 100,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+      progress: undefined,
+      theme: "colored",
+      closeButton: false,
+    });
+  };
+
   const removeProductFromCart = (product) => {
     isCartFromUserAction.current = true;
     setCart((prevCart) => {
@@ -129,11 +181,13 @@ export function CartProvider({ children }) {
   const deleteProductFromCart = (product) => {
     isCartFromUserAction.current = true;
     setCart((prevCart) => prevCart.filter((item) => item.id !== product.id));
+    showRemoveFromCartNotification(product);
   };
 
   const clearCart = () => {
     isCartFromUserAction.current = true;
     setCart([]);
+    showClearCartNotification();
   };
 
   const openCart = () => {
@@ -215,6 +269,9 @@ export function CartProvider({ children }) {
     openCart,
     closeCart,
     addProductToCart,
+    showAddToCartNotification,
+    showRemoveFromCartNotification,
+    showClearCartNotification,
     removeProductFromCart,
     deleteProductFromCart,
     clearCart,

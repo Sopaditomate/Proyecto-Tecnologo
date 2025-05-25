@@ -5,7 +5,7 @@ import { useCart } from "../../context/CartContext";
 import "../../pages/catalog/catalog.css";
 
 export function ProductCard({ product }) {
-  const { addProductToCart } = useCart();
+  const { addProductToCart, showAddToCartNotification } = useCart();
   const [showFullDesc, setShowFullDesc] = useState(false);
 
   // Función para truncar la descripción
@@ -103,7 +103,10 @@ export function ProductCard({ product }) {
             </div>
             <button
               className="btn-add"
-              onClick={() => addProductToCart(product)}
+              onClick={() => {
+                addProductToCart(product);
+                showAddToCartNotification();
+              }}
               aria-label={`Agregar ${product.nameProduct} al carrito`}
             >
               <img

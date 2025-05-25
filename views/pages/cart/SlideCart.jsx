@@ -6,18 +6,6 @@ import { ProductRecommendation } from "./ProductRecommendation";
 import { CheckoutModal } from "./CheckoutModal";
 import "./slide-cart.css";
 
-// Toast simple usando clase CSS
-function Toast({ message, onClose }) {
-  if (!message) return null;
-  setTimeout(onClose, 2000);
-  return (
-    <div className="cart-toast" role="status" aria-live="polite">
-      <span style={{ fontSize: "1.5rem", marginRight: "0.7rem" }}>ℹ️</span>
-      {message}
-    </div>
-  );
-}
-
 // Componente para el botón de disminuir cantidad con hover
 function MinusButton({ disabled, onClick }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -62,11 +50,11 @@ export function SlideCart() {
     setDeliveryAddress,
   } = useCart();
 
+  //Estado para mostrar/ocultar resumen
+  const [showSummary, setShowSummary] = useState(true);
+
   // Estado para el modal de checkout
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
-
-  // Estado para el mensaje de toast
-  const [toast, setToast] = useState("");
 
   // Confirmaciones
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -80,11 +68,6 @@ export function SlideCart() {
 
   // Estado para descripciones expandibles
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
-
-  // Mostrar mensaje de toast
-  const showToast = (message) => {
-    setToast(message);
-  };
 
   // Manejar clic en el botón de checkout
   const handleCheckout = () => {
@@ -107,7 +90,6 @@ export function SlideCart() {
   const handleConfirmDelete = (product) => {
     deleteProductFromCart(product);
     setConfirmDelete(null);
-    showToast("Producto eliminado del carrito");
   };
 
   // Vaciar carrito
@@ -116,7 +98,6 @@ export function SlideCart() {
   const handleConfirmClear = () => {
     clearCart();
     setConfirmClear(false);
-    showToast("Carrito vaciado");
   };
 
   // Truncar descripción
@@ -129,7 +110,6 @@ export function SlideCart() {
 
   return (
     <>
-      <Toast message={toast} onClose={() => setToast("")} />
       {/* Overlay para cerrar el carrito al hacer clic fuera */}
       <div
         className={`slide-cart-overlay ${isCartOpen ? "active" : ""}`}
@@ -323,53 +303,62 @@ export function SlideCart() {
         {/* Pie del carrito con resumen y checkout */}
         {cart.length > 0 && (
           <div className="slide-cart-footer">
-            <div className="delivery-address">
-              <label htmlFor="address">Dirección de entrega:</label>
-              <input
-                type="text"
-                id="address"
-                placeholder="Ingresa tu dirección"
-                value={deliveryAddress}
-                onChange={(e) => {
-                  setDeliveryAddress(e.target.value);
-                  if (addressError) setAddressError("");
-                }}
-              />
-              {addressError && (
-                <div className="address-error">{addressError}</div>
-              )}
-            </div>
-
-            <div className="cart-summary">
-              <div className="summary-row">
-                <span>Subtotal</span>
-                <span>${getCartSubtotal().toFixed(3)}</span>
-              </div>
-              <div className="summary-row">
-                <span>Envío</span>
-                <span>
-                  {getShippingCost() === 0
-                    ? "Gratis"
-                    : `$${getShippingCost().toFixed(3)}`}
-                </span>
-              </div>
-              <div className="summary-row">
-                <span>IVA (19%)</span>
-                <span>${getTaxes().toFixed(3)}</span>
-              </div>
-              <div className="summary-row total">
-                <span>Total</span>
-                <span>${getCartTotal().toFixed(3)}</span>
-              </div>
-            </div>
-
             <button
-              className="checkout-btn"
-              onClick={handleCheckout}
-              disabled={cart.length === 0}
+              className="toggle-details-btn"
+              onClick={() => setShowSummary(!showSummary)}
             >
-              Ir a pagar
+              {showSummary ? "Ocultar resumen" : "Mostrar resumen"}
             </button>
+
+            <div className={`details ${!showSummary ? "hidden" : ""}`}>
+              <div className="delivery-address">
+                <label htmlFor="address">Dirección de entrega:</label>
+                <input
+                  type="text"
+                  id="address"
+                  placeholder="Ingresa tu dirección"
+                  value={deliveryAddress}
+                  onChange={(e) => {
+                    setDeliveryAddress(e.target.value);
+                    if (addressError) setAddressError("");
+                  }}
+                />
+                {addressError && (
+                  <div className="address-error">{addressError}</div>
+                )}
+              </div>
+
+              <div className="cart-summary">
+                <div className="summary-row">
+                  <span>Subtotal</span>
+                  <span>${getCartSubtotal().toFixed(3)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Envío</span>
+                  <span>
+                    {getShippingCost() === 0
+                      ? "Gratis"
+                      : `$${getShippingCost().toFixed(3)}`}
+                  </span>
+                </div>
+                <div className="summary-row">
+                  <span>IVA (19%)</span>
+                  <span>${getTaxes().toFixed(3)}</span>
+                </div>
+                <div className="summary-row total">
+                  <span>Total</span>
+                  <span>${getCartTotal().toFixed(3)}</span>
+                </div>
+              </div>
+
+              <button
+                className="checkout-btn"
+                onClick={handleCheckout}
+                disabled={cart.length === 0}
+              >
+                Ir a pagar
+              </button>
+            </div>
           </div>
         )}
 

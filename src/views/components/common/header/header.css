@@ -203,6 +203,7 @@ header {
   transition: all 0.3s ease;
   border-radius: 50%;
   cursor: pointer;
+  z-index: 15;
 }
 
 .shoppin-car-header:hover {
