@@ -24,7 +24,6 @@ import { AdminProductions } from "../pages/admin/production/ProductionManagement
 import { AdminProducts } from "../pages/admin/products/ProductManagement.jsx";
 import { AdminUsers } from "../pages/admin/users/UserManagement.jsx";
 
-
 // Componente de layout para las páginas
 import { useAuth } from "../context/AuthContext";
 const PageLayout = ({ children, config }) => {
@@ -37,13 +36,7 @@ const PageLayout = ({ children, config }) => {
 
   const itemHeader = getHeaderItems(menuType);
   const itemMenu = getMenuItems(menuType);
-  const {
-    iconMenu,
-    icon1,
-    icon2,
-    link2,
-    link,
-  } = config;
+  const { iconMenu, icon1, icon2, link2, link } = config;
   const footerRef = React.useRef(null);
 
   return (
@@ -156,36 +149,38 @@ export function AppRoutes() {
         element={
           <ProtectedRoute requireAdmin={true}>
             <PageLayout
-            config={{
-              menuType: "admin",
-              iconMenu: defaultIcons.iconMenu,
-              icon1: defaultIcons.icon1,
-              link: "/",
-            }}>
+              config={{
+                menuType: "admin",
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
               <AdminDashboard />
             </PageLayout>
           </ProtectedRoute>
         }
       />
 
-      { /* ruta para la gestion de usuarios */ }
+      {/* ruta para la gestion de usuarios */}
       <Route
         path="/admin/users"
         element={
           <ProtectedRoute requireAdmin={true}>
             <PageLayout
-            config={{
-              menuType: "admin",
-              iconMenu: defaultIcons.iconMenu,
-              icon1: defaultIcons.icon1,
-              link: "/",
-            }}>
+              config={{
+                menuType: "admin",
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
               <AdminUsers />
             </PageLayout>
           </ProtectedRoute>
         }
       />
-      { /* ruta para la gestion de productos y recetas */ }
+      {/* ruta para la gestion de productos y recetas */}
       <Route
         path="/admin/products"
         element={
@@ -204,7 +199,7 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      { /* ruta para la gestion de pedidos*/ }
+      {/* ruta para la gestion de pedidos*/}
       <Route
         path="/admin/orders"
         element={
@@ -223,7 +218,7 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      { /* ruta para la gestion del inventario o existencias*/ }
+      {/* ruta para la gestion del inventario o existencias*/}
       <Route
         path="/admin/inventory"
         element={
@@ -242,7 +237,7 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      { /* ruta para produccion del admin*/ }
+      {/* ruta para produccion del admin*/}
       <Route
         path="/admin/productions"
         element={
@@ -263,6 +258,5 @@ export function AppRoutes() {
       />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
-    
   );
 }

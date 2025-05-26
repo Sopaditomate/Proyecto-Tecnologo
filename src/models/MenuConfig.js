@@ -43,77 +43,70 @@ export const getHeaderItems = (type) => {
 // Obtener elementos del menú según el tipo de página
 export const getMenuItems = (UserType) => {
   switch (UserType) {
-    case "catalog": //se hizo un pequeño cambio en catalogo respecto a las rutas y es que quito la parte de cuenta 
+    case "catalog": //se hizo un pequeño cambio en catalogo respecto a las rutas y es que quito la parte de cuenta
       return [
-        { 
-          name: "Inicio", 
-          path: "/" 
+        {
+          name: "Inicio",
+          path: "/",
         },
-        { 
-          name: "Catalogo", 
-          path: "/catalogo" 
+        {
+          name: "Catalogo",
+          path: "/catalogo",
         },
-        { 
-          name: "Servicios" 
+        {
+          name: "Servicios",
         },
-        { 
-          name: "Contacto" 
+        {
+          name: "Contacto",
         },
-        { 
-          name: "Cerrar Sesion" 
+        {
+          name: "Cerrar Sesion",
         },
       ];
     case "login":
       return [
-        { name: "Inicio", 
-          icon: "/assets/house.svg", 
-          path: "/" 
-        },
+        { name: "Inicio", icon: "/assets/house.svg", path: "/" },
         {
           name: "Catalogo",
           path: "/catalogo",
           icon: "/assets/baguette-catalog.svg",
         },
-        { name: "Cuenta", 
-          icon: "/assets/profileiconwhite.svg" 
-        },
-        { name: "Contacto", 
-          icon: "/assets/contact.svg" 
-        },
-        { 
-          name: "Cerrar Sesion", 
-          icon: "/assets/log-out.svg" 
+        { name: "Cuenta", icon: "/assets/profileiconwhite.svg" },
+        { name: "Contacto", icon: "/assets/contact.svg" },
+        {
+          name: "Cerrar Sesion",
+          icon: "/assets/log-out.svg",
         },
       ];
     case "admin": //opciones para el modulo de admin
       return [
-        { 
-          name: "Panel", 
-          path: "/admin" 
+        {
+          name: "Panel",
+          path: "/admin",
         },
-        { 
-          name: "Gestión de Usuarios", 
-          path: "/admin/users" 
+        {
+          name: "Gestión de Usuarios",
+          path: "/admin/users",
         },
-        { 
-          name: "Gestión de Pedidos", 
-          path: "/admin/orders" 
+        {
+          name: "Gestión de Pedidos",
+          path: "/admin/orders",
         },
-        { 
-          name: "Productos", 
-          path: "/admin/products" 
+        {
+          name: "Productos",
+          path: "/admin/products",
         },
-        { 
-          name: "Inventario", 
-          path: "/admin/inventory" 
+        {
+          name: "Inventario",
+          path: "/admin/inventory",
         },
-        { 
-          name: "Producción", 
-          path: "/admin/productions" 
+        {
+          name: "Producción",
+          path: "/admin/productions",
         },
-        { 
-          name: "Cerrar Sesion", 
-          icon: "/assets/log-out.svg" 
+        {
+          name: "Cerrar Sesion",
+          icon: "/assets/log-out.svg",
         },
       ];
     default:
