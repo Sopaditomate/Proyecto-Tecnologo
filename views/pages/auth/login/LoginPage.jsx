@@ -1,5 +1,5 @@
 "use client";
-
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { HeadProfile } from "../../../components/common/header/HeadProfile.jsx";
@@ -22,6 +22,7 @@ export function LoginPage() {
 
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { setUser } = useAuth();
@@ -165,13 +166,23 @@ export function LoginPage() {
             </p>
           )}
 
-          <input
-            type="password"
-            placeholder="Contraseña"
-            className="input-password"
-            onChange={handlePassword}
-            style={{ borderBottom: `2px solid ${password.borderColor}` }}
-          />
+          <div className="input-password-container">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Contraseña"
+              className="input-password"
+              onChange={handlePassword}
+              style={{ borderBottom: `2px solid ${password.borderColor}` }}
+            />
+            <span
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="toggle-password-icon"
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+
           {password.text && (
             <p
               style={{
