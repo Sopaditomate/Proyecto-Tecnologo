@@ -265,6 +265,29 @@ button:active {
   height: 20px;
 }
 
+
+/* ===== ICONO DE TOGGLE DE CONTRASEÑA ===== */
+
+
+.input-password-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+  
+.toggle-password-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    right: 5px;
+}
+
+
+
+
 /* ===== MENSAJE DE CONFIRMACIÓN ===== */
 #registration-confirmed {
   display: flex;
