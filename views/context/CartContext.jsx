@@ -6,7 +6,7 @@ import { products } from "./ProductsData.js";
 import { useAuth } from "./AuthContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import "../../src/styles/toastify.css";
+import "../styles/toastify.css";
 
 export const CartContext = createContext();
 
