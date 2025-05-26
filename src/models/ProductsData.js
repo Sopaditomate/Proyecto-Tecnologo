@@ -114,7 +114,7 @@ export const products = [
   },
   {
     id: 12,
-    nameProduct: "Croissant Clásico ",
+    nameProduct: "Croissant Clásico",
     description:
       "Croissant hojaldrado y dorado, elaborado con mantequilla de alta calidad. Su textura crujiente por fuera y suave por dentro lo convierte en un clásico irresistible del desayuno francés.",
     price: 5.5,

@@ -4,22 +4,26 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { testConnection } from "./config/db.js";
 
-dotenv.config();
+dotenv.config(); //para unar .env
 
-const app = express();
+const app = express(); //instancia creada del servidor express
+//se configura con middlewares y rutas
 
 const allowedOrigins = ["http://127.0.0.1:53885/", "http://localhost:5173"];
+//especificacion de los dominios que pueden hacer peticiones al backend
+//en etse caso los puertos del frontend
+
 
 // Configuración de CORS
 const corsOptions = {
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: allowedOrigins, //origenes permitidos
+  credentials: true, //se aceptan cookies
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], //se permiten estos metodos comunes https
+  allowedHeaders: ["Content-Type", "Authorization"], //se aceptan ciertos encabezados en las peticiones
 };
 
-// Middleware de CORS
-app.use(cors(corsOptions));
+// Middleware de CORS, en este caso una instancia de express
+app.use(cors(corsOptions)); //aplica cors a todas las rutas
 app.options("*", cors(corsOptions));
 
 // Probar la conexión al inicio
@@ -30,16 +34,25 @@ const initializeDatabase = async () => {
     console.error(
       "❌ Failed to connect to the database. Please check your connection settings in .env"
     );
-    process.exit(1);
+    process.exit(1);//detiene el proceso si falla
   }
 };
 
 // Inicializar la base de datos
-initializeDatabase().catch(console.error);
+initializeDatabase().catch(console.error);//es un catch para los errores sin el try
+
 
 // Middleware de registro de solicitudes
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  const start = Date.now(); // Mueve esta línea aquí para que `start` esté disponible en el ámbito
+
+  console.log(`[${new Date().toISOString()}] Solicitud: ${req.method} ${req.url}`);
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start; // Aquí `start` es accesible
+    console.log(`Respuesta: ${res.statusCode} en ${duration}ms`);
+  });
+
   next();
 });
 
@@ -49,22 +62,25 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Error interno del servidor" });
 });
 
-app.use(express.json());
-app.use(cookieParser());
+app.use(express.json());// permite interpretar el cuerpo de las peticiones como JSON.
+app.use(cookieParser());// permite leer cookies que se envían con las peticiones.
 
-// Rutas
+// Rutas de las APIS
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
-
+//Se importan las nuevas rutas para inventario
+import inventoryRoutes from "./routes/inventoryRoutes.js";
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/inventario", inventoryRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running!");
 });
 
+//inicializador del servidor
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
