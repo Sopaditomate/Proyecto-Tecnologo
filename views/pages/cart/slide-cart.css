@@ -619,6 +619,18 @@
   outline: none;
   box-shadow: 0 0 0 2px #aaa;
 }
+
+/* =========================
+   TEXTOS WARNING
+   ========================= */
+
+.warning-text-cart {
+  color: red;
+  position: relative;
+  margin-left: 2rem;
+  bottom: 5px;
+}
+
 /* =========================
    RESPONSIVE
    ========================= */
