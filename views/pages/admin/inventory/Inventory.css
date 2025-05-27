@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/* Estilos generales para la tabla */
+/* Estilo para la tabla envuelta */
+.tableTail {
+  display: flex;
+  justify-content: center; /* Centra la tabla en la pantalla */
+  margin-top: 2rem;
+}
+
+/* Estilo general para la tabla */
+.Custom {
+  width: 80%; /* Controla el ancho de la tabla (puedes ajustarlo) */
+  max-width: 1200px; /* Limita el ancho máximo */
+  border-collapse: collapse; /* Fusiona los bordes */
+  background-color: white; /* Fondo blanco */
+  border: 1px solid #e0e0e0; /* Borde gris claro */
+  border-radius: 8px; /* Bordes redondeados */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
+  overflow: hidden; /* Evita que los elementos desborden */
+  margin-bottom: 2rem;
+}
+
+/* Cabecera de la tabla */
+.Custom th {
+  background-color: #f8f9fa; /* Fondo gris claro */
+  color: #333; /* Color de texto oscuro */
+  font-weight: bold; /* Texto en negrita */
+  padding: 12px 20px; /* Padding para mayor altura */
+  text-align: left; /* Alineación a la izquierda */
+}
+
+/* Estilo para las filas de la tabla */
+.Custom td {
+  padding: 12px 20px; /* Padding para las filas */
+  text-align: left; /* Alineación a la izquierda */
+  color: #333; /* Color de texto oscuro */
+}
+
+/* Fila al pasar el mouse */
+.Custom tr:hover {
+  background-color: #f1f1f1; /* Fondo gris claro al pasar el mouse */
+}
+
+/* Estilo para las filas impares */
+.Custom tr:nth-child(odd) {
+  background-color: #fafafa; /* Fondo ligeramente gris para filas impares */
+}
+
+
+.Divselect{
+    width: 80%;
+    flex: auto;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+/* Paginación */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+
+
+.pagination-container button{
+    width: 60px;
+    margin: 5px;
+    align-items: center;
+    justify-content:center;
+}
+
+
+.pagination-container select {
+  padding: 8px 12px;
+  font-size: 14px;
+  margin: 0 5px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: #f1f1f1;
+  color: #333;
+  cursor: pointer;
+}
+
+.pagination-container button:disabled {
+  background-color: #e0e0e0; /* Color de fondo cuando está deshabilitado */
+  cursor: not-allowed;       /* Cambiar el cursor para indicar que no se puede hacer clic */
+}
+
+.pagination-container button:hover:not(:disabled) {
+  background-color: #007bff;
+  color: white;
+}
+
+.pagination-container select {
+  padding: 4px 8px;
+  font-size: 12px;
+  background-color: #fff;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+/* Estilo de la cabecera 
+.table-header {
+  background-color: #f8f9fa;
+  text-align: left;
+  font-weight: bold;
+}
+*/
+/* Para ajustar el tamaño de la tabla si es muy grande */
+@media (max-width: 1024px) {
+  .table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 10px;
+  }
+}
+
+.page-info{
+    margin: 10px
+}

@@ -1,211 +1,174 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Row, Col, Table, Button, Modal, Form } from 'react-bootstrap';
+import { Container } from 'react-bootstrap';
+import { useTable, usePagination } from 'react-table';  // Usamos useTable y usePagination de React Table
+import './inventory.css';
 
 const InventoryManagement = () => {
   const [inventory, setInventory] = useState([]);
-  const [rawMaterialTypes, setRawMaterialTypes] = useState([]);
-  const [units, setUnits] = useState([]);
-  const [showModal, setShowModal] = useState(false);
-  const [newRawMaterial, setNewRawMaterial] = useState({
-    nombre: '',
-    tipoMateria: '',
-    unidad: '',
-    cantidad: 0,
-    descripcion: '',
-    idAdministrador: 100001, // Reemplazado
-  });
 
   useEffect(() => {
     fetchInventory();
-    fetchRawMaterialTypes();
-    fetchUnits();
   }, []);
 
   const fetchInventory = async () => {
     try {
-      const response = await axios.get('/api/inventory');
-      setInventory(response.data);
+      const response = await axios.get('http://localhost:5001/api/inventario/');
+      setInventory(response.data);  // Guardamos los datos en el estado
     } catch (error) {
       console.error('Error al obtener el inventario:', error);
     }
   };
 
-  const fetchRawMaterialTypes = async () => {
-    try {
-      const response = await axios.get('/api/inventory/tipos');
-      setRawMaterialTypes(response.data);
-    } catch (error) {
-      console.error('Error al obtener los tipos de materia prima:', error);
-    }
-  };
+  // Definir las columnas
+  const columns = React.useMemo(
+    () => [
+      {
+        Header: 'ID Inventario',
+        accessor: 'ID_INVENTARIO',
+      },
+      {
+        Header: 'Materia Prima',
+        accessor: 'MATERIA_PRIMA',
+      },
+      {
+        Header: 'Cantidad',
+        accessor: 'CANTIDAD',
+      },
+      {
+        Header: 'Unidad',
+        accessor: 'UNIDAD',
+      },
+      {
+        Header: 'Tipo',
+        accessor: 'TIPO',
+      },
+    ],
+    []
+  );
 
-  const fetchUnits = async () => {
-    try {
-      const response = await axios.get('/api/inventory/unidades');
-      setUnits(response.data);
-    } catch (error) {
-      console.error('Error al obtener las unidades:', error);
-    }
-  };
-
-  const handleAddNewRawMaterial = async () => {
-    try {
-      await axios.post('/api/inventory/nuevo', newRawMaterial);
-      setShowModal(false);
-      setNewRawMaterial({
-        nombre: '',
-        tipoMateria: '',
-        unidad: '',
-        cantidad: 0,
-        descripcion: '',
-        idAdministrador: 100001,
-      });
-      fetchInventory();
-    } catch (error) {
-      console.error('Error al agregar nuevo insumo:', error);
-    }
-  };
-
-  const handleUpdateQuantity = async (id, cantidad) => {
-    try {
-      await axios.put(`/api/inventory/${id}`, { cantidad });
-      fetchInventory();
-    } catch (error) {
-      console.error('Error al actualizar la cantidad:', error);
-    }
-  };
-
-  const handleDeleteInventory = async (id) => {
-    try {
-      await axios.delete(`/api/inventory/${id}`);
-      fetchInventory();
-    } catch (error) {
-      console.error('Error al eliminar el inventario:', error);
-    }
-  };
+  // Configuración de la tabla con React Table
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+    state: { pageIndex, pageSize },
+    canPreviousPage,
+    canNextPage,
+    pageOptions,
+    gotoPage,
+    setPageSize,
+    page, // Aquí es donde tomamos solo los registros de la página actual
+  } = useTable(
+    {
+      columns,
+      data: inventory, // Este es el estado con los datos
+      initialState: { pageIndex: 0, pageSize: 5 }, // Página inicial y tamaño de página por defecto
+    },
+    usePagination // Usamos el hook de paginación
+  );
 
   return (
     <Container>
-      <h1>Gestión de Inventario</h1>
-      <Button variant="primary" onClick={() => setShowModal(true)}>
-        Agregar Nuevo Insumo
-      </Button>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Materia Prima</th>
-            <th>Cantidad</th>
-            <th>Unidad</th>
-            <th>Tipo</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.isArray(inventory) && inventory.length > 0 ? (
-            inventory.map((item) => (
-              <tr key={item.ID_INVENTARIO}>
-                <td>{item.ID_INVENTARIO}</td>
-                <td>{item.MATERIA_PRIMA}</td>
-                <td>
-                  <input
-                    type="number"
-                    value={item.CANTIDAD}
-                    onChange={(e) => handleUpdateQuantity(item.ID_INVENTARIO, Number(e.target.value))}
-                  />
-                </td>
-                <td>{item.UNIDAD}</td>
-                <td>{item.TIPO}</td>
-                <td>
-                  <Button variant="danger" onClick={() => handleDeleteInventory(item.ID_INVENTARIO)}>
-                    Eliminar
-                  </Button>
-                </td>
+      <br />
+      <h1 className="text-3xl font-bold text-center text-brown-700 mb-6">Gestión de Inventario</h1>
+      <div className="flex my-4 justify-center w-2/5 mx-auto">
+        <select
+          value={pageSize}
+          onChange={(e) => setPageSize(Number(e.target.value))}
+          className="px-8 py-4 text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {[5, 10, 20].map((size) => (
+            <option key={size} value={size}>
+              Mostrar {size}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className='tableTail'>
+        
+        <table
+          {...getTableProps()}
+          className="Custom"
+        >
+          <thead>
+            {headerGroups.map((headerGroup) => (
+              <tr {...headerGroup.getHeaderGroupProps()} className="bg-gray-100">
+                {headerGroup.headers.map((column) => (
+                  <th
+                    {...column.getHeaderProps()}
+                    className="px-4 py-2 text-left font-semibold text-gray-700"
+                  >
+                    {column.render('Header')}
+                  </th>
+                ))}
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="6">No hay elementos en el inventario.</td>
-            </tr>
-          )}
-        </tbody>
-      </Table>
+            ))}
+          </thead>
+          <tbody {...getTableBodyProps()}>
+            {page.map((row) => {
+              prepareRow(row);
+              return (
+                <tr {...row.getRowProps()} className="border-b hover:bg-gray-50">
+                  {row.cells.map((cell) => (
+                    <td {...cell.getCellProps()} className="px-4 py-2 text-gray-800">
+                      {cell.render('Cell')}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {/* Controles de Paginación */}
+      <div className="pagination-container flex justify-center items-center space-x-2">
+        {/* Botón "Primera página" */}
+        <button
+          onClick={() => gotoPage(0)}
+          disabled={!canPreviousPage}
+          className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:bg-gray-400"
+        >
+          {'<<'}
+        </button>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Agregar Nuevo Insumo</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form>
-            <Form.Group controlId="formNombre">
-              <Form.Label>Nombre</Form.Label>
-              <Form.Control
-                type="text"
-                value={newRawMaterial.nombre}
-                onChange={(e) => setNewRawMaterial({ ...newRawMaterial, nombre: e.target.value })}
-              />
+        {/* Botón "Página anterior" */}
+        <button
+          onClick={() => gotoPage(pageIndex - 1)}
+          disabled={!canPreviousPage}
+          className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:bg-gray-400"
+        >
+          {'<'}
+        </button>
 
-            </Form.Group>
-            <Form.Group controlId="formTipoMateria">
-              <Form.Label>Tipos de Materia Prima</Form.Label>
-              <Form.Control
-                as="select"
-                value={newRawMaterial.tipoMateria}
-                onChange={(e) => setNewRawMaterial({ ...newRawMaterial, tipoMateria: e.target.value })}
-              >
-                <option value="">Seleccionar</option>
-                {Array.isArray(rawMaterialTypes) && rawMaterialTypes.map((type) => (
-                  <option key={type.ID_TIP_MATERIA} value={type.ID_TIP_MATERIA}>
-                    {type.NOMBRE}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
+        {/* Información sobre la página actual */}
+        <span className="page-info">
+          Página {pageIndex + 1} de {pageOptions.length}
+        </span>
 
-            <Form.Group controlId="formUnidad">
-              <Form.Label>Unidad</Form.Label>
-              <Form.Control
-                as="select"
-                value={newRawMaterial.unidad}
-                onChange={(e) => setNewRawMaterial({ ...newRawMaterial, unidad: e.target.value })}
-              >
-                <option value="">Seleccionar</option>
-                {Array.isArray(units) && units.length > 0 && units.map((unit) => (
-                  <option key={unit.ID_UNIDAD} value={unit.ID_UNIDAD}>
-                    {unit.NOMBRE}
-                  </option>
-                ))}
-              </Form.Control>
-            </Form.Group>
+        {/* Botón "Página siguiente" */}
+        <button
+          onClick={() => gotoPage(pageIndex + 1)}
+          disabled={!canNextPage}
+          className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:bg-gray-400"
+        >
+          {'>'}
+        </button>
 
-            <Form.Group controlId="formCantidad">
-              <Form.Label>Cantidad</Form.Label>
-              <Form.Control
-                type="number"
-                value={newRawMaterial.cantidad}
-                onChange={(e) => setNewRawMaterial({ ...newRawMaterial, cantidad: e.target.value })}
-              />
-            </Form.Group>
-            <Form.Group controlId="formDescripcion">
-              <Form.Label>Descripción</Form.Label>
-              <Form.Control
-                as="textarea"
-                value={newRawMaterial.descripcion}
-                onChange={(e) => setNewRawMaterial({ ...newRawMaterial, descripcion: e.target.value })}
-              />
-            </Form.Group>
-          </Form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleAddNewRawMaterial}>
-            Agregar
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        {/* Botón "Última página" */}
+        <button
+          onClick={() => gotoPage(pageOptions.length - 1)}
+          disabled={!canNextPage}
+          className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:bg-gray-400"
+        >
+          {'>>'}
+        </button>
+
+        {/* Selector de tamaño de página */}
+        
+      </div>
     </Container>
   );
 };
