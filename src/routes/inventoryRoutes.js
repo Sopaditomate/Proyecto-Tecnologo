@@ -1,11 +1,11 @@
 import express from 'express';
 import InventoryController from '../controllers/InventoryController.js';
-import { verifyToken, isAdmin } from "../middleware/authMiddleware.js";
+//import { verifyToken, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 // Todas las rutas requieren autenticación y rol de administrador
-router.use(verifyToken, isAdmin);
+//router.use(verifyToken, isAdmin);
 
 // Obtener información del inventario
 router.get('/', InventoryController.getInventario);

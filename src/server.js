@@ -69,7 +69,7 @@ app.use(cookieParser());// permite leer cookies que se envían con las peticione
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
-//Se importan las nuevas rutas para inventario
+//Se importan las nuevas rutas para inventario, los endpoints de la api
 import inventoryRoutes from "./routes/inventoryRoutes.js";
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
