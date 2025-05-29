@@ -24,6 +24,9 @@ import { AdminProductions } from "../pages/admin/production/ProductionManagement
 import { AdminProducts } from "../pages/admin/products/ProductManagement.jsx";
 import { AdminUsers } from "../pages/admin/users/UserManagement.jsx";
 
+//importaciones de los crud de recetas y productos
+import { Recetasform } from "../pages/admin/receta/crud_rece.jsx";
+
 // Componente de layout para las páginas
 import { useAuth } from "../context/AuthContext";
 const PageLayout = ({ children, config }) => {
@@ -180,7 +183,7 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      {/* ruta para la gestion de productos y recetas */}
+      { /* ruta para la gestion de productos y recetas */}
       <Route
         path="/admin/products"
         element={
@@ -257,6 +260,48 @@ export function AppRoutes() {
         }
       />
       <Route path="*" element={<Navigate to="/" />} />
+
+      {/* recetas */}
+
+      <Route
+        path="/admin/receta"
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageLayout
+              config={{
+                itemHeader: getHeaderItems("admin"),
+                itemMenu: getMenuItems("admin"),
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
+              <Recetasform />
+            </PageLayout>
+          </ProtectedRoute>
+        }
+      />
+      {/* para que me funcione el boton de ver en productos.jsx*/}
+      <Route
+        path="/crud_rece/:id"
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageLayout
+              config={{
+                itemHeader: getHeaderItems("admin"),
+                itemMenu: getMenuItems("admin"),
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
+              <Recetasform />
+            </PageLayout>
+          </ProtectedRoute>
+        }
+      />
+
+
     </Routes>
   );
 }

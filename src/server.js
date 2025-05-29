@@ -8,7 +8,7 @@ dotenv.config();
 
 const app = express();
 
-const allowedOrigins = ["http://127.0.0.1:49989", "http://localhost:5173"];
+const allowedOrigins = ["http://127.0.0.1:53885/", "http://localhost:5173"];
 
 // Configuración de CORS
 const corsOptions = {
@@ -61,9 +61,23 @@ app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 
+
+//productos
+import productAdminRoutes from './routes/productAdminRoutes.js';
+app.use("/api/productos_crud", productAdminRoutes);
+
+//recetas
+import recetaRoutes from './routes/recetaRoutes.js'
+app.use("/api/recetas_crud", recetaRoutes);
+
 app.get("/", (req, res) => {
   res.send("API is running!");
 });
+
+
+
+
+
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
