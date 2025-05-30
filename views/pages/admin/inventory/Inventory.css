@@ -39,7 +39,7 @@
 
 /* Fila al pasar el mouse */
 .Custom tr:hover {
-  background-color: #f1f1f1; /* Fondo gris claro al pasar el mouse */
+  background-color: #f1f1f1 !important; /* Fondo gris claro al pasar el mouse */
 }
 
 /* Estilo para las filas impares */
@@ -125,4 +125,65 @@
 
 .page-info{
     margin: 10px
+}
+
+.filtros-contenedor {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 62%;
+  margin: 0 auto 1rem auto;
+  gap: 1rem;
+}
+
+
+/* Fondo del modal */
+.modal {
+  display: none; /* Oculto por defecto */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.4); /* Sombra de fondo */
+}
+
+/* Contenido del modal */
+.modal-content {
+  background-color: #fefefe;
+  margin: 10% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 10px;
+}
+
+/* styles.css */
+.custom-button {
+    background-color: #28a745; /* Color de fondo verde */
+    color: white; /* Color del texto */
+    width: 100%;
+    margin: 20px;
+    padding: 10px 20px; /* Espaciado interno */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer; /* Cambia el cursor al pasar el mouse */
+    font-size: 16px; /* Tamaño del texto */
+    transition: background-color 0.3s; /* Transición suave para el color de fondo */
+}
+
+.custom-button:hover {
+    background-color: #218838; /* Color al pasar el mouse */
+}
+
+.Cont-Butt{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 62%;
+  margin: 0 auto 1rem auto;
+  gap: 1rem;
 }

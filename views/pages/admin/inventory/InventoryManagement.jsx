@@ -1,106 +1,256 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container } from 'react-bootstrap';
-import { useTable, usePagination } from 'react-table';  // Usamos useTable y usePagination de React Table
+import { Container, Modal, Button, Form } from 'react-bootstrap';
+import { useTable, usePagination, useGlobalFilter } from 'react-table';
 import './inventory.css';
 
 const InventoryManagement = () => {
   const [inventory, setInventory] = useState([]);
-
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [unidades, setUnidades] = useState([]);
+  const [tipos, setTipos] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentInsumo, setCurrentInsumo] = useState(null);
+  
   useEffect(() => {
     fetchInventory();
+    fetchUnidades();
+    fetchTipos();
   }, []);
 
   const fetchInventory = async () => {
     try {
       const response = await axios.get('http://localhost:5001/api/inventario/');
-      setInventory(response.data);  // Guardamos los datos en el estado
+      setInventory(response.data);
     } catch (error) {
       console.error('Error al obtener el inventario:', error);
     }
   };
 
-  // Definir las columnas
-  const columns = React.useMemo(
-    () => [
-      {
-        Header: 'ID Inventario',
-        accessor: 'ID_INVENTARIO',
-      },
-      {
-        Header: 'Materia Prima',
-        accessor: 'MATERIA_PRIMA',
-      },
-      {
-        Header: 'Cantidad',
-        accessor: 'CANTIDAD',
-      },
-      {
-        Header: 'Unidad',
-        accessor: 'UNIDAD',
-      },
-      {
-        Header: 'Tipo',
-        accessor: 'TIPO',
-      },
-    ],
-    []
-  );
+  const fetchUnidades = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/inventario/unidades');
+      setUnidades(response.data);
+    } catch (error) {
+      console.error('Error al obtener las unidades:', error);
+    }
+  };
 
-  // Configuración de la tabla con React Table
+  const fetchTipos = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/inventario/tipos');
+      setTipos(response.data);
+    } catch (error) {
+      console.error('Error al obtener los tipos:', error);
+    }
+  };
+
+  const columns = React.useMemo(() => [
+    {
+      Header: 'ID Inventario',
+      accessor: 'ID_INVENTARIO',
+    },
+    {
+      Header: 'Materia Prima',
+      accessor: 'MATERIA_PRIMA',
+    },
+    {
+      Header: 'Cantidad',
+      accessor: 'CANTIDAD',
+    },
+    {
+      Header: 'Unidad',
+      accessor: 'UNIDAD',
+    },
+    {
+      Header: 'Tipo',
+      accessor: 'TIPO',
+    },
+    {
+    Header: 'Descripción', // Agregar columna para descripción
+    accessor: 'DESCRIPCION',
+    },
+    {
+      Header: 'Acciones',
+      Cell: ({ row }) => (
+        <div className="flex space-x-2">
+          <button className="text-blue-600 hover:underline text-sm" onClick={() => handleEdit(row.original)}>
+              Editar
+          </button>
+          <button 
+            className="text-red-600 hover:underline text-sm" 
+            onClick={() => handleDelete(row.original.ID_INVENTARIO)}
+          >
+            Eliminar
+          </button>
+        </div>
+      ),
+    },
+  ], []);
+
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    rows,
     prepareRow,
+    page,
     state: { pageIndex, pageSize },
     canPreviousPage,
     canNextPage,
     pageOptions,
     gotoPage,
     setPageSize,
-    page, // Aquí es donde tomamos solo los registros de la página actual
-  } = useTable(
-    {
-      columns,
-      data: inventory, // Este es el estado con los datos
-      initialState: { pageIndex: 0, pageSize: 5 }, // Página inicial y tamaño de página por defecto
-    },
-    usePagination // Usamos el hook de paginación
-  );
+    setGlobalFilter: setTableGlobalFilter,
+  } = useTable({
+    columns,
+    data: inventory,
+    initialState: { pageIndex: 0, pageSize: 5 },
+  }, useGlobalFilter, usePagination);
+
+  useEffect(() => {
+    setTableGlobalFilter(globalFilter);
+  }, [globalFilter, setTableGlobalFilter]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [nuevoInsumo, setNuevoInsumo] = useState({
+    MATERIA_PRIMA: '',
+    CANTIDAD: '',
+    UNIDAD: '',
+    TIPO: '',
+    DESCRIPCION: '', // Agregar campo de descripción
+    ID_ADMINISTRADOR: 1000000, // admin actual
+  });
+
+  const handleShowModal = () => setShowModal(true);
+  //para que se limpie el formulario cada vez que se cierra
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setIsEditing(false);
+    setCurrentInsumo(null);
+    setNuevoInsumo({
+      MATERIA_PRIMA: '',
+      CANTIDAD: '',
+      UNIDAD: '',
+      TIPO: '',
+      DESCRIPCION: '',
+      ID_ADMINISTRADOR: 1000000,
+    });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNuevoInsumo((prev) => ({ ...prev, [name]: value }));
+  };
+  //para editar
+  const handleEdit = (insumo) => {
+    setCurrentInsumo(insumo);
+    setNuevoInsumo({
+        MATERIA_PRIMA: insumo.MATERIA_PRIMA,
+        CANTIDAD: insumo.CANTIDAD,
+        UNIDAD: insumo.ID_UNIDAD,
+        TIPO: insumo.ID_TIP_MATERIA,
+        DESCRIPCION: insumo.DESCRIPCION,
+        ID_ADMINISTRADOR: 1000000,
+    });
+    setIsEditing(true);
+    setShowModal(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+        const { MATERIA_PRIMA, CANTIDAD, UNIDAD, TIPO, DESCRIPCION, ID_ADMINISTRADOR } = nuevoInsumo;
+
+        if (isEditing) {
+          //si o si, al usar axios deben ser iguales a los parametros del controlador, esots estan bien:
+            // Lógica para actualizar el insumo
+            await axios.put(`http://localhost:5001/api/inventario/${currentInsumo.ID_INVENTARIO}`, {
+                nombre: MATERIA_PRIMA,
+                id_tipo_materia: TIPO,
+                id_unidad: UNIDAD,
+                cantidad: CANTIDAD,
+                descripcion: DESCRIPCION,
+            });
+        } else {
+          //los parametros estan bien, por favor no tocar
+            // Lógica para agregar un nuevo insumo
+            await axios.post('http://localhost:5001/api/inventario/nuevo', {
+                nombre: MATERIA_PRIMA,
+                tipoMateria: TIPO, // Asegúrate de que esto coincida con lo que espera tu controlador
+                unidad: UNIDAD, // Asegúrate de que esto coincida con lo que espera tu controlador
+                cantidad: CANTIDAD,
+                descripcion: DESCRIPCION,
+                idAdministrador: ID_ADMINISTRADOR,
+            });
+        }
+
+        fetchInventory(); // Recarga la tabla
+        handleCloseModal(); // Cierra el modal
+        setIsEditing(false); // Resetea el estado de edición
+    } catch (error) {
+        console.error('Error al guardar el insumo:', error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este insumo?')) {
+        try {
+            await axios.delete(`http://localhost:5001/api/inventario/${id}`);
+            fetchInventory(); // Recarga la tabla después de eliminar
+        } catch (error) {
+            console.error('Error al eliminar el insumo:', error);
+            alert('Error al eliminar el insumo. Intenta nuevamente.');
+        }
+    }
+  };
 
   return (
     <Container>
-      <br />
-      <h1 className="text-3xl font-bold text-center text-brown-700 mb-6">Gestión de Inventario</h1>
-      <div className="flex my-4 justify-center w-2/5 mx-auto">
-        <select
-          value={pageSize}
-          onChange={(e) => setPageSize(Number(e.target.value))}
-          className="px-8 py-4 text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          {[5, 10, 20].map((size) => (
-            <option key={size} value={size}>
-              Mostrar {size}
-            </option>
-          ))}
-        </select>
+      <br /><br />
+      <h1 className="text-3xl font-bold text-center text-brown-700 my-6">Gestión de Inventario</h1>
+      <br /><br />
+      <div className="Cont-Butt">
+          <Button 
+              onClick={handleShowModal} 
+              className="custom-button" // Clase personalizada para el botón
+          >
+              Agregar Insumo
+          </Button>
       </div>
-      <div className='tableTail'>
-        
-        <table
-          {...getTableProps()}
-          className="Custom"
-        >
+
+      <div className="filtros-contenedor">
+        <div>
+          <select
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+            className="px-8 py-4 text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {[5, 10, 20].map((size) => (
+              <option key={size} value={size}>
+                Mostrar {size}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <input
+            type="text"
+            value={globalFilter || ''}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            placeholder="Buscar..."
+            className="w-48 px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto tableTail">
+        <table {...getTableProps()} className="Custom">
           <thead>
-            {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()} className="bg-gray-100">
-                {headerGroup.headers.map((column) => (
-                  <th
-                    {...column.getHeaderProps()}
-                    className="px-4 py-2 text-left font-semibold text-gray-700"
-                  >
+            {headerGroups.map((headerGroup, index) => (
+              <tr {...headerGroup.getHeaderGroupProps()} key={index} className="bg-gray-100">
+                {headerGroup.headers.map((column, idx) => (
+                  <th {...column.getHeaderProps()} key={idx} className="px-4 py-2 text-left font-semibold text-gray-700">
                     {column.render('Header')}
                   </th>
                 ))}
@@ -108,12 +258,12 @@ const InventoryManagement = () => {
             ))}
           </thead>
           <tbody {...getTableBodyProps()}>
-            {page.map((row) => {
+            {page.map((row, i) => {
               prepareRow(row);
               return (
-                <tr {...row.getRowProps()} className="border-b hover:bg-gray-50">
-                  {row.cells.map((cell) => (
-                    <td {...cell.getCellProps()} className="px-4 py-2 text-gray-800">
+                <tr {...row.getRowProps()} key={row.id} className="border-b hover:bg-gray-100 transition-colors">
+                  {row.cells.map((cell, j) => (
+                    <td {...cell.getCellProps()} key={j} className="px-4 py-2 text-gray-800">
                       {cell.render('Cell')}
                     </td>
                   ))}
@@ -123,52 +273,112 @@ const InventoryManagement = () => {
           </tbody>
         </table>
       </div>
-      {/* Controles de Paginación */}
-      <div className="pagination-container flex justify-center items-center space-x-2">
-        {/* Botón "Primera página" */}
-        <button
-          onClick={() => gotoPage(0)}
-          disabled={!canPreviousPage}
-          className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:bg-gray-400"
-        >
+
+      <div className="pagination-container flex justify-center items-center space-x-2 mt-4">
+        <button onClick={() => gotoPage(0)} disabled={!canPreviousPage} className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:opacity-50">
           {'<<'}
         </button>
-
-        {/* Botón "Página anterior" */}
-        <button
-          onClick={() => gotoPage(pageIndex - 1)}
-          disabled={!canPreviousPage}
-          className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:bg-gray-400"
-        >
+        <button onClick={() => gotoPage(pageIndex - 1)} disabled={!canPreviousPage} className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:opacity-50">
           {'<'}
         </button>
-
-        {/* Información sobre la página actual */}
-        <span className="page-info">
+        <span>
           Página {pageIndex + 1} de {pageOptions.length}
         </span>
-
-        {/* Botón "Página siguiente" */}
-        <button
-          onClick={() => gotoPage(pageIndex + 1)}
-          disabled={!canNextPage}
-          className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:bg-gray-400"
-        >
+        <button onClick={() => gotoPage(pageIndex + 1)} disabled={!canNextPage} className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:opacity-50">
           {'>'}
         </button>
-
-        {/* Botón "Última página" */}
-        <button
-          onClick={() => gotoPage(pageOptions.length - 1)}
-          disabled={!canNextPage}
-          className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:bg-gray-400"
-        >
+        <button onClick={() => gotoPage(pageOptions.length - 1)} disabled={!canNextPage} className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:opacity-50">
           {'>>'}
         </button>
-
-        {/* Selector de tamaño de página */}
-        
       </div>
+
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>{isEditing ? 'Editar Insumo' : 'Agregar Nuevo Insumo'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label>Materia Prima</Form.Label>
+              <Form.Control
+                type="text"
+                name="MATERIA_PRIMA"
+                value={nuevoInsumo.MATERIA_PRIMA}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Cantidad</Form.Label>
+              <Form.Control
+                type="number"
+                name="CANTIDAD"
+                value={nuevoInsumo.CANTIDAD}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Unidad</Form.Label>
+              <Form.Control
+                as="select"
+                name="UNIDAD"
+                value={nuevoInsumo.UNIDAD}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Selecciona una unidad</option>
+                {unidades.map((unidad) => (
+                  <option key={unidad.ID_UNIDAD} value={unidad.ID_UNIDAD}>
+                    {unidad.NOMBRE}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Tipo</Form.Label>
+              <Form.Control
+                as="select"
+                name="TIPO"
+                value={nuevoInsumo.TIPO}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Selecciona un tipo</option>
+                {tipos.map((tipo) => (
+                  <option key={tipo.ID_TIP_MATERIA} value={tipo.ID_TIP_MATERIA}>
+                    {tipo.NOMBRE}
+                  </option>
+                ))}
+              </Form.Control>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Descripción</Form.Label>
+              <Form.Control
+                type="text"
+                name="DESCRIPCION"
+                value={nuevoInsumo.DESCRIPCION}
+                onChange={handleChange}
+                required
+              />
+            </Form.Group>
+
+            <div className="d-flex justify-content-end">
+              <Button variant="primary" type="submit">
+                Guardar
+              </Button>
+              <Button variant="secondary" onClick={handleCloseModal} className="me-2">
+                Cancelar
+              </Button> 
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
     </Container>
   );
 };
