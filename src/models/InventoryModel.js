@@ -2,20 +2,26 @@ import pool from '../config/db.js';
 
 class InventoryModel {
   async getInventory() {
-    const [rows] = await pool.query(`
-      SELECT 
-        inv.ID_INVENTARIO,
-        inv.CANTIDAD,
-        mat.NOMBRE AS MATERIA_PRIMA,
-        uni.NOMBRE AS UNIDAD,
-        tip.NOMBRE AS TIPO
-      FROM inventario inv
-      JOIN materia_prima mat ON inv.ID_MATERIA = mat.ID_MATERIA
-      JOIN unidad uni ON mat.ID_UNIDAD = uni.ID_UNIDAD
-      JOIN tipo_materia tip ON mat.ID_TIP_MATERIA = tip.ID_TIP_MATERIA
-    `);
-    return rows;
+  const [rows] = await pool.query(`
+    SELECT 
+      inv.ID_INVENTARIO,
+      inv.CANTIDAD,
+      mat.NOMBRE AS MATERIA_PRIMA,
+      uni.NOMBRE AS UNIDAD,
+      uni.ID_UNIDAD,
+      tip.NOMBRE AS TIPO,
+      tip.ID_TIP_MATERIA,
+      mat.DESCRIPCION
+    FROM inventario inv
+    JOIN materia_prima mat ON inv.ID_MATERIA = mat.ID_MATERIA
+    JOIN unidad uni ON mat.ID_UNIDAD = uni.ID_UNIDAD
+    JOIN tipo_materia tip ON mat.ID_TIP_MATERIA = tip.ID_TIP_MATERIA
+  `);
+  return rows;
   }
+
+
+  
 
   async updateQuantity(id, cantidad) {
     const [result] = await pool.query(
@@ -28,7 +34,7 @@ class InventoryModel {
     }
   }
 
-  async updateRawMaterial(id, nombre, id_tipo_materia, id_unidad) {
+  async updateRawMaterial(id, nombre, id_tipo_materia, id_unidad, descripcion) {
     // Obtener ID_MATERIA desde el inventario
     const [[inventario]] = await pool.query(
       'SELECT ID_MATERIA FROM inventario WHERE ID_INVENTARIO = ?',
@@ -44,9 +50,9 @@ class InventoryModel {
     // Actualizar materia_prima
     const [result] = await pool.query(
       `UPDATE materia_prima 
-       SET NOMBRE = ?, ID_TIP_MATERIA = ?, ID_UNIDAD = ?
+       SET NOMBRE = ?, ID_TIP_MATERIA = ?, ID_UNIDAD = ?, DESCRIPCION = ?
        WHERE ID_MATERIA = ?`,
-      [nombre, id_tipo_materia, id_unidad, idMateria]
+      [nombre, id_tipo_materia, id_unidad, descripcion, idMateria]
     );
 
     if (result.affectedRows === 0) {
@@ -55,11 +61,13 @@ class InventoryModel {
   }
 
   async deleteInventory(id) {
-    const [result] = await pool.query('DELETE FROM inventario WHERE ID_INVENTARIO = ?', [id]);
+      const [result] = await pool.query('DELETE FROM inventario WHERE ID_INVENTARIO = ?', [id]);
 
-    if (result.affectedRows === 0) {
-      throw new Error('Inventario no encontrado');
-    }
+      if (result.affectedRows === 0) {
+          throw new Error('Inventario no encontrado');
+      }
+
+      return { message: 'Inventario eliminado correctamente' }; 
   }
 
   async getRawMaterialTypes() {
@@ -75,30 +83,31 @@ class InventoryModel {
   async addNewRawMaterial(nombre, tipoMateria, unidad, cantidad, descripcion, idAdministrador) {
     const conn = await pool.getConnection();
     try {
-      await conn.beginTransaction();
+        await conn.beginTransaction();
 
-      // 1. Insertar en MATERIA_PRIMA
-      const [materiaResult] = await conn.query(
-        "INSERT INTO materia_prima (NOMBRE, ID_TIP_MATERIA, ID_UNIDAD) VALUES (?, ?, ?)",
-        [nombre, tipoMateria, unidad]
-      );
+        // 1. Insertar en MATERIA_PRIMA
+        const [materiaResult] = await conn.query(
+            "INSERT INTO materia_prima (NOMBRE, ID_TIP_MATERIA, ID_UNIDAD, DESCRIPCION) VALUES (?, ?, ?, ?)",
+            [nombre, tipoMateria, unidad, descripcion]  // Asegúrate de incluir la descripción aquí
+        );
 
-      const idMateria = materiaResult.insertId;
+        const idMateria = materiaResult.insertId;
 
-      // 2. Insertar en INVENTARIO
-      const [inventarioResult] = await conn.query(
-        "INSERT INTO inventario (ID_MATERIA, CANTIDAD, DESCRIPCION, ID_ADMINISTRADOR_NEGOCIO) VALUES (?, ?, ?, ?)",
-        [idMateria, cantidad, descripcion, idAdministrador]
-      );
+        // 2. Insertar en INVENTARIO (sin DESCRIPCION)
+        const [inventarioResult] = await conn.query(
+            "INSERT INTO inventario (ID_MATERIA, CANTIDAD, ID_ADMINISTRADOR_NEGOCIO) VALUES (?, ?, ?)",
+            [idMateria, cantidad, idAdministrador]
+        );
 
-      await conn.commit();
+        await conn.commit();
     } catch (error) {
-      await conn.rollback();
-      throw error;
+        await conn.rollback();
+        throw error;
     } finally {
-      conn.release();
+        conn.release();
     }
   }
+
 
   async getInventoryHistory() {
     const [rows] = await pool.query(`

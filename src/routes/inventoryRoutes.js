@@ -16,7 +16,8 @@ router.get("/resumen", InventoryController.getResumenInventario);
 
 // Operaciones CRUD
 router.post("/nuevo", InventoryController.agregarNuevoInsumo);
-router.put('/:id(\\d+)', InventoryController.updateCantidad);
+//El update inventario incluye el llamado a dos modelos
+router.put('/:id(\\d+)', InventoryController.updateInventario);
 router.put('/materia/:id(\\d+)', InventoryController.updateMateriaPrimaPorInventario);
 router.delete('/:id(\\d+)', InventoryController.deleteInventario);
 

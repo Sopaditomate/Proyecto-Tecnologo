@@ -11,6 +11,22 @@ class InventoryController {
     }
   }
 
+  //Controlador General
+
+  async updateInventario(req, res) {
+    const { id } = req.params;
+    const { nombre, id_tipo_materia, id_unidad, cantidad, descripcion } = req.body; // Agregar descripcion
+
+    try {
+        await InventoryModel.updateRawMaterial(id, nombre, id_tipo_materia, id_unidad, descripcion); // Pasar descripcion
+        await InventoryModel.updateQuantity(id, cantidad);
+        res.json({ message: 'Insumo actualizado correctamente' });
+    } catch (err) {
+        console.error('Error al actualizar insumo:', err);
+        res.status(500).json({ message: 'Error al actualizar insumo' });
+    }
+  }
+
   async updateCantidad(req, res) {
     const { id } = req.params;
     const { cantidad } = req.body;
@@ -26,10 +42,10 @@ class InventoryController {
 
   async updateMateriaPrimaPorInventario(req, res) {
     const { id } = req.params;
-    const { nombre, id_tipo_materia, id_unidad } = req.body;
+    const { nombre, id_tipo_materia, id_unidad, descripcion } = req.body; // Agregar descripcion
 
     try {
-      await InventoryModel.updateRawMaterial(id, nombre, id_tipo_materia, id_unidad);
+      await InventoryModel.updateRawMaterial(id, nombre, id_tipo_materia, id_unidad, descripcion); // Pasar descripcion
       res.json({ message: 'Materia prima actualizada correctamente' });
     } catch (err) {
       console.error('Error al actualizar materia prima:', err);
@@ -71,6 +87,10 @@ class InventoryController {
 
   async agregarNuevoInsumo(req, res) {
     const { nombre, tipoMateria, unidad, cantidad, descripcion, idAdministrador } = req.body;
+
+    if (!nombre || !tipoMateria || !unidad || !cantidad || !idAdministrador) {
+      return res.status(400).json({ message: "Faltan datos obligatorios" });
+    }
 
     try {
       await InventoryModel.addNewRawMaterial(nombre, tipoMateria, unidad, cantidad, descripcion, idAdministrador);

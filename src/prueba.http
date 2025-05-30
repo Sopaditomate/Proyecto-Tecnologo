@@ -1,2 +1,2 @@
-GET http://localhost:5001/api/inventario/
-
+GET http://localhost:5001/api/inventario
+//pa hacer pruebas
