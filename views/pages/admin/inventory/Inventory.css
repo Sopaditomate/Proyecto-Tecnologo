@@ -187,3 +187,45 @@
   margin: 0 auto 1rem auto;
   gap: 1rem;
 }
+
+.custom-modal {
+    width: 80%; /* Ajusta el ancho según tus necesidades */
+    
+}
+
+/*Estilos para el historial*/
+
+/* Nueva clase para controlar el ancho de la tabla */
+.CustomWidth {
+  width: 90%; /* Ajusta el ancho según lo necesites */
+  max-width: 1200px; /* Limita el ancho máximo */
+  margin: 0 auto; /* Centra la tabla en el contenedor */
+  overflow-x: auto; /* Permite desplazamiento horizontal si es necesario */
+}
+
+/* Estilo para la tabla dentro de la nueva clase */
+.CustomWidth table {
+  border-collapse: collapse; /* Fusiona los bordes */
+  background-color: white; /* Fondo blanco */
+  border: 1px solid #e0e0e0; /* Borde gris claro */
+  border-radius: 8px; /* Bordes redondeados */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+
+/* Estilo para las cabeceras y celdas */
+.CustomWidth th,
+.CustomWidth td {
+  padding: 12px 20px; /* Padding para mayor altura */
+  text-align: left; /* Alineación a la izquierda */
+  color: #333; /* Color de texto oscuro */
+}
+
+/* Fila al pasar el mouse */
+.CustomWidth tr:hover {
+  background-color: #f1f1f1 !important; /* Fondo gris claro al pasar el mouse */
+}
+
+/* Estilo para las filas impares */
+.CustomWidth tr:nth-child(odd) {
+  background-color: #fafafa; /* Fondo ligeramente gris para filas impares */
+}

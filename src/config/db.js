@@ -9,7 +9,7 @@ const dbConfig = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: Number(process.env.DB_PORT),
-  ssl: { rejectUnauthorized: false }, //se supone que es para que la conexion sea segura
+  //ssl: { rejectUnauthorized: false }, //se supone que es para que la conexion sea segura
   //mas o porque estamos trabajando la db en la nube
 };
 
