@@ -11,6 +11,9 @@ const InventoryManagement = () => {
   const [tipos, setTipos] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentInsumo, setCurrentInsumo] = useState(null);
+  const [historial, setHistorial] = useState([]);
+  const [showHistorialModal, setShowHistorialModal] = useState(false);
+  const [historialFilter, setHistorialFilter] = useState('');
   
   useEffect(() => {
     fetchInventory();
@@ -44,6 +47,17 @@ const InventoryManagement = () => {
       console.error('Error al obtener los tipos:', error);
     }
   };
+
+  //prueba de historial
+  const fetchHistorial = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/inventario/historial');
+      setHistorial(response.data);
+    } catch (error) {
+      console.error('Error al obtener el historial:', error);
+    }
+  };
+
 
   const columns = React.useMemo(() => [
     {
@@ -88,6 +102,32 @@ const InventoryManagement = () => {
     },
   ], []);
 
+
+
+  const historialColumns = React.useMemo(() => [
+  {
+    Header: 'ID Historial',
+    accessor: 'ID_HYS_INVENTARIO',
+  },
+  {
+    Header: 'Materia',
+    accessor: 'NOMBRE_MATERIA',
+  },
+  {
+    Header: 'Cantidad',
+    accessor: 'CANTIDAD',
+  },
+  {
+    Header: 'Tipo de Movimiento',
+    accessor: 'TIPO_MOVIMIENTO',
+  },
+  {
+    Header: 'Fecha de Movimiento',
+    accessor: 'FECHA_MOVIMIENTO',
+    Cell: ({ value }) => new Date(value).toLocaleString(), // Formatear la fecha
+  },
+  ], []);
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -107,9 +147,37 @@ const InventoryManagement = () => {
     initialState: { pageIndex: 0, pageSize: 5 },
   }, useGlobalFilter, usePagination);
 
-  useEffect(() => {
-    setTableGlobalFilter(globalFilter);
-  }, [globalFilter, setTableGlobalFilter]);
+
+  const {
+  getTableProps: getHistorialTableProps,
+  getTableBodyProps: getHistorialTableBodyProps,
+  headerGroups: historialHeaderGroups,
+  prepareRow: prepareHistorialRow,
+  page: historialPage,
+  state: { pageIndex: historialPageIndex, pageSize: historialPageSize },
+  canPreviousPage: canHistorialPreviousPage,
+  canNextPage: canHistorialNextPage,
+  pageOptions: historialPageOptions,
+  gotoPage: gotoHistorialPage,
+  setPageSize: setHistorialPageSize,
+  setGlobalFilter: setHistorialGlobalFilter,
+} = useTable({
+  columns: historialColumns,
+  data: historial,
+  initialState: { pageIndex: 0, pageSize: 5 },
+  globalFilter: historialFilter,
+}, useGlobalFilter, usePagination);
+
+
+// UseEffect para la tabla de inventario
+useEffect(() => {
+  setTableGlobalFilter(globalFilter);
+}, [globalFilter, setTableGlobalFilter]);
+
+// UseEffect para la tabla de historial
+useEffect(() => {
+  setHistorialGlobalFilter(historialFilter); // Cambia esto
+}, [historialFilter, setHistorialGlobalFilter]);
 
   const [showModal, setShowModal] = useState(false);
   const [nuevoInsumo, setNuevoInsumo] = useState({
@@ -117,8 +185,8 @@ const InventoryManagement = () => {
     CANTIDAD: '',
     UNIDAD: '',
     TIPO: '',
-    DESCRIPCION: '', // Agregar campo de descripción
-    ID_ADMINISTRADOR: 1000000, // admin actual
+    DESCRIPCION: '',
+    ID_ADMINISTRADOR: 1000000, // admin actual, hay que dudar si hacerlo dinamico
   });
 
   const handleShowModal = () => setShowModal(true);
@@ -204,11 +272,28 @@ const InventoryManagement = () => {
     }
   };
 
+  const handleShowHistorialModal = () => {
+    fetchHistorial(); // Carga el historial antes de mostrar el modal
+    setShowHistorialModal(true);
+  };
+
+  const handleCloseHistorialModal = () => setShowHistorialModal(false);
+
   return (
     <Container>
       <br /><br />
       <h1 className="text-3xl font-bold text-center text-brown-700 my-6">Gestión de Inventario</h1>
-      <br /><br />
+      <br />
+      <div className="Cont-Butt">
+        <Button 
+            onClick={handleShowHistorialModal} 
+            className="custom-button"
+        >
+          Ver Historial
+        </Button>
+      </div>
+      
+      
       <div className="Cont-Butt">
           <Button 
               onClick={handleShowModal} 
@@ -378,6 +463,91 @@ const InventoryManagement = () => {
           </Form>
         </Modal.Body>
       </Modal>
+
+      {/*Modal de el historial*/}
+      <Modal className="tableTail" show={showHistorialModal} onHide={handleCloseHistorialModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Historial de Inventario</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <input
+            type="text"
+            placeholder="Buscar..."
+            onChange={(e) => setHistorialFilter(e.target.value)}
+            className="w-48 px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+          
+          {/* Select para controlar el tamaño de página */}
+          <div className="my-2">
+            <select
+              value={historialPageSize}
+              onChange={(e) => setHistorialPageSize(Number(e.target.value))}
+              className="px-2 py-1 text-sm border border-gray-300 rounded-md"
+            >
+              {[5, 10, 20].map((size) => (
+                <option key={size} value={size}>
+                  Mostrar {size}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table {...getHistorialTableProps()} className="Custom">
+              <thead>
+                {historialHeaderGroups.map((headerGroup, index) => (
+                  <tr {...headerGroup.getHeaderGroupProps()} key={index} className="bg-gray-100">
+                    {headerGroup.headers.map((column, idx) => (
+                      <th {...column.getHeaderProps()} key={idx} className="px-4 py-2 text-left font-semibold text-gray-700">
+                        {column.render('Header')}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
+              </thead>
+              <tbody {...getHistorialTableBodyProps()}>
+                {historialPage.map((row) => {
+                  prepareHistorialRow(row);
+                  return (
+                    <tr {...row.getRowProps()} key={row.id} className="border-b hover:bg-gray-100 transition-colors">
+                      {row.cells.map((cell, j) => (
+                        <td {...cell.getCellProps()} key={j} className="px-4 py-2 text-gray-800">
+                          {cell.render('Cell')}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Paginación */}
+          <div className="pagination-container flex justify-center items-center space-x-2 mt-4">
+            <button onClick={() => gotoHistorialPage(0)} disabled={!canHistorialPreviousPage} className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:opacity-50">
+              {'<<'}
+            </button>
+            <button onClick={() => gotoHistorialPage(historialPageIndex - 1)} disabled={!canHistorialPreviousPage} className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:opacity-50">
+              {'<'}
+            </button>
+            <span>
+              Página {historialPageIndex + 1} de {historialPageOptions.length}
+            </span>
+            <button onClick={() => gotoHistorialPage(historialPageIndex + 1)} disabled={!canHistorialNextPage} className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:opacity-50">
+              {'>'}
+            </button>
+            <button onClick={() => gotoHistorialPage(historialPageOptions.length - 1)} disabled={!canHistorialNextPage} className="px-2 py-1 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 disabled:opacity-50">
+              {'>>'}
+            </button>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseHistorialModal}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
 
     </Container>
   );
