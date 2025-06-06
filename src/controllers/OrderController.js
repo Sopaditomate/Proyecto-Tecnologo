@@ -1,5 +1,5 @@
 // Convertir a clase
-import OrderModel from "../models/orderModel.js";
+import OrderModel from "../models/OrderModel.js";
 
 class OrderController {
   // Crear un nuevo pedido

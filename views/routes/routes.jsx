@@ -18,7 +18,7 @@ import { ProtectedRoute } from "../routes/ProtectedRoute.jsx";
 import { AdminDashboard } from "../pages/admin/AdminDashboard";
 
 //Importaciones de los modulos de Admin
-import { AdminInventory } from "../pages/admin/inventory/InventoryManagement.jsx";
+import InventoryManagement from "../pages/admin/inventory/InventoryManagement.jsx";
 import { AdminOrders } from "../pages/admin/orders/OrderManagement.jsx";
 import { AdminProductions } from "../pages/admin/production/ProductionManagement.jsx";
 import { AdminProducts } from "../pages/admin/products/ProductManagement.jsx";
@@ -232,7 +232,7 @@ export function AppRoutes() {
                 link: "/",
               }}
             >
-              <AdminInventory />
+              <InventoryManagement />
             </PageLayout>
           </ProtectedRoute>
         }
