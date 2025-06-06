@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext.jsx";
-import { useAuth } from "../../context/AuthContext.jsx";
 import { ProductRecommendation } from "./ProductRecommendation";
 import { CheckoutModal } from "./CheckoutModal";
 import "./slide-cart.css";
@@ -34,8 +32,6 @@ function MinusButton({ disabled, onClick }) {
 }
 
 export function SlideCart() {
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
   const {
     cart,
     isCartOpen,
@@ -75,16 +71,6 @@ export function SlideCart() {
 
   // Manejar clic en el botón de checkout
   const handleCheckout = () => {
-    // Si el usuario no está autenticado, redirigir a la página de inicio de sesión
-    if (!isAuthenticated) {
-      // Cerrar el carrito antes de navegar
-      closeCart();
-      // Redirigir a la página de inicio de sesión
-      navigate("/login");
-      return;
-    }
-
-    // Verificar dirección de entrega solo si el usuario está autenticado
     if (!deliveryAddress.trim()) {
       setAddressError("Por favor ingresa una dirección de entrega");
       return;
@@ -325,28 +311,22 @@ export function SlideCart() {
             </button>
 
             <div className={`details ${!showSummary ? "hidden" : ""}`}>
-              {isAuthenticated ? (
-                <div className="delivery-address">
-                  <label htmlFor="address">Dirección de entrega:</label>
-                  <input
-                    type="text"
-                    id="address"
-                    placeholder="Ingresa tu dirección"
-                    value={deliveryAddress}
-                    onChange={(e) => {
-                      setDeliveryAddress(e.target.value);
-                      if (addressError) setAddressError("");
-                    }}
-                  />
-                  {addressError && (
-                    <div className="address-error">{addressError}</div>
-                  )}
-                </div>
-              ) : (
-                <div className="login-prompt">
-                  <p className="warning-text-cart">Inicia sesión para poder hacer la compra</p>
-                </div>
-              )}
+              <div className="delivery-address">
+                <label htmlFor="address">Dirección de entrega:</label>
+                <input
+                  type="text"
+                  id="address"
+                  placeholder="Ingresa tu dirección"
+                  value={deliveryAddress}
+                  onChange={(e) => {
+                    setDeliveryAddress(e.target.value);
+                    if (addressError) setAddressError("");
+                  }}
+                />
+                {addressError && (
+                  <div className="address-error">{addressError}</div>
+                )}
+              </div>
 
               <div className="cart-summary">
                 <div className="summary-row">
