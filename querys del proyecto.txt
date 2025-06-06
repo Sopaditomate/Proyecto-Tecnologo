@@ -1,0 +1,1194 @@
+creación de la base:
+
+CREATE DATABASE lovebites;
+USE lovebites;
+
+/////////////////////////////////////////////////////////////////////////////////
+Creación de Tablas para las Entidades PRINCIPALES o FUERTES.
+
+
+CREATE TABLE rol (
+    ID_ROL INT AUTO_INCREMENT PRIMARY KEY,
+    NOMBRE VARCHAR(20) NOT NULL
+) AUTO_INCREMENT = 100000;
+
+
+CREATE TABLE tipo_producto (
+    ID_TIPO_PRO INT AUTO_INCREMENT PRIMARY KEY,
+    NOMBRE VARCHAR(30) NOT NULL
+) AUTO_INCREMENT = 200000;
+
+CREATE TABLE estado_pedido (
+    ID_ESTADO INT AUTO_INCREMENT PRIMARY KEY,
+    NOMBRE VARCHAR(20) NOT NULL,
+    DESCRIPCION VARCHAR(40)
+) AUTO_INCREMENT = 300000; 
+ 
+
+CREATE TABLE tipo_materia (
+    ID_TIP_MATERIA INT AUTO_INCREMENT PRIMARY KEY,
+    NOMBRE VARCHAR(50)
+) AUTO_INCREMENT = 400000;
+
+CREATE TABLE unidad (
+    ID_UNIDAD INT AUTO_INCREMENT PRIMARY KEY,
+    NOMBRE VARCHAR(20) NOT NULL
+) AUTO_INCREMENT = 500000;
+
+CREATE TABLE estado_produccion (
+    ID_ESTADO_PRODUCCION INT AUTO_INCREMENT PRIMARY KEY,
+    NOMBRE VARCHAR(15) NOT NULL
+) AUTO_INCREMENT = 600000;
+
+/////////////////////////////////////////////////////////////////////////////////
+Creación de tablas para las entidades DEBILES
+
+CREATE TABLE usuario_sys (
+    ID_USUARIO INT AUTO_INCREMENT PRIMARY KEY,
+    ID_ROL INT NOT NULL,
+    USUARIO VARCHAR(100) NOT NULL UNIQUE, -- Evita duplicados en el correo electrónico o usuario
+    PASSWORD VARCHAR(50),
+    LOGIN VARCHAR(100), -- Campo adicional para el nombre de inicio de sesión
+    FOREIGN KEY (ID_ROL) REFERENCES rol(ID_ROL)
+) AUTO_INCREMENT = 700000;
+
+CREATE TABLE datos_usuario (
+    ID_DATOS INT AUTO_INCREMENT PRIMARY KEY,
+    ID_USUARIO INT NOT NULL,
+    NOMBRES VARCHAR(50) NOT NULL,
+    APELLIDOS VARCHAR(50) NOT NULL,
+    DIRECCION VARCHAR(100) NOT NULL,
+    TELEFONO VARCHAR(10) NOT NULL,
+    FOREIGN KEY (ID_USUARIO) REFERENCES usuario_sys(ID_USUARIO)
+) AUTO_INCREMENT = 800000;
+
+
+CREATE TABLE cliente (
+    ID_CLIENTE INT AUTO_INCREMENT PRIMARY KEY,
+    ID_USUARIO INT NOT NULL,
+    FECHA_REGISTRO TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (ID_USUARIO) REFERENCES usuario_sys(ID_USUARIO)
+) AUTO_INCREMENT = 900000;
+
+CREATE TABLE administrador_negocio (
+    ID_ADMINISTRADOR_NEGOCIO INT AUTO_INCREMENT PRIMARY KEY,
+    ID_USUARIO INT NOT NULL,
+    FOREIGN KEY (ID_USUARIO) REFERENCES usuario_sys(ID_USUARIO)
+) AUTO_INCREMENT = 1000000;
+
+CREATE TABLE producto (
+    ID_PRODUCTO INT AUTO_INCREMENT PRIMARY KEY,
+    ID_TIPO_PRO INT NOT NULL,
+    NOMBRE VARCHAR(30) NOT NULL,
+    PRECIO DECIMAL(10, 2) NOT NULL,
+    DESCRIPCION VARCHAR(254),
+    IMAGEN_URL VARCHAR(254) NOT NULL,
+    NOTA_ACTUAL DECIMAL(2, 1),
+    ADVERTENCIA VARCHAR(254) NOT NULL,
+    FOREIGN KEY (ID_TIPO_PRO) REFERENCES tipo_producto(ID_TIPO_PRO)
+) AUTO_INCREMENT = 1200000;
+
+
+CREATE TABLE pedido (
+    ID_PEDIDO INT AUTO_INCREMENT PRIMARY KEY,
+    ID_CLIENTE INT NOT NULL,
+    ID_ESTADO INT NOT NULL,
+    FECHA_HORA TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    TOTAL_DESCUENTO DECIMAL(10, 2),
+    TOTAL_PAGAR DECIMAL(10, 2),
+    FOREIGN KEY (ID_CLIENTE) REFERENCES cliente(ID_CLIENTE),
+    FOREIGN KEY (ID_ESTADO) REFERENCES estado_pedido(ID_ESTADO)
+) AUTO_INCREMENT = 1100000;
+
+CREATE TABLE detalle_pedido (
+    ID_DETALLE_PEDIDO INT AUTO_INCREMENT PRIMARY KEY,
+    ID_PEDIDO INT NOT NULL,
+    ID_PRODUCTO INT NOT NULL,
+    CANTIDAD INT NOT NULL,
+    PRECIO_FINAL DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (ID_PEDIDO) REFERENCES pedido(ID_PEDIDO),
+    FOREIGN KEY (ID_PRODUCTO) REFERENCES producto(ID_PRODUCTO)
+) AUTO_INCREMENT = 1300000;
+
+CREATE TABLE materia_prima (
+    ID_MATERIA INT AUTO_INCREMENT PRIMARY KEY,
+    ID_TIP_MATERIA INT NOT NULL,
+    NOMBRE VARCHAR(30) NOT NULL,
+    ID_UNIDAD INT NOT NULL,
+    DESCRIPCION VARCHAR(100),
+    FOREIGN KEY (ID_TIP_MATERIA) REFERENCES tipo_materia(ID_TIP_MATERIA),
+    FOREIGN KEY (ID_UNIDAD) REFERENCES unidad(ID_UNIDAD)
+) AUTO_INCREMENT = 1400000;
+
+CREATE TABLE inventario (
+    ID_INVENTARIO INT AUTO_INCREMENT PRIMARY KEY,
+    ID_MATERIA INT NOT NULL,
+    ID_ADMINISTRADOR_NEGOCIO INT NOT NULL,
+    CANTIDAD INT NOT NULL,
+    FOREIGN KEY (ID_MATERIA) REFERENCES materia_prima(ID_MATERIA),
+FOREIGN KEY (ID_ADMINISTRADOR_NEGOCIO) REFERENCES administrador_negocio(ID_ADMINISTRADOR_NEGOCIO)
+) AUTO_INCREMENT = 1500000;
+
+
+CREATE TABLE historial_inventario (
+    ID_HYS_INVENTARIO INT AUTO_INCREMENT PRIMARY KEY,
+    ID_INVENTARIO INT NOT NULL,
+    ID_MATERIA INT NOT NULL,
+    CANTIDAD INT NOT NULL,
+    TIPO_MOVIMIENTO VARCHAR(20) NOT NULL,  -- 'INGRESO' o 'SALIDA'
+    FECHA_MOVIMIENTO TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (ID_INVENTARIO) REFERENCES inventario(ID_INVENTARIO),
+    FOREIGN KEY (ID_MATERIA) REFERENCES materia_prima(ID_MATERIA)
+) AUTO_INCREMENT = 1600000;
+
+
+
+///////////CORRECION HISTORIAL_INVENTARIO////////////////
+
+CREATE TABLE historial_inventario (
+    ID_HYS_INVENTARIO INT AUTO_INCREMENT PRIMARY KEY,
+    ID_INVENTARIO INT NOT NULL,
+    ID_MATERIA INT NOT NULL,
+    CANTIDAD INT NOT NULL,
+    TIPO_MOVIMIENTO VARCHAR(20) NOT NULL,  -- 'INGRESO' o 'SALIDA'
+    FECHA_MOVIMIENTO TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (ID_INVENTARIO) REFERENCES inventario(ID_INVENTARIO) ON DELETE CASCADE,
+    FOREIGN KEY (ID_MATERIA) REFERENCES materia_prima(ID_MATERIA) ON DELETE CASCADE
+) AUTO_INCREMENT = 1600000;
+
+
+
+CREATE TABLE recetas (
+    ID_RECETA INT AUTO_INCREMENT PRIMARY KEY,
+    ID_PRODUCTO INT NOT NULL,
+    ID_MATERIA INT NOT NULL,
+    CANTIDAD_USAR INT NOT NULL,
+    FOREIGN KEY (ID_PRODUCTO) REFERENCES producto(ID_PRODUCTO),
+    FOREIGN KEY (ID_MATERIA) REFERENCES materia_prima(ID_MATERIA)
+) AUTO_INCREMENT = 1700000;
+
+
+CREATE TABLE produccion (
+    ID_PRODUCCION INT AUTO_INCREMENT PRIMARY KEY,
+    ID_ADMINISTRADOR_NEGOCIO INT NOT NULL,
+    ID_PRODUCTO INT NOT NULL,
+    ID_ESTADO_PRODUCCION INT NOT NULL,
+    CANTIDAD_PRODUCIR INT NOT NULL,
+    FECHA_HORA TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (ID_ADMINISTRADOR_NEGOCIO) REFERENCES administrador_negocio(ID_ADMINISTRADOR_NEGOCIO),
+    FOREIGN KEY (ID_PRODUCTO) REFERENCES producto(ID_PRODUCTO),
+    FOREIGN KEY (ID_ESTADO_PRODUCCION) REFERENCES estado_produccion(ID_ESTADO_PRODUCCION)
+) AUTO_INCREMENT = 1800000;
+
+/////////////////////////////////////NUEVOS CAMBIOS PARA PRODUCCION//////////////////////////////////////////////////////
+
+CREATE TABLE produccion (
+    ID_PRODUCCION INT AUTO_INCREMENT PRIMARY KEY,
+    FECHA_INICIO DATETIME NOT NULL,
+    FECHA_FIN DATETIME,
+    PRODUCTOS_TOTALES INT NOT NULL,
+    ID_ESTADO_PRODUCCION INT NOT NULL,
+    ID_ADMINISTRADOR_NEGOCIO INT NOT NULL,
+    FOREIGN KEY (ID_ESTADO_PRODUCCION) REFERENCES estado_produccion(ID_ESTADO_PRODUCCION),
+    FOREIGN KEY (ID_ADMINISTRADOR_NEGOCIO) REFERENCES administrador_negocio(ID_ADMINISTRADOR_NEGOCIO)
+) AUTO_INCREMENT = 1800000;
+
+CREATE TABLE detalle_produccion (
+    ID_PRODUCCION INT NOT NULL,
+    ID_PRODUCTO INT NOT NULL,
+    CANTIDAD_PRODUCIR INT NOT NULL,
+    PRIMARY KEY (ID_PRODUCCION, ID_PRODUCTO),
+    FOREIGN KEY (ID_PRODUCCION) REFERENCES produccion(ID_PRODUCCION),
+    FOREIGN KEY (ID_PRODUCTO) REFERENCES producto(ID_PRODUCTO)
+);
+
+CREATE TABLE historial_produccion (
+    ID_HYS_PRODUCC INT AUTO_INCREMENT PRIMARY KEY,
+    ID_PRODUCCION INT NOT NULL,
+    ID_PRODUCTO INT NOT NULL,
+    CANTIDAD INT NOT NULL,
+    TIPO_MOVIMIENTO VARCHAR(16) NOT NULL,  -- 'INGRESO' o 'SALIDA'
+    FECHA_MOVIMIENTO TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (ID_PRODUCCION, ID_PRODUCTO) REFERENCES detalle_produccion(ID_PRODUCCION, ID_PRODUCTO)
+) AUTO_INCREMENT = 1900000;
+
+/////////////////////////////////////NUEVOS CAMBIOS PARA PRODUCCION//////////////////////////////////////////////////////
+
+CREATE TABLE historial_produccion (
+    ID_HYS_PRODUCC INT AUTO_INCREMENT PRIMARY KEY,
+    ID_PRODUCCION INT NOT NULL,
+    ID_PRODUCTO INT NOT NULL,
+    CANTIDAD INT NOT NULL,
+    TIPO_MOVIMIENTO VARCHAR(16) NOT NULL,  -- 'INGRESO' o 'SALIDA'
+    FECHA_MOVIMIENTO TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (ID_PRODUCCION) REFERENCES produccion(ID_PRODUCCION),
+    FOREIGN KEY (ID_PRODUCTO) REFERENCES producto(ID_PRODUCTO)
+) AUTO_INCREMENT = 1900000;
+
+
+CREATE TABLE catalogo (
+    ID_CATALOGO INT AUTO_INCREMENT PRIMARY KEY,
+    ID_PRODUCTO INT NOT NULL,
+    DESCUENTO DECIMAL(5, 2),
+    FECHA_INCLUSION TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ULTIMA_ACTUALIZACION TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ID_PRODUCTO) REFERENCES producto(ID_PRODUCTO)
+) AUTO_INCREMENT = 2000000;
+
+CREATE TABLE historial_pedidos (
+    ID_HYS_PEDIDOS INT AUTO_INCREMENT PRIMARY KEY,
+    ID_CLIENTE INT NOT NULL,
+    ID_PEDIDO INT NOT NULL,
+    FECHA TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ID_CLIENTE) REFERENCES cliente(ID_CLIENTE),
+    FOREIGN KEY (ID_PEDIDO) REFERENCES pedido(ID_PEDIDO)
+) AUTO_INCREMENT = 2100000;
+
+CREATE TABLE review (
+    ID_REVIEW INT AUTO_INCREMENT PRIMARY KEY,
+    ID_CLIENTE INT NOT NULL,
+    ID_PRODUCTO INT NOT NULL,
+    COMENTARIO VARCHAR(254) NOT NULL,
+    CALIFICACION INT NOT NULL,
+    FECHA_HORA TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ID_CLIENTE) REFERENCES cliente(ID_CLIENTE),
+    FOREIGN KEY (ID_PRODUCTO) REFERENCES producto(ID_PRODUCTO)
+) AUTO_INCREMENT = 2200000;
+
+/////////////////////////////////////////////////////////////////////////////////
+Tablas temporales
+No se que hace esta cosa, pero la pongo por si acaso
+
+CREATE TEMPORARY TABLE temp_pedidos (
+    ID_PEDIDO INT
+) ENGINE = MEMORY;
+
+/////////////////////////////////////////////////////////////////////////////////
+
+Triggers en la base de datos
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+Triggers de la base remota
+
+//para eliminarlos
+
+DROP TRIGGER IF EXISTS trg_inventario_insert;
+DROP TRIGGER IF EXISTS trg_inventario_update;
+
+
+DELIMITER $$
+CREATE TRIGGER trg_inventario_insert
+AFTER INSERT ON inventario
+FOR EACH ROW
+BEGIN
+    INSERT INTO historial_inventario (
+        ID_INVENTARIO, 
+        ID_MATERIA,
+        CANTIDAD, 
+        TIPO_MOVIMIENTO, 
+        FECHA_MOVIMIENTO
+    ) VALUES (
+        NEW.ID_INVENTARIO, 
+        NEW.ID_MATERIA, 
+        NEW.CANTIDAD, 
+        'INGRESO',
+        NOW()
+    );
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER trg_inventario_update
+AFTER UPDATE ON inventario
+FOR EACH ROW
+BEGIN
+    IF NEW.CANTIDAD < OLD.CANTIDAD THEN
+        INSERT INTO historial_inventario (
+            ID_INVENTARIO, 
+            ID_MATERIA, 
+            CANTIDAD, 
+            TIPO_MOVIMIENTO, 
+            FECHA_MOVIMIENTO
+        ) VALUES (
+            NEW.ID_INVENTARIO, 
+            NEW.ID_MATERIA, 
+            OLD.CANTIDAD - NEW.CANTIDAD, 
+            'SALIDA',
+            NOW()
+        );
+    ELSEIF NEW.CANTIDAD > OLD.CANTIDAD THEN
+        INSERT INTO HISTORIAL_INVENTARIO (
+            ID_INVENTARIO, 
+            ID_MATERIA, 
+            CANTIDAD, 
+            TIPO_MOVIMIENTO, 
+            FECHA_MOVIMIENTO
+        ) VALUES (
+            NEW.ID_INVENTARIO, 
+            NEW.ID_MATERIA, 
+            NEW.CANTIDAD - OLD.CANTIDAD, 
+            'ACTUALIZACION',
+            NOW()
+        );
+    END IF;
+END $$
+DELIMITER ;
+
+
+////////////////////////////////////////////////////////////////////////////////
+En tu caso, registrar en historial_produccion puede quedarse como trigger si es simple y no condiciona estados. 
+Si necesitas lógicas como “si finaliza una tanda, mover inventario” → eso debe estar en el backend.
+
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_actualizar_inventario
+BEFORE INSERT ON PRODUCCION
+FOR EACH ROW
+BEGIN
+    DECLARE v_cantidad_usar INT;
+    DECLARE v_cantidad_disponible INT;
+    DECLARE v_materia_id INT;
+    DECLARE v_materia_nombre VARCHAR(255);
+    DECLARE v_mensaje_error VARCHAR(255);  -- Nueva variable para el mensaje de error
+    DECLARE done INT DEFAULT FALSE;
+
+    -- Cursor para iterar sobre los insumos de la receta
+    DECLARE cur CURSOR FOR 
+        SELECT R.ID_MATERIA, R.CANTIDAD_USAR
+        FROM RECETAS R
+        WHERE R.ID_PRODUCTO = NEW.ID_PRODUCTO;
+
+    -- Manejador de fin de datos del cursor
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Abrir el cursor
+    OPEN cur;
+
+    -- Bucle para recorrer los insumos de la receta
+    read_loop: LOOP
+        FETCH cur INTO v_materia_id, v_cantidad_usar;
+
+        -- Salir del bucle si no hay más registros
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Calcular la cantidad total a utilizar
+        SET v_cantidad_usar = v_cantidad_usar * NEW.CANTIDAD_PRODUCIR;
+
+        -- Obtener datos de inventario y materia prima
+        -- Cambiar la referencia de 'MATERIAS' a 'MATERIA_PRIMA'
+        SELECT NOMBRE INTO v_materia_nombre
+        FROM MATERIA_PRIMA
+        WHERE ID_MATERIA = v_materia_id;
+
+        -- Obtener cantidad disponible del inventario
+        SELECT CANTIDAD INTO v_cantidad_disponible
+        FROM INVENTARIO
+        WHERE ID_MATERIA = v_materia_id;
+
+        -- Validar si hay suficiente inventario
+        IF v_cantidad_disponible < v_cantidad_usar THEN
+            -- Crear el mensaje de error fuera del SIGNAL
+            SET v_mensaje_error = CONCAT('No hay suficiente inventario para la materia prima: ', v_materia_nombre, 
+                                          ' (ID: ', v_materia_id, '). Faltan: ', v_cantidad_usar - v_cantidad_disponible, ' unidades.');
+            -- Llamar al SIGNAL con el mensaje de error
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = v_mensaje_error;
+        END IF;
+
+        -- Actualizar inventario
+        UPDATE INVENTARIO
+        SET CANTIDAD = CANTIDAD - v_cantidad_usar
+        WHERE ID_MATERIA = v_materia_id;
+    END LOOP;
+
+    -- Cerrar el cursor
+    CLOSE cur;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_inventario_insert
+AFTER INSERT ON INVENTARIO
+FOR EACH ROW
+BEGIN
+    INSERT INTO HISTORIAL_INVENTARIO (
+        ID_INVENTARIO, 
+        ID_MATERIA, 
+        CANTIDAD, 
+        TIPO_MOVIMIENTO, 
+        FECHA_MOVIMIENTO
+    ) VALUES (
+        NEW.ID_INVENTARIO, 
+        NEW.ID_MATERIA, 
+        NEW.CANTIDAD, 
+        'INGRESO',
+        NOW()
+    );
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_inventario_update
+AFTER UPDATE ON INVENTARIO
+FOR EACH ROW
+BEGIN
+    IF NEW.CANTIDAD < OLD.CANTIDAD THEN
+        INSERT INTO HISTORIAL_INVENTARIO (
+            ID_INVENTARIO, 
+            ID_MATERIA, 
+            CANTIDAD, 
+            TIPO_MOVIMIENTO, 
+            FECHA_MOVIMIENTO
+        ) VALUES (
+            NEW.ID_INVENTARIO, 
+            NEW.ID_MATERIA, 
+            OLD.CANTIDAD - NEW.CANTIDAD, 
+            'SALIDA',
+            NOW()
+        );
+    ELSEIF NEW.CANTIDAD > OLD.CANTIDAD THEN
+        INSERT INTO HISTORIAL_INVENTARIO (
+            ID_INVENTARIO, 
+            ID_MATERIA, 
+            CANTIDAD, 
+            TIPO_MOVIMIENTO, 
+            FECHA_MOVIMIENTO
+        ) VALUES (
+            NEW.ID_INVENTARIO, 
+            NEW.ID_MATERIA, 
+            NEW.CANTIDAD - OLD.CANTIDAD, 
+            'ACTUALIZACION',
+            NOW()
+        );
+    END IF;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_historial_estado_produccion
+AFTER UPDATE ON PRODUCCION
+FOR EACH ROW
+BEGIN
+    INSERT INTO HISTORIAL_PRODUCCION (
+        ID_PRODUCCION, 
+        ID_PRODUCTO, 
+        CANTIDAD, 
+        TIPO_MOVIMIENTO, 
+        FECHA_MOVIMIENTO
+    ) VALUES (
+        NEW.ID_PRODUCCION, 
+        NEW.ID_PRODUCTO, 
+        NEW.CANTIDAD_PRODUCIR, 
+        'SALIDA',
+        NOW() -- Usando NOW() para la fecha y hora actual
+    );
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_historial_perdidas_produccion 
+AFTER UPDATE ON PRODUCCION
+FOR EACH ROW
+BEGIN
+    DECLARE v_cantidad_perdida INT;
+
+    -- Verificar si la cantidad producida disminuye
+    IF NEW.CANTIDAD_PRODUCIR < OLD.CANTIDAD_PRODUCIR THEN
+        SET v_cantidad_perdida = OLD.CANTIDAD_PRODUCIR - NEW.CANTIDAD_PRODUCIR;
+
+        -- Insertar en la tabla de historial
+        INSERT INTO HISTORIAL_PRODUCCION (
+            ID_PRODUCCION,
+            ID_PRODUCTO,
+            CANTIDAD,
+            TIPO_MOVIMIENTO,
+            FECHA_MOVIMIENTO
+        ) 
+        VALUES (
+            NEW.ID_PRODUCCION,
+            NEW.ID_PRODUCTO,
+            v_cantidad_perdida,
+            "PERDIDA",
+            NOW()
+        );
+    END IF;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_historial_produccion
+AFTER INSERT ON PRODUCCION
+FOR EACH ROW
+BEGIN
+    INSERT INTO HISTORIAL_PRODUCCION (
+        ID_PRODUCCION, 
+        ID_PRODUCTO, 
+        CANTIDAD, 
+        TIPO_MOVIMIENTO, 
+        FECHA_MOVIMIENTO
+    ) VALUES (
+        NEW.ID_PRODUCCION, 
+        NEW.ID_PRODUCTO, 
+        NEW.CANTIDAD_PRODUCIR, 
+        'INGRESO',
+        NOW() -- Usando NOW() para la fecha exacta
+    );
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_actualizar_totales_pedido_insert
+AFTER INSERT ON DETALLE_PEDIDO
+FOR EACH ROW
+BEGIN
+    -- Evitar duplicados en la tabla persistente
+    INSERT IGNORE INTO pedidos_activos (ID_PEDIDO) VALUES (NEW.ID_PEDIDO);
+END $$
+
+DELIMITER ;
+
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_actualizar_totales_pedido_updates
+AFTER UPDATE ON DETALLE_PEDIDO
+FOR EACH ROW
+BEGIN
+    -- Actualiza los totales inmediatamente
+    CALL actualizar_totales(NEW.ID_PEDIDO);
+
+    -- Elimina el pedido de la tabla de pedidos activos si ya se procesó
+    DELETE FROM pedidos_activos WHERE ID_PEDIDO = NEW.ID_PEDIDO;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_update_producto_calificacion
+AFTER INSERT ON REVIEW
+FOR EACH ROW
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_id_producto INT;
+    DECLARE cur CURSOR FOR
+        SELECT DISTINCT ID_PRODUCTO FROM REVIEW;
+
+    -- Manejo de fin de cursor
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO v_id_producto;
+
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Llamar al procedimiento para calcular el promedio de calificación del producto
+        CALL calcular_promedio(v_id_producto);
+    END LOOP;
+
+    CLOSE cur;
+END $$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_validar_producto_y_calcular_precio
+BEFORE INSERT ON DETALLE_PEDIDO
+FOR EACH ROW
+BEGIN
+    DECLARE v_descuento DECIMAL(5,2) DEFAULT 0;
+    DECLARE v_precio_producto DECIMAL(10,2);
+    DECLARE v_precio_final DECIMAL(10,2);
+
+    -- Verificar si el producto está en el catálogo y obtener el precio
+    SELECT COALESCE(c.DESCUENTO, 0), p.PRECIO
+    INTO v_descuento, v_precio_producto
+    FROM CATALOGO c
+    JOIN PRODUCTO p ON c.ID_PRODUCTO = p.ID_PRODUCTO
+    WHERE c.ID_PRODUCTO = NEW.ID_PRODUCTO
+    LIMIT 1;  -- Garantiza que solo se obtenga una fila
+
+    -- Si no se encontró el producto en el catálogo, lanzar un error.
+    IF v_precio_producto IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Producto no disponible en el catálogo';
+    END IF;
+
+    -- Calcular el precio final aplicando el descuento (si hay).
+    SET v_precio_final = v_precio_producto * NEW.CANTIDAD * (1 - v_descuento / 100);
+
+    -- Asignar el precio final calculado al campo de la tabla DETALLE_PEDIDO.
+    SET NEW.PRECIO_FINAL = v_precio_final;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_update_historial_pedido
+AFTER UPDATE ON pedido
+FOR EACH ROW
+BEGIN
+    -- Verificar si el estado del pedido ha cambiado
+    IF OLD.ID_ESTADO <> NEW.ID_ESTADO THEN
+        -- Insertar en el historial de pedidos
+        INSERT INTO historial_pedidos (ID_CLIENTE, ID_PEDIDO, FECHA)
+        VALUES (NEW.ID_CLIENTE, NEW.ID_PEDIDO, CURRENT_TIMESTAMP);
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+////////////////////////////////////////////////////////////////////////
+
+PROCEDIMIENTOS ALMACENADOS
+
+CREATE PROCEDURE actualizar_totales(p_id_pedido INT)
+BEGIN
+    DECLARE v_total_descuento DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_total_pagar DECIMAL(10,2) DEFAULT 0;
+
+    -- Calcular el total de descuentos aplicados y el total a pagar
+    SELECT 
+        SUM((p.PRECIO * dp.CANTIDAD) - dp.PRECIO_FINAL) AS total_descuento,
+        SUM(dp.PRECIO_FINAL) AS total_pagar
+    INTO v_total_descuento, v_total_pagar
+    FROM DETALLE_PEDIDO dp
+    JOIN PRODUCTO p ON dp.ID_PRODUCTO = p.ID_PRODUCTO
+    WHERE dp.ID_PEDIDO = p_id_pedido;
+
+    -- Actualizar la tabla PEDIDO con los nuevos valores
+    UPDATE PEDIDO
+    SET TOTAL_DESCUENTO = v_total_descuento,
+        TOTAL_PAGAR = v_total_pagar
+    WHERE ID_PEDIDO = p_id_pedido;
+
+    -- Verificar si la actualización afectó alguna fila
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No se actualizó ninguna fila en PEDIDO';
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE calcular_promedio(IN p_id_producto INT)
+BEGIN
+    DECLARE v_promedio DECIMAL(3,1);
+
+    -- Calcular el promedio de las calificaciones
+    SELECT AVG(CALIFICACION)
+    INTO v_promedio
+    FROM REVIEW
+    WHERE ID_PRODUCTO = p_id_producto;
+
+    -- Actualizar la nota del producto
+    UPDATE PRODUCTO
+    SET NOTA_ACTUAL = v_promedio
+    WHERE ID_PRODUCTO = p_id_producto;
+END $$
+
+DELIMITER ;
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+
+INSERCIONES EN TABLAS
+
+
+-- Insertar rol de Cliente
+INSERT INTO ROL (NOMBRE) VALUES ('Cliente');
+
+-- Insertar rol de Administrador
+INSERT INTO ROL (NOMBRE) VALUES ('Administrador');
+
+
+
+
+INSERT INTO USUARIO_SYS (ID_ROL, USUARIO, PASSWORD, LOGIN) 
+VALUES (100000, 'juan.perez@gmail.com', 'contrasena123', 'juan.perez@gmail.com');
+
+INSERT INTO USUARIO_SYS (ID_ROL, USUARIO, PASSWORD, LOGIN) 
+VALUES (100000, 'alfredo@gmail.com', 'pass12345', 'alfredo@gmail.com');
+
+INSERT INTO USUARIO_SYS (ID_ROL, USUARIO, PASSWORD, LOGIN) 
+VALUES (100001, 'espriellag8@gmail.com', 'adminpass456', 'espriellag8@gmail.com');
+
+INSERT INTO USUARIO_SYS (ID_ROL, USUARIO, PASSWORD, LOGIN) 
+VALUES (100000, 'maria.lopez@gmail.com', 'mariapass789', 'maria.lopez@gmail.com');
+
+INSERT INTO USUARIO_SYS (ID_ROL, USUARIO, PASSWORD, LOGIN) 
+VALUES (100000, 'pedro.martinez@gmail.com', 'pedropass101', 'pedro.martinez@gmail.com');
+
+
+
+-- Insertar tipo de materia: Harinas
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Harinas');
+
+-- Insertar tipo de materia: Azúcares y Edulcorantes
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Azúcares y Edulcorantes');
+
+-- Insertar tipo de materia: Grasas y Aceites
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Grasas y Aceites');
+
+-- Insertar tipo de materia: Levaduras y Fermentos
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Levaduras y Fermentos');
+
+-- Insertar tipo de materia: Lácteos
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Lácteos');
+
+-- Insertar tipo de materia: Conservantes
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Conservantes');
+
+-- Insertar tipo de materia: Frutas y Frutos Secos
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Frutas y Frutos Secos');
+
+-- Insertar tipo de materia: Aromas y Sabores
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Aromas y Sabores');
+
+-- Insertar tipo de materia: Huevos y Ovoproductos
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Huevos y Ovoproductos');
+
+-- Insertar tipo de materia: Sal
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Sal');
+
+-- Insertar tipo de materia: Aditivos y Mejoradores
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Aditivos y Mejoradores');
+
+-- Insertar tipo de materia: Coberturas y Decoraciones
+INSERT INTO TIPO_MATERIA (NOMBRE) VALUES ('Coberturas y Decoraciones');
+
+
+
+-- Estado de producción en curso
+INSERT INTO ESTADO_PRODUCCION (NOMBRE) VALUES ('En Produccion');  -- Asegúrate que la columna NOMBRE existe y es de tipo adecuado
+
+-- Estado de producción finalizado
+INSERT INTO ESTADO_PRODUCCION (NOMBRE) VALUES ('Finalizado');  -- Asegúrate de que no haya restricciones de unicidad si los valores pueden repetirse
+
+
+
+
+INSERT INTO UNIDAD (NOMBRE) VALUES ('Kilogramos');
+INSERT INTO UNIDAD (NOMBRE) VALUES ('Gramos');
+INSERT INTO UNIDAD (NOMBRE) VALUES ('Litros');
+INSERT INTO UNIDAD (NOMBRE) VALUES ('Mililitros');
+INSERT INTO UNIDAD (NOMBRE) VALUES ('Unidades');
+
+
+INSERT INTO datos_usuario (ID_USUARIO, NOMBRES, APELLIDOS, DIRECCION, TELEFONO)
+VALUES (700000, 'Juan', 'Pérez', 'Calle 123', '5551234');
+
+INSERT INTO datos_usuario (ID_USUARIO, NOMBRES, APELLIDOS, DIRECCION, TELEFONO)
+VALUES (700001, 'Alfredo', 'Gómez', 'Calle sin nombre', '5554567'); -- inferido
+
+INSERT INTO datos_usuario (ID_USUARIO, NOMBRES, APELLIDOS, DIRECCION, TELEFONO)
+VALUES (700002, 'Guillermo', 'Medina', 'Avenida 456', '5555678');
+
+INSERT INTO datos_usuario (ID_USUARIO, NOMBRES, APELLIDOS, DIRECCION, TELEFONO)
+VALUES (700003, 'María', 'López', 'Calle Las Rosas 789', '5556789');
+
+INSERT INTO datos_usuario (ID_USUARIO, NOMBRES, APELLIDOS, DIRECCION, TELEFONO)
+VALUES (700004, 'Pedro', 'Martínez', 'Calle Los Almendros 456', '5557890');
+
+
+
+-- Estado de pedido: Recepción
+INSERT INTO ESTADO_PEDIDO (NOMBRE, DESCRIPCION) 
+VALUES ('Recepción', 'Pedido pendiente de procesamiento');
+
+-- Estado de pedido: Preparando
+INSERT INTO ESTADO_PEDIDO (NOMBRE, DESCRIPCION) 
+VALUES ('Preparando', 'Pedido en preparación');
+
+-- Estado de pedido: Empaquetado
+INSERT INTO ESTADO_PEDIDO (NOMBRE, DESCRIPCION) 
+VALUES ('Empaquetado', 'Pedido empaquetado y listo para envío');
+
+-- Estado de pedido: Envio
+INSERT INTO ESTADO_PEDIDO (NOMBRE, DESCRIPCION) 
+VALUES ('Envio', 'Pedido en camino al cliente');
+
+-- Estado de pedido: Entregado
+INSERT INTO ESTADO_PEDIDO (NOMBRE, DESCRIPCION) 
+VALUES ('Entregado', 'Pedido entregado al cliente');
+
+
+
+-- Insertar tipo de producto Tradicional
+INSERT INTO TIPO_PRODUCTO (NOMBRE) VALUES ('Tradicional');
+
+-- Insertar tipo de producto Natural
+INSERT INTO TIPO_PRODUCTO (NOMBRE) VALUES ('Natural');
+
+-- Insertar tipo de producto Orgánico
+INSERT INTO TIPO_PRODUCTO (NOMBRE) VALUES ('Orgánico');
+
+-- Insertar tipo de producto Vegano
+INSERT INTO TIPO_PRODUCTO (NOMBRE) VALUES ('Vegano');
+
+-- Insertar tipo de producto Sin Gluten
+INSERT INTO TIPO_PRODUCTO (NOMBRE) VALUES ('Sin Gluten');
+
+
+INSERT INTO CLIENTE (ID_USUARIO, FECHA_REGISTRO)
+VALUES (700000, CURRENT_TIMESTAMP); -- Juan Pérez
+
+INSERT INTO CLIENTE (ID_USUARIO, FECHA_REGISTRO)
+VALUES (700001, CURRENT_TIMESTAMP); -- Alfredo
+
+INSERT INTO CLIENTE (ID_USUARIO, FECHA_REGISTRO)
+VALUES (700003, CURRENT_TIMESTAMP); -- María López
+
+INSERT INTO CLIENTE (ID_USUARIO, FECHA_REGISTRO)
+VALUES (700004, CURRENT_TIMESTAMP); -- Pedro Martínez
+
+
+
+
+INSERT INTO ADMINISTRADOR_NEGOCIO (ID_USUARIO)
+VALUES (700002); -- espriellag8@gmail.com
+
+
+
+INSERT INTO PRODUCTO (ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA) 
+VALUES (200000, 'Panetón', 15000.00, 'Pan dulce con frutas confitadas y pasas', 'url_imagen_panetón.jpg', NULL, 'Conservar en un lugar fresco.');
+
+INSERT INTO PRODUCTO (ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA) 
+VALUES (200000, 'Pan Integral', 12000.00, 'Pan denso con salvado y fibra', 'url_imagen_integral.jpg', NULL, 'Consumir antes de la fecha de caducidad.');
+
+INSERT INTO PRODUCTO (ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA) 
+VALUES (200001, 'Baguette', 10000.00, 'Pan largo y crujiente, con miga ligera', 'url_imagen_baguette.jpg', NULL, 'Mejor si se consume el día de compra.');
+
+INSERT INTO PRODUCTO (ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA) 
+VALUES (200002, 'Pan Blanco', 5000.00, 'Pan suave y esponjoso, ideal para todo', 'url_imagen_blanco.jpg', NULL, 'Almacenar en un lugar seco.');
+
+INSERT INTO PRODUCTO (ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA) 
+VALUES (200003, 'Focaccia', 18000.00, 'Pan italiano con aceite de oliva y hierbas', 'url_imagen_focaccia.jpg', NULL, 'Conservar en un lugar fresco.');
+
+INSERT INTO PRODUCTO (ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA) 
+VALUES (200004, 'Ciabatta', 14000.00, 'Pan italiano con una corteza crujiente y miga aireada', 'url_imagen_ciabatta.jpg', NULL, 'Consumir dentro de los 3 días.');
+
+INSERT INTO PRODUCTO (ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA) 
+VALUES (200001, 'Pan de Ajo', 11000.00, 'Pan suave con un delicioso sabor a ajo', 'url_imagen_pan_ajo.jpg', NULL, 'Calentar antes de servir.');
+
+
+
+
+-- Harinas
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400000, 'Haz de oros', 500000, 'Harina blanca común para panadería');
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400000, 'Corona', 500000, 'Harina de trigo integral para panes más saludables');
+
+-- Azúcares y Edulcorantes
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400001, 'La soberana', 500001, 'Azúcar refinada utilizada para endulzar');
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400001, 'Miel', 500001, 'Miel de abeja natural para endulzar y dar sabor');
+
+-- Grasas y Aceites
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400002, 'Gustocita', 500001, 'Mantequilla sin sal para masas y cremas');
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400002, 'Aceite Lite', 500002, 'Aceite de girasol para mezclar en recetas líquidas');
+
+-- Levaduras y Fermentos
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400003, 'Levadude', 500001, 'Levadura para fermentación de masas de pan');
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400003, 'Brisa Fresca', 500001, 'Levadura fresca para panes artesanales');
+
+-- Lácteos
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400004, 'Alqueria', 500002, 'Leche líquida para mezclar en recetas de panadería');
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400004, 'Maxima cream', 500002, 'Nata líquida para preparar cremas y rellenos');
+
+-- Conservantes
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400005, 'Sorbato de Potasio', 500001, 'Conservante utilizado para prolongar la vida útil de productos horneados');
+
+-- Frutas y Frutos Secos
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400006, 'Pasas', 500001, 'Frutas deshidratadas para agregar a masas y decoraciones');
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400006, 'Nueces', 500001, 'Frutos secos para mezclar en masas y como decoración');
+
+-- Sal
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400009, 'Refial', 500001, 'Sal de mesa para dar sabor y mejorar la textura de las masas');
+
+-- Huevos y Ovoproductos
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400008, 'AA', 500004, 'Huevos frescos para mezclar en la masa y dar estructura');
+
+-- Coberturas y Decoraciones
+INSERT INTO MATERIA_PRIMA (ID_TIP_MATERIA, NOMBRE, ID_UNIDAD, DESCRIPCION) 
+VALUES (400011, 'Roma dulce', 500001, 'Chocolate oscuro para decorar y recubrir productos');
+
+
+
+
+-- Producto con descuento del 10% Panetón
+INSERT INTO CATALOGO (ID_PRODUCTO, DESCUENTO) VALUES (1200000, 10);
+
+-- Producto sin descuento Pan Integral
+INSERT INTO CATALOGO (ID_PRODUCTO, DESCUENTO) VALUES (1200001, 0);
+
+-- Producto con descuento del 15% Baguette
+INSERT INTO CATALOGO (ID_PRODUCTO, DESCUENTO) VALUES (1200002, 15);
+
+-- Producto sin descuento Pan Blanco
+INSERT INTO CATALOGO (ID_PRODUCTO, DESCUENTO) VALUES (1200003, 0);
+
+-- Producto con descuento del 5% Focaccia
+INSERT INTO CATALOGO (ID_PRODUCTO, DESCUENTO) VALUES (1200004, 5);
+
+-- Producto con descuento del 8% Ciabatta
+INSERT INTO CATALOGO (ID_PRODUCTO, DESCUENTO) VALUES (1200005, 8);
+
+-- Producto sin descuento Pan de Ajo
+INSERT INTO CATALOGO (ID_PRODUCTO, DESCUENTO) VALUES (1200006, 0);
+
+
+
+
+-- Harinas
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400000, 1000000, 50); -- Haz de oros
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400001, 1000000, 25); -- Corona
+
+-- Azúcares y Edulcorantes
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400002, 1000000, 10000); -- La soberana
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400003, 1000000, 2000); -- Miel
+
+-- Grasas y Aceites
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400004, 1000000, 5000); -- Gustocita
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400005, 1000000, 10); -- Aceite Lite
+
+-- Levaduras y Fermentos
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400006, 1000000, 200); -- Levadude
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400007, 1000000, 500); -- Brisa Fresca
+
+-- Lácteos
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400008, 1000000, 50); -- Alqueria
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400009, 1000000, 20); -- Maxima cream
+
+-- Conservantes
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400010, 1000000, 500); -- Sorbato de Potasio
+
+-- Frutas y Frutos Secos
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400011, 1000000, 2000); -- Pasas
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400012, 1000000, 1500); -- Nueces
+
+-- Sal
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400013, 1000000, 5000); -- Refial
+
+-- Huevos y Ovoproductos
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400014, 1000000, 600); -- AA
+
+-- Coberturas y Decoraciones
+INSERT INTO INVENTARIO (ID_MATERIA, ID_ADMINISTRADOR_NEGOCIO, CANTIDAD) 
+VALUES (1400015, 1000000, 4000); -- Roma dulce
+
+
+
+-- Pedido 1: Juan Pérez (Recepción)
+INSERT INTO PEDIDO (ID_CLIENTE, ID_ESTADO, TOTAL_DESCUENTO, TOTAL_PAGAR) 
+VALUES (900000, 300000, 0, 0);  
+
+-- Pedido 2: Alfredo (Empaquetado)
+INSERT INTO PEDIDO (ID_CLIENTE, ID_ESTADO, TOTAL_DESCUENTO, TOTAL_PAGAR) 
+VALUES (900001, 300002, 0, 0);  
+
+-- Pedido 3: María López (Envío)
+INSERT INTO PEDIDO (ID_CLIENTE, ID_ESTADO, TOTAL_DESCUENTO, TOTAL_PAGAR) 
+VALUES (900002, 300003, 0, 0);  
+
+-- Pedido 4: Pedro Martínez (Preparando)
+INSERT INTO PEDIDO (ID_CLIENTE, ID_ESTADO, TOTAL_DESCUENTO, TOTAL_PAGAR) 
+VALUES (900003, 300001, 0, 0);  
+
+-- Pedido 5: Pedro Martínez (Entregado)
+INSERT INTO PEDIDO (ID_CLIENTE, ID_ESTADO, TOTAL_DESCUENTO, TOTAL_PAGAR) 
+VALUES (900003, 300004, 0, 0);  
+
+
+
+
+
+-- Detalle del Pedido 1
+INSERT INTO DETALLE_PEDIDO (ID_PEDIDO, ID_PRODUCTO, CANTIDAD, PRECIO_FINAL) 
+VALUES (1100000, 1200000, 2, 0);  -- Panetón x2
+
+INSERT INTO DETALLE_PEDIDO (ID_PEDIDO, ID_PRODUCTO, CANTIDAD, PRECIO_FINAL) 
+VALUES (1100000, 1200004, 1, 0);  -- Focaccia x1
+
+-- Detalle del Pedido 2
+INSERT INTO DETALLE_PEDIDO (ID_PEDIDO, ID_PRODUCTO, CANTIDAD, PRECIO_FINAL) 
+VALUES (1100001, 1200001, 3, 0);  -- Pan Integral x3
+
+INSERT INTO DETALLE_PEDIDO (ID_PEDIDO, ID_PRODUCTO, CANTIDAD, PRECIO_FINAL) 
+VALUES (1100001, 1200002, 1, 0);  -- Baguette x1
+
+-- Detalle del Pedido 3
+INSERT INTO DETALLE_PEDIDO (ID_PEDIDO, ID_PRODUCTO, CANTIDAD, PRECIO_FINAL) 
+VALUES (1100002, 1200006, 3, 0);  -- Pan de Ajo x3
+
+INSERT INTO DETALLE_PEDIDO (ID_PEDIDO, ID_PRODUCTO, CANTIDAD, PRECIO_FINAL) 
+VALUES (1100002, 1200004, 1, 0);  -- Focaccia x1
+
+-- Detalle del Pedido 4
+INSERT INTO DETALLE_PEDIDO (ID_PEDIDO, ID_PRODUCTO, CANTIDAD, PRECIO_FINAL) 
+VALUES (1100003, 1200000, 3, 0);  -- Panetón x3
+
+INSERT INTO DETALLE_PEDIDO (ID_PEDIDO, ID_PRODUCTO, CANTIDAD, PRECIO_FINAL) 
+VALUES (1100003, 1200005, 1, 0);  -- Ciabatta x1
+
+-- Detalle del Pedido 5
+INSERT INTO DETALLE_PEDIDO (ID_PEDIDO, ID_PRODUCTO, CANTIDAD, PRECIO_FINAL) 
+VALUES (1100004, 1200001, 3, 0);  -- Pan Integral x3
+
+
+
+
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200000, 1400000, 10);   -- Harina de Trigo
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200000, 1400002, 2);    -- Azúcar Blanca
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200000, 1400011, 0.5);  -- Pasas
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200000, 1400007, 0.05); -- Levadura Fresca
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200000, 1400004, 1);    -- Mantequilla
+
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200001, 1400001, 8);    -- Harina Integral
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200001, 1400002, 1);    -- Azúcar Blanca
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200001, 1400007, 0.05); -- Levadura Fresca
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200001, 1400013, 0.1);  -- Sal
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200001, 1400005, 0.5);  -- Aceite Vegetal
+
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200002, 1400000, 6);    -- Harina de Trigo
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200002, 1400006, 0.02); -- Levadura Seca
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200002, 1400013, 0.1);  -- Sal
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200002, 1400008, 1);    -- Agua
+
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200003, 1400000, 5);    -- Harina de Trigo
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200003, 1400002, 0.5);  -- Azúcar Blanca
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200003, 1400007, 0.05); -- Levadura Fresca
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200003, 1400008, 2);    -- Agua
+
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200004, 1400000, 6);    -- Harina de Trigo
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200004, 1400013, 0.1);  -- Sal
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200004, 1400005, 0.2);  -- Aceite Vegetal
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200004, 1400006, 0.03); -- Levadura Seca
+
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200005, 1400000, 5);    -- Harina de Trigo
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200005, 1400006, 0.03); -- Levadura Seca
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200005, 1400013, 0.05); -- Sal
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200005, 1400008, 1.5);  -- Agua
+
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200006, 1400000, 3);    -- Harina de Trigo
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200006, 1400013, 0.05); -- Sal
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200006, 1400005, 0.1);  -- Aceite Vegetal
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200006, 1400003, 0.1);  -- Miel
+INSERT INTO RECETAS (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (1200006, 1400006, 0.02); -- Levadura Seca
+
+
+
+-- Comentarios sobre Pan de Ajo (ID_PRODUCTO = 1200006)
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900002, 1200006, 'Sabor a ajo delicioso, pero me gustaría que fuera un poco más crujiente.', 4);
+
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900000, 1200006, 'El pan de ajo es un favorito en casa. Siempre lo pido para acompañar la pasta.',5);
+
+-- Comentarios sobre Ciabatta (ID_PRODUCTO = 1200005)
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900003, 1200005, 'Me decepcionó un poco, esperaba algo más crujiente. Estaba un poco seco.',3);
+
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900002, 1200005, 'La ciabatta es perfecta para hacer sándwiches. ¡Me encanta su textura!',5);
+
+-- Comentarios sobre Focaccia (ID_PRODUCTO = 1200004)
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900000, 1200004, 'Buen pan, pero un poco salado para mi gusto. Sin embargo, sigue siendo delicioso.',4);
+
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900003, 1200004, 'La focaccia es increíble. El aceite de oliva le da un sabor espectacular.',5);
+
+-- Comentarios sobre Pan Blanco (ID_PRODUCTO = 1200003)
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900002, 1200003, 'Demasiado esponjoso para mi gusto. Preferiría algo más denso.',2);
+
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900000, 1200003, 'Este pan blanco es muy suave y perfecto para hacer tostadas. ¡Me encanta!',5);
+
+-- Comentarios sobre Baguette (ID_PRODUCTO = 1200002)
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900003, 1200002, 'Buen sabor, pero se puso duro rápido. Mejor consumir el mismo día.',3);
+
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900002, 1200002, 'Excelente baguette, crujiente y fresco. Perfecto para mis sándwiches.',5);
+
+-- Comentarios sobre Pan Integral (ID_PRODUCTO = 1200001)
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900003, 1200001, 'Me gustó, pero la textura es un poco densa. Aún así, lo volveré a comprar.',4);
+
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900000, 1200001, 'El pan integral tiene un sabor excepcional, ideal para mis desayunos saludables.',5);
+
+-- Comentario duplicado sobre Pan Integral
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900000, 1200001, 'El pan integral tiene un sabor excepcional, ideal para mis desayunos saludables.',5);
+
+-- Comentarios sobre Panetón (ID_PRODUCTO = 1200000)
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900002, 1200000, 'Muy rico, pero un poco más seco de lo que esperaba. Ideal para acompañar con café.',3);
+
+INSERT INTO REVIEW (ID_CLIENTE, ID_PRODUCTO, COMENTARIO, CALIFICACION) 
+VALUES (900000, 1200000, 'El panetón es realmente delicioso, pero me hubiera gustado que tuviera más frutas. ¡Aún así, muy bueno!',4);
+

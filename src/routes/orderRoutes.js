@@ -1,5 +1,5 @@
 import express from "express"
-import orderController from "../controllers/orderController.js"
+import orderController from "../controllers/OrderController.js" //se corrigio la ruta
 import { verifyToken, isClient } from "../middleware/authMiddleware.js"
 
 const router = express.Router()
