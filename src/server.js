@@ -71,11 +71,25 @@ import inventoryRoutes from "./routes/inventoryRoutes.js";
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
+
+
+//productos
+import productAdminRoutes from './routes/productAdminRoutes.js';
+app.use("/api/productos_crud", productAdminRoutes);
+
+//recetas
+import recetaRoutes from './routes/recetaRoutes.js'
+app.use("/api/recetas_crud", recetaRoutes);
 app.use("/api/inventario", inventoryRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running!");
 });
+
+
+
+
+
 
 //inicializador del servidor
 const PORT = process.env.PORT || 5001;
