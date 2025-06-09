@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 import UserModel from "../models/userModel.js";
 
 class AuthController {
@@ -54,7 +55,6 @@ class AuthController {
       }
 
       console.log("Usuario encontrado:", user);
-
       // Verificar la contraseña (siempre usando bcrypt para mayor seguridad)
       const isPasswordValid = await bcrypt.compare(password, user.PASSWORD);
 
@@ -165,6 +165,105 @@ class AuthController {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(email);
   }
+
+  // Recuperar contraseña
+  async forgotPassword(req, res) {
+    const { email } = req.body;
+    try {
+      // 1. Buscar usuario
+      const user = await UserModel.findByEmail(email);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ message: "No existe un usuario con ese correo." });
+      }
+
+      // 2. Generar token temporal (válido por 1 hora)
+      const resetToken = jwt.sign(
+        { userId: user.ID_USUARIO },
+        process.env.JWT_SECRET || "your_jwt_secret",
+        { expiresIn: "1h" }
+      );
+
+      // 3. Guardar el token en la base de datos (o en memoria para pruebas)
+      await UserModel.saveResetToken(user.ID_USUARIO, resetToken);
+
+      // 4. Configurar nodemailer
+      const transporter = nodemailer.createTransport({
+        service: "gmail", // O el servicio que uses
+        auth: {
+          user: process.env.EMAIL_USER, // Tu correo
+          pass: process.env.EMAIL_PASS, // Tu contraseña o app password
+        },
+      });
+
+      // 5. Crear enlace de recuperación
+      const resetUrl = `${
+        process.env.FRONTEND_URL || "http://localhost:5173"
+      }/reset-password?token=${resetToken}`;
+
+      // 6. Enviar correo
+      await transporter.sendMail({
+        from: `"Soporte" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Recuperación de contraseña",
+        html: `
+          <h3>Recuperación de contraseña</h3>
+          <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+          <a href="${resetUrl}">${resetUrl}</a>
+          <p>Este enlace expirará en 1 hora.</p>
+        `,
+      });
+
+      res.json({
+        message:
+          "Se ha enviado un correo de recuperación a tu dirección de email.",
+      });
+    } catch (error) {
+      console.error("Error en forgotPassword:", error);
+      res
+        .status(500)
+        .json({ message: "Error al enviar el correo de recuperación." });
+    }
+  }
+
+  // Restablecer contraseña
+  async resetPassword(req, res) {
+    const { token, newPassword } = req.body;
+    try {
+      // Verifica el token
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
+      const user = await UserModel.findById(decoded.userId);
+
+      if (
+        !user ||
+        user.reset_token !== token ||
+        !user.reset_token_expira ||
+        new Date(user.reset_token_expira) < new Date()
+      ) {
+        return res.status(400).json({ message: "Token inválido o expirado." });
+      }
+
+      // Hashea la nueva contraseña
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Actualiza la contraseña y elimina el token
+      await UserModel.updatePasswordAndClearToken(
+        user.ID_USUARIO,
+        hashedPassword
+      );
+
+      res.json({ message: "Contraseña restablecida correctamente." });
+    } catch (error) {
+      console.error("Error en resetPassword:", error);
+      res.status(400).json({ message: "Token inválido o expirado." });
+    }
+  }
+
+  // Endpoint para verificar el correo
 }
 
 export default new AuthController();

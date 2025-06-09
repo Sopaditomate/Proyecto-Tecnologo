@@ -93,18 +93,18 @@ body {
 /* ===== CONTENEDOR DEL FORMULARIO ===== */
 #section-login {
   width: 100%;
-  max-width: 500px;
+  max-width: 520px; 
   height: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   background-color: var(--card-background);
-  border-radius: 15px;
-  margin: 5vh auto;
-  padding: 2rem;
+  border-radius: 18px;
+  margin: 6vh auto;
+  padding: 2.5rem 2.5rem 2rem 2.5rem; 
   border: solid 1px var(--border-color);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.13);
 }
 
 .form-login {
@@ -265,9 +265,7 @@ button:active {
   height: 20px;
 }
 
-
 /* ===== ICONO DE TOGGLE DE CONTRASEÑA ===== */
-
 
 .input-password-container {
   display: flex;
@@ -276,17 +274,13 @@ button:active {
   position: relative;
 }
 
-  
 .toggle-password-icon {
-    background: none;
-    border: none;
-    cursor: pointer;
-    position: absolute;
-    right: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  right: 5px;
 }
-
-
-
 
 /* ===== MENSAJE DE CONFIRMACIÓN ===== */
 #registration-confirmed {

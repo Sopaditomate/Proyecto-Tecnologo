@@ -6,7 +6,8 @@ import { HomePage } from "../pages/home/HomePage.jsx";
 import { CatalogPage } from "../pages/catalog/CatalogPage";
 import { LoginRoutePage } from "./LoginRoutePage.jsx";
 import { RegisterRouterPage } from "./RegisterRouterPage.jsx";
-import { ForgotPasswordPage } from "../pages/auth/login/ForgotPasswordPage";
+import { ForgotPasswordPage } from "../pages/auth/forgot/ForgotPasswordPage.jsx";
+import { ResetPasswordPage } from "../pages/auth/reset/ResetPasswordPage.jsx";
 import { SlideCart } from "../pages/cart/SlideCart";
 import {
   defaultIcons,
@@ -141,6 +142,22 @@ export function AppRoutes() {
             }}
           >
             <ForgotPasswordPage />
+          </PageLayout>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <PageLayout
+            config={{
+              itemHeader: getHeaderItems("login"),
+              itemMenu: getMenuItems("login"),
+              iconMenu: defaultIcons.iconMenu,
+              icon1: defaultIcons.icon1,
+              link: "/login",
+            }}
+          >
+            <ResetPasswordPage />
           </PageLayout>
         }
       />
