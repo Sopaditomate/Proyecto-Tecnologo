@@ -1,6 +1,6 @@
 import mysql from "mysql2/promise";
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config();//activa dotenv y permite acceder al contenido de .env
 
 // Configuración de la conexión a la base de datos
 const dbConfig = {
@@ -16,9 +16,10 @@ const dbConfig = {
 const pool = mysql.createPool(dbConfig);
 
 // Manejador de eventos de error del pool
+//para el evento connection
 pool.on("connection", (connection) => {
   console.log("Nueva conexión establecida con la base de datos");
-
+//para el evento error
   connection.on("error", (err) => {
     console.error("Error en la conexión a la base de datos:", err);
     if (err.code === "PROTOCOL_CONNECTION_LOST") {
@@ -51,4 +52,4 @@ async function testConnection() {
 }
 
 export { testConnection };
-export default pool;
+export default pool; //se usa para hacer las consultas en otros archivos
