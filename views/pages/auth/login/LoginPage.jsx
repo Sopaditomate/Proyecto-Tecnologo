@@ -1,5 +1,6 @@
 "use client";
 
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { HeadProfile } from "../../../components/common/header/HeadProfile.jsx";
@@ -13,6 +14,7 @@ export function LoginPage() {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { setUser } = useAuth();
@@ -112,7 +114,7 @@ export function LoginPage() {
               type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Contraseña"
-              className={`input-password${
+              className={`input-password-login${
                 errors.password
                   ? " input-error"
                   : formData.password
@@ -144,10 +146,8 @@ export function LoginPage() {
             />
             <label htmlFor="remember-me">Recordar datos</label>
           </div>
-          <Link to="/forgotYourPassword">
-            <p className="link-forgot-your-password">
-              ¿Olvidaste tu contraseña?
-            </p>
+          <Link to="/forgotYourPassword" className="link-forgot-your-password">
+            <span>¿Olvidaste tu contraseña?</span>
           </Link>
         </div>
 
@@ -155,7 +155,7 @@ export function LoginPage() {
           <button type="submit" className="btn-login" disabled={loading}>
             {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>
-          <Link to="/register">
+          <Link to="/register" className="link-register">
             <button type="button" className="btn-register">
               Registrarse
             </button>

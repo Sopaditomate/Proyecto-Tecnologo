@@ -24,6 +24,7 @@
   z-index: 9999;
 }
 
+
 .logout-confirm-modal {
   background: #fff;
   color: #78350f;
@@ -441,7 +442,9 @@ header {
   gap: 12px;
   justify-content: flex-start;
   margin-top: 1rem;
-  width: 100%;
+  width: 120%;
+  position: relative;
+  right:35px;
 }
 
 .menu-item {
@@ -509,7 +512,10 @@ header {
 .div-link-menu {
   width: 100%;
   display: block;
+  text-decoration: none;
 }
+
+
 
 /* =========================
    NAVEGACIÓN (DESKTOP)
@@ -693,6 +699,7 @@ header {
   font-weight: 600;
   letter-spacing: 0.5px;
   margin-top: 50px;
+  margin-left: 12px;
 }
 
 /* =========================
@@ -740,7 +747,7 @@ header {
    ========================= */
 .menu-arrow {
   color: var(--color-amber-300);
-  font-size: 1rem;
+  font-size: 1.2rem;
 }
 
 /* =========================
@@ -892,7 +899,3 @@ header {
 /* =========================
    ENLACES GENERALES
    ========================= */
-a {
-  color: white;
-  text-decoration: none;
-}
