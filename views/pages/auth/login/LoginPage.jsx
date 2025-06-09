@@ -1,5 +1,5 @@
 "use client";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { HeadProfile } from "../../../components/common/header/HeadProfile.jsx";
@@ -13,7 +13,6 @@ export function LoginPage() {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { setUser } = useAuth();

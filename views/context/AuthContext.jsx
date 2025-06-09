@@ -17,11 +17,10 @@ export function AuthProvider({ children }) {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // Verificar si hay una sesión activa al cargar la aplicación
+    // Verificar si hay una sesión activa al cargar la aplicación
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        // Verificar si el token es válido con el servidor
         const response = await axios.get(`${API_URL}/auth/check`, {
           withCredentials: true,
         });
@@ -30,15 +29,29 @@ export function AuthProvider({ children }) {
           setUser(response.data.user);
         }
       } catch (error) {
-        console.error("Error al verificar autenticación:", error);
-        // No establecer usuario si hay un error
-        setUser(null);
+        if (error.response && error.response.status === 401) {
+          console.error("No autorizado. Verifica el token de autenticación.");
+          setUser(null); // Asegúrate de que el usuario esté en null si no está autenticado
+        } else {
+          console.error("Error al verificar autenticación:", error);
+        }
       } finally {
         setLoading(false);
       }
     };
 
+    // Prueba de conexión al servidor
+    const checkServer = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/auth/check`);
+        console.log("Servidor está funcionando:", response.data);
+      } catch (error) {
+        console.error("Error de conexión al servidor:", error);
+      }
+    };
+
     checkAuthStatus();
+    checkServer(); // Llama a la función de prueba de conexión
   }, [API_URL]);
 
   // Función para iniciar sesión
