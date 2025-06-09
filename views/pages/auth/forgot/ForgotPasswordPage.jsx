@@ -115,7 +115,7 @@ export function ForgotPasswordPage() {
             </div>
             <div className="button-container">
               <Link to="/login">
-                <button type="button" className="btn-login">
+                <button type="button" >
                   Regresar
                 </button>
               </Link>
@@ -135,14 +135,14 @@ export function ForgotPasswordPage() {
                 disabled={submitted}
               />
               {emailTouched && !emailValid && (
-                <p className="error-message" id="error-message-email">
+                <span className="error-message" id="error-message-email">
                   Por favor, ingresa un correo válido.
-                </p>
+                </span>
               )}
               <input
                 type="email"
                 placeholder="Confirmar Correo electrónico"
-                className="input-password"
+                className="input-email-user"
                 value={confirmEmail}
                 onChange={handleConfirmEmailChange}
                 style={confirmEmailStyle}
@@ -164,7 +164,7 @@ export function ForgotPasswordPage() {
                 {submitted ? "Enviando..." : "Confirmar"}
               </button>
               <Link to={"/login"}>
-                <button type="button">Regresar</button>
+                <button type="button" >Regresar</button>
               </Link>
             </div>
           </>

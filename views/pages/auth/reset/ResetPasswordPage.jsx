@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useSearchParams, Link } from "react-router-dom";
 import { HeadProfile } from "../../../components/common/header/HeadProfile";
 import axios from "axios";
@@ -12,7 +13,7 @@ export function ResetPasswordPage() {
   const [errors, setErrors] = useState({});
   const [serverMessage, setServerMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
   // Obtiene el token de la URL
   const searchParams = useSearchParams();
   const token = searchParams[0].get("token");
@@ -89,9 +90,7 @@ export function ResetPasswordPage() {
             </div>
             <div className="button-container">
               <Link to="/login">
-                <button type="button" className="btn-login">
-                  Regresar
-                </button>
+                <button type="button">Regresar</button>
               </Link>
             </div>
           </>
@@ -99,7 +98,8 @@ export function ResetPasswordPage() {
           <>
             <div id="container-email-password">
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
                 placeholder="Nueva contraseña"
                 className={`input-password${
                   errors.newPassword
@@ -113,11 +113,18 @@ export function ResetPasswordPage() {
                 required
                 disabled={loading}
               />
+              <span
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="toggle-password-icon-forgot"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
               {errors.newPassword && (
                 <p className="error-message">{errors.newPassword}</p>
               )}
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Confirmar nueva contraseña"
                 className={`input-password${
                   errors.confirm
@@ -131,6 +138,13 @@ export function ResetPasswordPage() {
                 required
                 disabled={loading}
               />
+              <span
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="toggle-password-icon-forgot"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
               {errors.confirm && (
                 <p className="error-message">{errors.confirm}</p>
               )}
