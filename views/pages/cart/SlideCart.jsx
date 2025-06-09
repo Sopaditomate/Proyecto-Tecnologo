@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -47,6 +47,7 @@ export function SlideCart() {
     getProductTotal,
     getCartSubtotal,
     getShippingCost,
+    setShippingCostValue, // Importar la nueva función para establecer el costo de envío
     getTaxes,
     getCartTotal,
     getRecommendedProducts,
@@ -70,8 +71,150 @@ export function SlideCart() {
   // Estado para el error de dirección
   const [addressError, setAddressError] = useState("");
 
+  // Estados para la dirección y el autocompletado
+  const [addressCoordinates, setAddressCoordinates] = useState(null);
+  const [deliveryDistance, setDeliveryDistance] = useState(null);
+  const [deliveryDuration, setDeliveryDuration] = useState(null);
+
+  // Referencias para el autocompletado de Google Places
+  const autocompleteRef = useRef(null);
+  const inputRef = useRef(null);
+
   // Estado para descripciones expandibles
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
+
+  // Inicializar Google Places Autocomplete
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Cargar el script de Google Maps si aún no está cargado
+    if (!window.google || !window.google.maps || !window.google.maps.places) {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = initAutocomplete;
+      document.head.appendChild(script);
+
+      return () => {
+        // Limpiar script cuando el componente se desmonte
+        const scripts = document.querySelectorAll(
+          `script[src*="maps.googleapis.com"]`
+        );
+        scripts.forEach((s) => s.parentNode?.removeChild(s));
+      };
+    } else {
+      initAutocomplete();
+    }
+  }, [isAuthenticated, isCartOpen]);
+
+  // Inicializar el autocompletado
+  const initAutocomplete = () => {
+    if (
+      !inputRef.current ||
+      !window.google ||
+      !window.google.maps ||
+      !window.google.maps.places
+    )
+      return;
+
+    // Crear nueva instancia de Autocomplete
+    autocompleteRef.current = new window.google.maps.places.Autocomplete(
+      inputRef.current,
+      {
+        types: ["address"],
+        componentRestrictions: { country: "co" }, // Restringir a Colombia
+      }
+    );
+
+    // Escuchar eventos de selección de lugares
+    autocompleteRef.current.addListener("place_changed", handlePlaceSelect);
+  };
+
+  // Manejar selección de un lugar
+  const handlePlaceSelect = () => {
+    if (!autocompleteRef.current) return;
+
+    const place = autocompleteRef.current.getPlace();
+
+    if (place && place.formatted_address) {
+      // Actualizar dirección seleccionada
+      setDeliveryAddress(place.formatted_address);
+
+      // Si la API devuelve directamente las coordenadas
+      if (place.geometry && place.geometry.location) {
+        const coords = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng(),
+        };
+
+        setAddressCoordinates(coords);
+        calculateDistance(place.formatted_address);
+      } else {
+        // Si no hay coordenadas, usar Geocoding API
+        geocodeAddress(place.formatted_address);
+      }
+    }
+  };
+
+  // Geocodificar dirección
+  const geocodeAddress = (address) => {
+    if (!window.google || !window.google.maps) return;
+
+    const geocoder = new window.google.maps.Geocoder();
+
+    geocoder.geocode({ address }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        const coords = {
+          lat: results[0].geometry.location.lat(),
+          lng: results[0].geometry.location.lng(),
+        };
+
+        setAddressCoordinates(coords);
+        calculateDistance(address);
+      }
+    });
+  };
+
+  // Calcular distancia usando Distance Matrix API
+  const calculateDistance = (destinationAddress) => {
+    if (!window.google || !window.google.maps) return;
+
+    const service = new window.google.maps.DistanceMatrixService();
+
+    service.getDistanceMatrix(
+      {
+        origins: ["Cra. 129 #131-50, Suba, Bogotá"], // Dirección del restaurante/bodega
+        destinations: [destinationAddress],
+        travelMode: "DRIVING",
+        unitSystem: window.google.maps.UnitSystem.METRIC,
+      },
+      (response, status) => {
+        if (status === "OK" && response.rows[0].elements[0].status === "OK") {
+          const distanceResult = response.rows[0].elements[0].distance;
+          const durationResult = response.rows[0].elements[0].duration;
+
+          // Guardar los valores para cálculos internos pero no para mostrar al usuario
+          setDeliveryDistance(distanceResult.text);
+          setDeliveryDuration(durationResult.text);
+
+          // Calcular costo de envío basado en la distancia
+          // Para este ejemplo: $2.000 por cada km, mínimo $5.000
+          const distanceInKm = distanceResult.value / 1000;
+          const calculatedShipping = Math.max(
+            5000,
+            Math.round(distanceInKm * 2000)
+          );
+          
+          // Actualizar el costo de envío en el contexto del carrito
+          // Usar la función setShippingCostValue del contexto del carrito
+          if (typeof setShippingCostValue === 'function') {
+            setShippingCostValue(calculatedShipping);
+          }
+        }
+      }
+    );
+  };
 
   // Manejar clic en el botón de checkout
   const handleCheckout = () => {
@@ -337,6 +480,7 @@ export function SlideCart() {
                       setDeliveryAddress(e.target.value);
                       if (addressError) setAddressError("");
                     }}
+                    ref={inputRef}
                   />
                   {addressError && (
                     <div className="address-error">{addressError}</div>
@@ -344,7 +488,9 @@ export function SlideCart() {
                 </div>
               ) : (
                 <div className="login-prompt">
-                  <p className="warning-text-cart">Inicia sesión para poder hacer la compra</p>
+                  <p className="warning-text-cart">
+                    Inicia sesión para poder hacer la compra
+                  </p>
                 </div>
               )}
 

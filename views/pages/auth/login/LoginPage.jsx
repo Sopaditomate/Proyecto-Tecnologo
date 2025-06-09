@@ -5,21 +5,12 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { HeadProfile } from "../../../components/common/header/HeadProfile.jsx";
 import axios from "axios";
 import { useAuth } from "../../../context/AuthContext";
+import { loginSchema } from "../../../utils/validationSchema";
 import "./login-page.css";
 
 export function LoginPage() {
-  const [email, setEmail] = useState({
-    value: "",
-    borderColor: "black",
-    text: "",
-  });
-
-  const [password, setPassword] = useState({
-    value: "",
-    borderColor: "black",
-    text: "",
-  });
-
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -29,69 +20,32 @@ export function LoginPage() {
 
   const redirectPath = location.state?.path;
 
-  function validateEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  }
+  const handleChange = async (e) => {
+    const { name, value } = e.target;
+    const updatedForm = { ...formData, [name]: value };
+    setFormData(updatedForm);
 
-  function validatePassword(password) {
-    if (password.length < 6) {
-      return {
-        isValid: false,
-        text: "La contraseña debe tener al menos 6 caracteres",
-      };
+    try {
+      await loginSchema.validateAt(name, updatedForm);
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, [name]: err.message }));
     }
-    return { isValid: true, text: "" };
-  }
-
-  function handleEmail(e) {
-    const valueEmail = e.target.value;
-    const isValid = validateEmail(valueEmail);
-
-    setEmail({
-      value: valueEmail,
-      borderColor: valueEmail === "" ? "black" : isValid ? "green" : "red",
-      text: isValid ? "" : "El correo electrónico no es válido",
-    });
-  }
-
-  function handlePassword(e) {
-    const valuePassword = e.target.value;
-    const { isValid, text } = validatePassword(valuePassword);
-
-    setPassword({
-      value: valuePassword,
-      borderColor: valuePassword === "" ? "black" : isValid ? "green" : "red",
-      text: isValid ? "" : text,
-    });
-  }
+  };
 
   async function handleLogin(e) {
     e.preventDefault();
     setServerError("");
+    setErrors({});
 
-    if (
-      email.value === "" ||
-      password.value === "" ||
-      email.borderColor === "red" ||
-      password.borderColor === "red"
-    ) {
-      if (email.value === "") {
-        setEmail((prev) => ({
-          ...prev,
-          borderColor: "red",
-          text: "El correo electrónico es requerido",
-        }));
-      }
-
-      if (password.value === "") {
-        setPassword((prev) => ({
-          ...prev,
-          borderColor: "red",
-          text: "La contraseña es requerida",
-        }));
-      }
-
+    try {
+      await loginSchema.validate(formData, { abortEarly: false });
+    } catch (validationError) {
+      const formErrors = {};
+      validationError.inner.forEach((err) => {
+        formErrors[err.path] = err.message;
+      });
+      setErrors(formErrors);
       return;
     }
 
@@ -100,10 +54,7 @@ export function LoginPage() {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/auth/login`,
-        {
-          email: email.value,
-          password: password.value,
-        },
+        formData,
         { withCredentials: true }
       );
 
@@ -124,7 +75,6 @@ export function LoginPage() {
         }
       }
     } catch (error) {
-      console.error("Error en login:", error);
       setServerError(
         error.response?.data?.message ||
           "Error al iniciar sesión. Intenta nuevamente."
@@ -139,40 +89,39 @@ export function LoginPage() {
       <form onSubmit={handleLogin} className="form-login">
         <HeadProfile titleHead={"Iniciar Sesión"} />
 
-        {serverError && (
-          <p style={{ color: "red", marginBottom: "10px" }}>{serverError}</p>
-        )}
+        {serverError && <p className="error-message">{serverError}</p>}
 
         <div id="container-email-password">
           <input
             type="email"
+            name="email"
             placeholder="Usuario (Correo electrónico)"
-            className="input-email-user"
-            onChange={handleEmail}
-            style={{
-              borderBottom: `2px solid ${email.borderColor}`,
-            }}
+            className={`input-email-user${
+              errors.email
+                ? " input-error"
+                : formData.email
+                ? " input-valid"
+                : ""
+            }`}
+            value={formData.email}
+            onChange={handleChange}
           />
-          {email.text && (
-            <p
-              style={{
-                color: "red",
-                fontSize: "12px",
-                marginTop: "-15px",
-                marginBottom: "10px",
-              }}
-            >
-              {email.text}
-            </p>
-          )}
+          {errors.email && <p className="error-message">{errors.email}</p>}
 
           <div className="input-password-container">
             <input
               type={showPassword ? "text" : "password"}
+              name="password"
               placeholder="Contraseña"
-              className="input-password"
-              onChange={handlePassword}
-              style={{ borderBottom: `2px solid ${password.borderColor}` }}
+              className={`input-password${
+                errors.password
+                  ? " input-error"
+                  : formData.password
+                  ? " input-valid"
+                  : ""
+              }`}
+              value={formData.password}
+              onChange={handleChange}
             />
             <span
               type="button"
@@ -182,18 +131,8 @@ export function LoginPage() {
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
-
-          {password.text && (
-            <p
-              style={{
-                color: "red",
-                fontSize: "12px",
-                marginTop: "-15px",
-                marginBottom: "10px",
-              }}
-            >
-              {password.text}
-            </p>
+          {errors.password && (
+            <p className="error-message">{errors.password}</p>
           )}
         </div>
 

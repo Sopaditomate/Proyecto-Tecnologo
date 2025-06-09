@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "../../context/CartContext.jsx";
+import PaymentService from "../../../src/services/paymentService.js";
 import "./checkout-modal.css";
 
 export function CheckoutModal({
@@ -18,6 +19,24 @@ export function CheckoutModal({
   // Estados para el proceso de checkout
   const [step, setStep] = useState("confirmation"); // confirmation, payment, success
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
+
+  // Estados para la dirección y envío
+  const [addressData, setAddress] = useState(address || "");
+  const [coordinates, setCoordinates] = useState(null);
+  const [shippingCost, setShipping] = useState(shipping);
+  // Asumimos que la dirección ya es válida si viene del primer paso
+  const [isValidAddress, setIsValidAddress] = useState(!!address);
+
+  // Estados para el pago con Nequi
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [qrCode, setQrCode] = useState("");
+  const [transactionId, setTransactionId] = useState("");
+  const [orderId, setOrderId] = useState(
+    `ORD-${Math.floor(Math.random() * 10000)}`
+  );
+  const [paymentStatus, setPaymentStatus] = useState("PENDING");
+  const [statusCheckInterval, setStatusCheckInterval] = useState(null);
 
   // Truncar descripción
   const truncateDescription = (text, maxLength = 30) => {
@@ -30,6 +49,7 @@ export function CheckoutModal({
   // Manejar confirmación del pedido
   const handleConfirmOrder = () => {
     setStep("payment");
+    generateQRCode();
   };
 
   // Manejar cancelación del pedido
@@ -37,16 +57,93 @@ export function CheckoutModal({
     onClose();
   };
 
+  // Generar código QR para pago con Nequi
+  const generateQRCode = async () => {
+    try {
+      setIsProcessing(true);
+      setPaymentError(null);
+
+      // Simular la creación de un pedido (en producción, esto vendría del backend)
+      // En un entorno real, primero crearías el pedido y luego generarías el QR con el ID real
+
+      // Generar QR para el pago
+      const qrResponse = await PaymentService.generateNequiQR(orderId);
+
+      if (qrResponse.success) {
+        setQrCode(qrResponse.qrImage || qrResponse.qrCode);
+        setTransactionId(qrResponse.transactionId);
+
+        // Iniciar verificación periódica del estado del pago
+        startPaymentStatusCheck(qrResponse.transactionId);
+      } else {
+        setPaymentError("No se pudo generar el código QR para el pago");
+      }
+    } catch (error) {
+      console.error("Error al generar QR:", error);
+      setPaymentError(
+        "Error al generar el código QR: " +
+          (error.message || "Error desconocido")
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Iniciar verificación periódica del estado del pago
+  const startPaymentStatusCheck = (txId) => {
+    // Limpiar cualquier intervalo existente
+    if (statusCheckInterval) {
+      clearInterval(statusCheckInterval);
+    }
+
+    // Crear nuevo intervalo para verificar el estado cada 5 segundos
+    const interval = setInterval(async () => {
+      try {
+        const statusResponse = await PaymentService.checkPaymentStatus(txId);
+
+        if (statusResponse.success) {
+          setPaymentStatus(statusResponse.status);
+
+          // Si el pago fue aprobado, avanzar al paso de éxito
+          if (statusResponse.status === "APPROVED") {
+            clearInterval(interval);
+            handlePaymentComplete();
+          }
+          // Si el pago fue rechazado o cancelado, mostrar error
+          else if (
+            ["REJECTED", "CANCELED", "FAILED"].includes(statusResponse.status)
+          ) {
+            clearInterval(interval);
+            setPaymentError(
+              `Pago ${
+                statusResponse.statusDescription ||
+                statusResponse.status.toLowerCase()
+              }`
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error al verificar estado del pago:", error);
+      }
+    }, 5000); // Verificar cada 5 segundos
+
+    setStatusCheckInterval(interval);
+  };
+
+  // Limpiar intervalo al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+      }
+    };
+  }, [statusCheckInterval]);
+
   // Manejar pago completado
   const handlePaymentComplete = () => {
-    setIsProcessing(true);
-
-    // Simular procesamiento de pago
-    setTimeout(() => {
-      setIsProcessing(false);
-      setStep("success");
-      clearCart();
-    }, 2000);
+    setIsProcessing(false);
+    setStep("success");
+    clearCart();
   };
 
   // Manejar cierre después de completar el pedido
@@ -54,9 +151,6 @@ export function CheckoutModal({
     closeCart();
     onClose();
   };
-
-  // Generar ID de pedido aleatorio
-  const orderId = `ORD-${Math.floor(Math.random() * 10000)}`;
 
   // Formatear fecha estimada de entrega (30 minutos desde ahora)
   const getEstimatedDelivery = () => {
@@ -109,7 +203,9 @@ export function CheckoutModal({
                 <div className="order-total-row">
                   <span>Envío</span>
                   <span>
-                    {shipping === 0 ? "Gratis" : `$${shipping.toFixed(3)}`}
+                    {shippingCost === 0
+                      ? "Gratis"
+                      : `$${shippingCost.toFixed(0)}`}
                   </span>
                 </div>
                 <div className="order-total-row">
@@ -125,12 +221,13 @@ export function CheckoutModal({
 
             <div className="delivery-info">
               <h3>Información de entrega</h3>
-              <p>
-                <strong>Dirección:</strong> {address}
-              </p>
-              <p>
-                <strong>Tiempo estimado:</strong> 30 minutos
-              </p>
+
+              {/* Usamos directamente la dirección del primer paso sin verificación adicional */}
+              <div className="selected-address-info">
+                <p>
+                  <strong>Dirección de entrega:</strong> {addressData}
+                </p>
+              </div>
             </div>
 
             <div className="confirmation-actions">
@@ -140,8 +237,11 @@ export function CheckoutModal({
               <button
                 className="confirm-order-btn"
                 onClick={handleConfirmOrder}
+                disabled={!isValidAddress || !addressData}
               >
-                Confirmar Pedido
+                {!isValidAddress && addressData
+                  ? "Dirección inválida"
+                  : "Confirmar Pedido"}
               </button>
             </div>
           </div>
@@ -153,10 +253,19 @@ export function CheckoutModal({
 
             <div className="payment-qr-container">
               <div className="qr-code">
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/QR_code_for_mobile_English_Wikipedia.svg/1200px-QR_code_for_mobile_English_Wikipedia.svg.png"
-                  alt="Código QR de Nequi"
-                />
+                {isProcessing ? (
+                  <div className="loading-spinner">Generando código QR...</div>
+                ) : qrCode ? (
+                  <img
+                    src={qrCode || "/placeholder.svg"}
+                    alt="Código QR de Nequi"
+                    className="nequi-qr-code"
+                  />
+                ) : (
+                  <div className="qr-placeholder">
+                    <p>No se pudo cargar el código QR</p>
+                  </div>
+                )}
               </div>
               <div className="payment-instructions">
                 <h3>Instrucciones:</h3>
@@ -166,6 +275,30 @@ export function CheckoutModal({
                   <li>Escanea el código QR</li>
                   <li>Confirma el pago de ${total.toFixed(3)}</li>
                 </ol>
+
+                {paymentStatus === "PENDING" && (
+                  <div className="payment-status pending">
+                    <p>Esperando confirmación del pago...</p>
+                    <div className="loading-dots">
+                      <span>.</span>
+                      <span>.</span>
+                      <span>.</span>
+                    </div>
+                  </div>
+                )}
+
+                {paymentError && (
+                  <div className="payment-error">
+                    <p>{paymentError}</p>
+                    <button
+                      className="retry-payment-btn"
+                      onClick={generateQRCode}
+                      disabled={isProcessing}
+                    >
+                      Reintentar
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -176,13 +309,6 @@ export function CheckoutModal({
                 disabled={isProcessing}
               >
                 Volver
-              </button>
-              <button
-                className="complete-payment-btn"
-                onClick={handlePaymentComplete}
-                disabled={isProcessing}
-              >
-                {isProcessing ? "Procesando..." : "He completado el pago"}
               </button>
             </div>
           </div>
@@ -199,7 +325,7 @@ export function CheckoutModal({
                 Entrega estimada: <strong>{getEstimatedDelivery()}</strong>
               </p>
               <p className="delivery-address">
-                Se entregará en: <strong>{address}</strong>
+                Se entregará en: <strong>{addressData}</strong>
               </p>
             </div>
 

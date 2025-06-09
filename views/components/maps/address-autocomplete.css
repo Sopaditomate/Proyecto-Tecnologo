@@ -1,0 +1,106 @@
+.address-autocomplete {
+  margin-bottom: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.address-autocomplete .form-group {
+  margin-bottom: 15px;
+}
+
+.address-autocomplete label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.address-autocomplete input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.address-autocomplete input:focus {
+  outline: none;
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  margin-top: 10px;
+  color: #666;
+  font-size: 14px;
+}
+
+.loading-indicator span {
+  margin-left: 8px;
+}
+
+.distance-info {
+  margin-top: 15px;
+  padding: 12px;
+  background-color: #fff;
+  border-radius: 6px;
+  border-left: 4px solid #ff6b6b;
+}
+
+.distance-info p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #444;
+}
+
+.selected-address-info {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f0f8ff;
+  border-radius: 6px;
+  border: 1px solid #d1e5f8;
+}
+
+.selected-address-info p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+/* Estilos para sugerencias de Google Places */
+.pac-container {
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 5px;
+}
+
+.pac-item {
+  padding: 8px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pac-item:hover {
+  background-color: #f5f5f5;
+}
+
+.pac-item-selected {
+  background-color: #f0f0f0;
+}
+
+.pac-icon {
+  margin-right: 10px;
+}
+
+.pac-matched {
+  color: #ff6b6b;
+  font-weight: bold;
+}
