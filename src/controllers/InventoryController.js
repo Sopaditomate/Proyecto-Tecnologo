@@ -17,6 +17,10 @@ class InventoryController {
     const { id } = req.params;
     const { nombre, id_tipo_materia, id_unidad, cantidad, descripcion } = req.body; // Agregar descripcion
 
+    if (!nombre || !id_tipo_materia || !id_unidad || !cantidad || !descripcion) {
+      return res.status(400).json({ message: "Faltan datos obligatorios" });
+    }
+
     try {
         await InventoryModel.updateRawMaterial(id, nombre, id_tipo_materia, id_unidad, descripcion); // Pasar descripcion
         await InventoryModel.updateQuantity(id, cantidad);
