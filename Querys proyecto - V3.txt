@@ -1,0 +1,1354 @@
+creación de la base:
+
+CREATE DATABASE lovebites;
+USE lovebites;
+
+/////////////////////////////////////////////////////////////////////////////////
+Creación de Tablas para las Entidades PRINCIPALES o FUERTES.
+
+CREATE TABLE state (
+    id_state INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary key of the state catalog',
+    name VARCHAR(20) NOT NULL UNIQUE COMMENT 'Logical status (e.g., active, inactive, deleted)'
+);
+
+
+Tablas principales PSEUDOFUERTES
+
+
+CREATE TABLE role (
+    id_role INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary key for role catalog',
+    name VARCHAR(20) NOT NULL UNIQUE COMMENT 'Role name: e.g., Admin, Client, etc.',
+    id_state INT NOT NULL DEFAULT 1 COMMENT 'Reference to state catalog',
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 100000;
+
+CREATE TABLE product_type (
+    id_product_type INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary key for product types',
+    name VARCHAR(30) NOT NULL COMMENT 'Name of the product type',
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 200000;
+
+CREATE TABLE order_status (
+    id_order_status INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary key for order statuses',
+    name VARCHAR(20) NOT NULL COMMENT 'Order status name',
+    description VARCHAR(40),
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 300000;
+
+CREATE TABLE material_type (
+    id_type_material INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary key for material types',
+    name VARCHAR(50) COMMENT 'Name of the material type',
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 400000;
+
+CREATE TABLE unit (
+    id_unit INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary key for measurement units',
+    name VARCHAR(20) NOT NULL COMMENT 'Unit name, e.g., kg, liters, units',
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 500000;
+
+CREATE TABLE production_status (
+    id_production_status INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary key for production statuses',
+    name VARCHAR(15) NOT NULL COMMENT 'Status of production',
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 600000;
+
+
+CREATE TABLE inventory_movement_type (
+    id_inventory_movement_type INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(20) NOT NULL COMMENT 'e.g., IN, OUT',
+    description VARCHAR(50),
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+);
+
+CREATE TABLE production_movement_type (
+    id_production_movement_type INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(20) NOT NULL COMMENT 'e.g., START, FINISH, CANCEL',
+    description VARCHAR(50),
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+);
+
+
+/////////////////////////////////////////////////////////////////////////////////
+
+Creación de tablas para las entidades DEBILES
+
+
+CREATE TABLE user_account (
+    id_user INT AUTO_INCREMENT PRIMARY KEY COMMENT 'Primary key for users',
+    email VARCHAR(100) NOT NULL UNIQUE COMMENT 'User email login',
+    password VARCHAR(255) NOT NULL COMMENT 'Hashed password',
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 700000;
+
+CREATE TABLE user_role (
+    id_user INT NOT NULL,
+    id_role INT NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_state INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (id_user, id_role),
+    FOREIGN KEY (id_user) REFERENCES user_account(id_user),
+    FOREIGN KEY (id_role) REFERENCES role(id_role),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+);
+
+CREATE TABLE user_profile (
+    id_profile INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL UNIQUE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    address VARCHAR(100) NOT NULL,
+    phone VARCHAR(15) NOT NULL,
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_user) REFERENCES user_account(id_user),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 800000;
+
+CREATE TABLE cart (
+    id_cart INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    items JSON NOT NULL,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id_state INT NOT NULL DEFAULT 1,
+    UNIQUE KEY unique_user_cart (id_user),
+    FOREIGN KEY (id_user) REFERENCES user_account(id_user),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 3;
+
+
+CREATE TABLE order_header (
+    id_order INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_order_status INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    total_discount DECIMAL(10,2) DEFAULT 0,
+    total_amount DECIMAL(10,2) NOT NULL,
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_user) REFERENCES user_account(id_user),
+    FOREIGN KEY (id_order_status) REFERENCES order_status(id_order_status),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 1100000;
+
+CREATE TABLE order_detail (
+    id_order_detail INT AUTO_INCREMENT PRIMARY KEY,
+    id_order INT NOT NULL,
+    id_product INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity >= 0),
+    final_price DECIMAL(10,2) NOT NULL CHECK (final_price >= 0),
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_order) REFERENCES order_header(id_order),
+    FOREIGN KEY (id_product) REFERENCES product(id_product),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 1300000;
+
+CREATE TABLE order_history (
+    id_order_history INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_order INT NOT NULL,
+    history_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_user) REFERENCES user_account(id_user),
+    FOREIGN KEY (id_order) REFERENCES order_header(id_order),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 2100000;
+
+CREATE TABLE raw_material (
+    id_material INT AUTO_INCREMENT PRIMARY KEY,
+    id_material_type INT NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    description VARCHAR(254),
+    id_unit INT NOT NULL,
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_material_type) REFERENCES material_type(id_type_material),
+    FOREIGN KEY (id_unit) REFERENCES unit(id_unit),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 1400000;
+
+CREATE TABLE inventory (
+    id_inventory INT AUTO_INCREMENT PRIMARY KEY,
+    id_material INT NOT NULL,
+    id_user INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity >= 0),
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_material) REFERENCES raw_material(id_material),
+    FOREIGN KEY (id_user) REFERENCES user_account(id_user),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 1500000;
+
+CREATE TABLE inventory_history (
+    id_inventory_history INT AUTO_INCREMENT PRIMARY KEY,
+    id_inventory INT NOT NULL,
+    id_material INT NOT NULL,
+    id_inventory_movement_type INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity >= 0),
+    movement_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_inventory) REFERENCES inventory(id_inventory),
+    FOREIGN KEY (id_material) REFERENCES raw_material(id_material),
+    FOREIGN KEY (id_state) REFERENCES state(id_state),
+    FOREIGN KEY (id_inventory_movement_type) REFERENCES inventory_movement_type(id_inventory_movement_type)
+) AUTO_INCREMENT = 1600000;
+
+CREATE TABLE product (
+    id_product INT AUTO_INCREMENT PRIMARY KEY,
+    id_product_type INT NOT NULL,
+    name VARCHAR(30) NOT NULL CHECK (LENGTH(name) >= 3),
+    price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
+    description VARCHAR(200) CHECK (LENGTH(description) >= 3),
+    image_url VARCHAR(254) NOT NULL,
+    rating DECIMAL(3,1) CHECK (rating BETWEEN 1 AND 5),
+    warning VARCHAR(254) NOT NULL,
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_product_type) REFERENCES product_type(id_product_type),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 1200000;
+
+//seriamente hay que discutir si de verdad es necesario que id_user este aquí, tuve que poner eso, para que todo fuera bien.
+CREATE TABLE production (
+    id_production INT AUTO_INCREMENT PRIMARY KEY,
+    start_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    end_datetime DATETIME NULL,
+    total_products INT NOT NULL CHECK (total_products >= 0),
+    id_production_status INT NOT NULL,
+    id_user INT NOT NULL DEFAULT 700002 CHECK (id_user = 700002), -- Solo permite al admin
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_production_status) REFERENCES production_status(id_production_status),
+    FOREIGN KEY (id_user) REFERENCES user_account(id_user),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 1800000;
+
+
+CREATE TABLE production_detail (
+    id_production INT NOT NULL,
+    id_product INT NOT NULL,
+    planned_quantity INT NOT NULL CHECK (planned_quantity >= 0),
+    id_state INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (id_production, id_product),
+    FOREIGN KEY (id_production) REFERENCES production(id_production),
+    FOREIGN KEY (id_product) REFERENCES product(id_product),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+);
+
+CREATE TABLE production_history (
+    id_production_history INT AUTO_INCREMENT PRIMARY KEY,
+    id_production INT NOT NULL,
+    id_product INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity >= 0),
+    id_production_movement_type INT NOT NULL,
+    movement_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_production, id_product) REFERENCES production_detail(id_production, id_product),
+    FOREIGN KEY (id_state) REFERENCES state(id_state),
+    FOREIGN KEY (id_production_movement_type) REFERENCES production_movement_type(id_production_movement_type)
+) AUTO_INCREMENT = 1900000;
+
+CREATE TABLE review (
+    id_review INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_product INT NOT NULL,
+    comment VARCHAR(250) NOT NULL,
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_user) REFERENCES user_account(id_user),
+    FOREIGN KEY (id_product) REFERENCES product(id_product),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 2200000;
+
+
+CREATE TABLE recipe (
+    id_product INT NOT NULL,
+    id_material INT NOT NULL,
+    quantity_required INT NOT NULL CHECK (quantity_required >= 0),
+    id_state INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (id_product, id_material),
+    FOREIGN KEY (id_product) REFERENCES product(id_product),
+    FOREIGN KEY (id_material) REFERENCES raw_material(id_material),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+);
+
+
+CREATE TABLE catalog (
+    id_catalog INT AUTO_INCREMENT PRIMARY KEY,
+    id_product INT NOT NULL,
+    discount DECIMAL(5,2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id_state INT NOT NULL DEFAULT 1,
+    FOREIGN KEY (id_product) REFERENCES product(id_product),
+    FOREIGN KEY (id_state) REFERENCES state(id_state)
+) AUTO_INCREMENT = 2000000;
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////---INSERCIONES---///////////////////////////////
+
+INSERT INTO state (name) VALUES 
+('active'), 
+('inactive'), 
+('deleted');
+
+
+INSERT INTO role (name) VALUES 
+('Cliente'), 
+('Administrador');
+
+
+INSERT INTO product_type (name) VALUES 
+('Tradicional'), 
+('Natural'), 
+('Orgánico'), 
+('Vegano'), 
+('Sin Gluten');
+
+
+INSERT INTO order_status (name, description) VALUES 
+('Recepción', 'Pedido pendiente de procesamiento'),
+('Preparando', 'Pedido en preparación'),
+('Empaquetado', 'Pedido empaquetado y listo para envío'),
+('Envio', 'Pedido en camino al cliente'),
+('Entregado', 'Pedido entregado al cliente');
+
+
+INSERT INTO material_type (name) VALUES 
+('Harinas'),
+('Azúcares y Edulcorantes'),
+('Grasas y Aceites'),
+('Levaduras y Fermentos'),
+('Lácteos'),
+('Conservantes'),
+('Frutas y Frutos Secos'),
+('Aromas y Sabores'),
+('Huevos y Ovoproductos'),
+('Sal'),
+('Aditivos y Mejoradores'),
+('Coberturas y Decoraciones');
+
+
+INSERT INTO unit (name) VALUES 
+('Kilogramos'),
+('Gramos'),
+('Litros'),
+('Mililitros'),
+('Unidades');
+
+
+INSERT INTO production_status (name) VALUES 
+('En Producción'),
+('Finalizado');
+
+
+INSERT INTO inventory_movement_type (name, description) VALUES 
+('Entrada', 'Movimiento de entrada de inventario'),
+('Salida', 'Movimiento de salida de inventario'),
+('Actualizado', 'Movimiento de actualización de inventario'),
+('Eliminado', 'Movimiento de eliminación de inventario');
+
+
+INSERT INTO production_movement_type (name, description) VALUES 
+('Ingreso', 'Movimiento de ingreso en producción'),
+('Salida', 'Movimiento de salida de producción'),
+('Cancelado', 'Movimiento de cancelación de producción'),
+('Item Eliminado', 'Movimiento de eliminación de un ítem en producción');
+
+
+INSERT INTO user_account (email, password) VALUES 
+('juan.perez@gmail.com', 'contrasena123'),
+('alfredo@gmail.com', 'pass12345'),
+('espriellag8@gmail.com', 'adminpass456'),
+('maria.lopez@gmail.com', 'mariapass789'),
+('pedro.martinez@gmail.com', 'pedropass101');
+
+
+INSERT INTO user_role (id_user, id_role) VALUES 
+(700000, 100000),  -- juan.perez@gmail.com
+(700001, 100000),  -- alfredo@gmail.com
+(700002, 100001),  -- espriellag8@gmail.com (administrador)
+(700003, 100000),  -- maria.lopez@gmail.com
+(700004, 100000);  -- pedro.martinez@gmail.com
+
+
+INSERT INTO user_profile (id_user, first_name, last_name, address, phone) VALUES 
+(700000, 'Juan', 'Pérez', 'Calle 123', '5551234'),
+(700001, 'Alfredo', 'Gómez', 'Calle sin nombre', '5554567'),
+(700002, 'Guillermo', 'Medina', 'Avenida 456', '5555678'),
+(700003, 'María', 'López', 'Calle Las Rosas 789', '5556789'),
+(700004, 'Pedro', 'Martínez', 'Calle Los Almendros 456', '5557890');
+
+
+INSERT INTO product (id_product_type, name, price, description, image_url, rating, warning) VALUES 
+(200000, 'Panetón', 15000.00, 'Pan dulce con frutas confitadas y pasas', 'url_imagen_panetón.jpg', NULL, 'Conservar en un lugar fresco.'),
+(200000, 'Pan Integral', 12000.00, 'Pan denso con salvado y fibra', 'url_imagen_integral.jpg', NULL, 'Consumir antes de la fecha de caducidad.'),
+(200001, 'Baguette', 10000.00, 'Pan largo y crujiente, con miga ligera', 'url_imagen_baguette.jpg', NULL, 'Mejor si se consume el día de compra.'),
+(200002, 'Pan Blanco', 5000.00, 'Pan suave y esponjoso, ideal para todo', 'url_imagen_blanco.jpg', NULL, 'Almacenar en un lugar seco.'),
+(200003, 'Focaccia', 18000.00, 'Pan italiano con aceite de oliva y hierbas', 'url_imagen_focaccia.jpg', NULL, 'Conservar en un lugar fresco.'),
+(200004, 'Ciabatta', 14000.00, 'Pan italiano con una corteza crujiente y miga aireada', 'url_imagen_ciabatta.jpg', NULL, 'Consumir dentro de los 3 días.'),
+(200001, 'Pan de Ajo', 11000.00, 'Pan suave con un delicioso sabor a ajo', 'url_imagen_pan_ajo.jpg', NULL, 'Calentar antes de servir.');
+
+
+INSERT INTO raw_material (id_material_type, name, description, id_unit) VALUES 
+(400000, 'Haz de oros', 'Harina blanca común para panadería', 500000),
+(400000, 'Corona', 'Harina de trigo integral para panes más saludables', 500000),
+(400001, 'La soberana', 'Azúcar refinada utilizada para endulzar', 500001),
+(400001, 'Miel', 'Miel de abeja natural para endulzar y dar sabor', 500001),
+(400002, 'Gustocita', 'Mantequilla sin sal para masas y cremas', 500001),
+(400002, 'Aceite Lite', 'Aceite de girasol para mezclar en recetas líquidas', 500002),
+(400003, 'Levadude', 'Levadura para fermentación de masas de pan', 500001),
+(400003, 'Brisa Fresca', 'Levadura fresca para panes artesanales', 500001),
+(400004, 'Alqueria', 'Leche líquida para mezclar en recetas de panadería', 500002),
+(400004, 'Maxima cream', 'Nata líquida para preparar cremas y rellenos', 500002),
+(400005, 'Sorbato de Potasio', 'Conservante utilizado para prolongar la vida útil de productos horneados', 500001),
+(400006, 'Pasas', 'Frutas deshidratadas para agregar a masas y decoraciones', 500001),
+(400006, 'Nueces', 'Frutos secos para mezclar en masas y como decoración', 500001),
+(400009, 'Refial', 'Sal de mesa para dar sabor y mejorar la textura de las masas', 500001),
+(400008, 'AA', 'Huevos frescos para mezclar en la masa y dar estructura', 500004),
+(400011, 'Roma dulce', 'Chocolate oscuro para decorar y recubrir productos', 500001);
+
+
+INSERT INTO inventory (id_material, id_user, quantity, id_state) VALUES 
+(1400000, 700002, 50, 1), -- Haz de oros
+(1400001, 700002, 25, 1), -- Corona
+(1400002, 700002, 10000, 1), -- La soberana
+(1400003, 700002, 2000, 1), -- Miel
+(1400004, 700002, 5000, 1), -- Gustocita
+(1400005, 700002, 10, 1), -- Aceite Lite
+(1400006, 700002, 200, 1), -- Levadude
+(1400007, 700002, 500, 1), -- Brisa Fresca
+(1400008, 700002, 50, 1), -- Alqueria
+(1400009, 700002, 20, 1), -- Maxima cream
+(1400010, 700002, 500, 1), -- Sorbato de Potasio
+(1400011, 700002, 2000, 1), -- Pasas
+(1400012, 700002, 1500, 1), -- Nueces
+(1400013, 700002, 5000, 1), -- Refial
+(1400014, 700002, 600, 1), -- AA
+(1400015, 700002, 4000, 1); -- Roma dulce
+
+
+-- Comentarios sobre Pan de Ajo (ID_PRODUCT = 1200006)
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700000, 1200006, 'Sabor a ajo delicioso, pero me gustaría que fuera un poco más crujiente.', 4);
+
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700001, 1200006, 'El pan de ajo es un favorito en casa. Siempre lo pido para acompañar la pasta.', 5);
+
+-- Comentarios sobre Ciabatta (ID_PRODUCT = 1200005)
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700003, 1200005, 'Me decepcionó un poco, esperaba algo más crujiente. Estaba un poco seco.', 3);
+
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700004, 1200005, 'La ciabatta es perfecta para hacer sándwiches. ¡Me encanta su textura!', 5);
+
+-- Comentarios sobre Focaccia (ID_PRODUCT = 1200004)
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700001, 1200004, 'Buen pan, pero un poco salado para mi gusto. Sin embargo, sigue siendo delicioso.', 4);
+
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700003, 1200004, 'La focaccia es increíble. El aceite de oliva le da un sabor espectacular.', 5);
+
+-- Comentarios sobre Pan Blanco (ID_PRODUCT = 1200003)
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700004, 1200003, 'Demasiado esponjoso para mi gusto. Preferiría algo más denso.', 2);
+
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700000, 1200003, 'Este pan blanco es muy suave y perfecto para hacer tostadas. ¡Me encanta!', 5);
+
+-- Comentarios sobre Baguette (ID_PRODUCT = 1200002)
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700001, 1200002, 'Buen sabor, pero se puso duro rápido. Mejor consumir el mismo día.', 3);
+
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700004, 1200002, 'Excelente baguette, crujiente y fresco. Perfecto para mis sándwiches.', 5);
+
+-- Comentarios sobre Pan Integral (ID_PRODUCT = 1200001)
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700003, 1200001, 'Me gustó, pero la textura es un poco densa. Aún así, lo volveré a comprar.', 4);
+
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700000, 1200001, 'El pan integral tiene un sabor excepcional, ideal para mis desayunos saludables.', 5);
+
+-- Comentarios sobre Panetón (ID_PRODUCT = 1200000)
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700001, 1200000, 'Muy rico, pero un poco más seco de lo que esperaba. Ideal para acompañar con café.', 3);
+
+INSERT INTO review (id_user, id_product, comment, rating)
+VALUES (700004, 1200000, 'El panetón es realmente delicioso, pero me hubiera gustado que tuviera más frutas. ¡Aún así, muy bueno!', 4);
+
+
+-- Producto con descuento del 10% - Panetón
+INSERT INTO catalog (id_product, discount) VALUES (1200000, 10);
+
+-- Producto sin descuento - Pan Integral
+INSERT INTO catalog (id_product, discount) VALUES (1200001, 0);
+
+-- Producto con descuento del 15% - Baguette
+INSERT INTO catalog (id_product, discount) VALUES (1200002, 15);
+
+-- Producto sin descuento - Pan Blanco
+INSERT INTO catalog (id_product, discount) VALUES (1200003, 0);
+
+-- Producto con descuento del 5% - Focaccia
+INSERT INTO catalog (id_product, discount) VALUES (1200004, 5);
+
+-- Producto con descuento del 8% - Ciabatta
+INSERT INTO catalog (id_product, discount) VALUES (1200005, 8);
+
+-- Producto sin descuento - Pan de Ajo
+INSERT INTO catalog (id_product, discount) VALUES (1200006, 0);
+
+
+-- Pedido 1: Juan Pérez (Recepción)
+INSERT INTO order_header (id_user, id_order_status, total_discount, total_amount)
+VALUES (700000, 300000, 0, 0);
+
+-- Pedido 2: Alfredo (Empaquetado)
+INSERT INTO order_header (id_user, id_order_status, total_discount, total_amount)
+VALUES (700001, 300002, 0, 0);
+
+-- Pedido 3: María López (Envío)
+INSERT INTO order_header (id_user, id_order_status, total_discount, total_amount)
+VALUES (700003, 300003, 0, 0);
+
+-- Pedido 4: Pedro Martínez (Preparando)
+INSERT INTO order_header (id_user, id_order_status, total_discount, total_amount)
+VALUES (700004, 300001, 0, 0);
+
+-- Pedido 5: Pedro Martínez (Entregado)
+INSERT INTO order_header (id_user, id_order_status, total_discount, total_amount)
+VALUES (700004, 300004, 0, 0);
+
+
+-- Panetón
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200000, 1400000, 10, 1); -- Harina de Trigo
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200000, 1400002, 2, 1);  -- Azúcar Blanca
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200000, 1400011, 0.5, 1); -- Pasas
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200000, 1400007, 0.05, 1); -- Levadura Fresca
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200000, 1400004, 1, 1);  -- Mantequilla
+
+-- Pan Integral
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200001, 1400001, 8, 1);   -- Harina Integral
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200001, 1400002, 1, 1);   -- Azúcar Blanca
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200001, 1400007, 0.05, 1);-- Levadura Fresca
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200001, 1400013, 0.1, 1); -- Sal
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200001, 1400005, 0.5, 1); -- Aceite Vegetal
+
+-- Focaccia
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200002, 1400000, 6, 1);   -- Harina de Trigo
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200002, 1400006, 0.02, 1);-- Levadura Seca
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200002, 1400013, 0.1, 1); -- Sal
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200002, 1400008, 1, 1);   -- Agua
+
+-- Pan Francés
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200003, 1400000, 5, 1);   -- Harina de Trigo
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200003, 1400002, 0.5, 1); -- Azúcar Blanca
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200003, 1400007, 0.05, 1);-- Levadura Fresca
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200003, 1400008, 2, 1);   -- Agua
+
+-- Pan Ciabatta
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200004, 1400000, 6, 1);   -- Harina de Trigo
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200004, 1400013, 0.1, 1); -- Sal
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200004, 1400005, 0.2, 1); -- Aceite Vegetal
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200004, 1400006, 0.03, 1);-- Levadura Seca
+
+-- Pan de Mesa
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200005, 1400000, 5, 1);   -- Harina de Trigo
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200005, 1400006, 0.03, 1);-- Levadura Seca
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200005, 1400013, 0.05, 1);-- Sal
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200005, 1400008, 1.5, 1); -- Agua
+
+-- Pan Dulce
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200006, 1400000, 3, 1);   -- Harina de Trigo
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200006, 1400013, 0.05, 1);-- Sal
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200006, 1400005, 0.1, 1); -- Aceite Vegetal
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200006, 1400003, 0.1, 1); -- Miel
+INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200006, 1400006, 0.02, 1);-- Levadura Seca
+
+
+
+//falta terminar la logica
+-- Inserciones para producción (solo admin - 700002)
+INSERT INTO production (total_products, id_production_status)
+VALUES 
+(90, 600000),  -- Producción en curso
+(150, 600001); -- Producción finalizada
+
+//lo mismo aqui
+-- Detalles para producción 1800000 (en curso)
+INSERT INTO production_detail (id_production, id_product, planned_quantity)
+VALUES
+(1800000, 1200000, 30), -- Panetón
+(1800000, 1200001, 30), -- Pan Integral
+(1800000, 1200002, 30); -- Baguette
+
+-- Detalles para producción 1800001 (finalizada)
+INSERT INTO production_detail (id_production, id_product, planned_quantity)
+VALUES
+(1800001, 1200003, 50), -- Pan Blanco
+(1800001, 1200004, 50), -- Focaccia
+(1800001, 1200005, 50); -- Ciabatta
+
+
+
+/////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////---RESTRICCIONES---//////////////////////////////
+
+//mientras se soluciona el de si el campo deberia ir o no en inventory
+ALTER TABLE inventory MODIFY id_user INT NOT NULL CHECK(id_user = 700002);
+
+ALTER TABLE review 
+ADD CONSTRAINT chk_no_admin_reviews 
+CHECK (id_user <> 700002);
+
+
+ALTER TABLE order_header
+ADD CONSTRAINT chk_no_admin_orders
+CHECK (id_user <> 700002);
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////---OBJETOS DE LA BASE---////////////////////////////
+
+
+--------------------------------------VIEWS--------------------------------------
+
+CREATE VIEW vw_cart_by_user AS
+SELECT * FROM cart;
+
+///Inventario
+
+CREATE OR REPLACE VIEW vw_active_inventory AS
+SELECT 
+  inv.id_inventory,
+  inv.quantity,
+  mat.name AS raw_material,
+  uni.name AS unit,
+  uni.id_unit,
+  typ.name AS type,
+  typ.id_type_material,
+  mat.description
+FROM inventory inv
+JOIN raw_material mat ON inv.id_material = mat.id_material
+JOIN unit uni ON mat.id_unit = uni.id_unit
+JOIN material_type typ ON mat.id_material_type = typ.id_type_material
+WHERE inv.id_state = 1
+  AND mat.id_state = 1
+  AND uni.id_state = 1
+  AND typ.id_state = 1;
+
+CREATE VIEW vw_active_material_types AS
+SELECT id_type_material, name 
+FROM material_type 
+WHERE id_state = 1;
+
+CREATE VIEW vw_active_units AS
+SELECT id_unit, name 
+FROM unit 
+WHERE id_state = 1;
+
+
+CREATE OR REPLACE VIEW vw_active_inventory_history AS
+SELECT 
+    h.id_inventory_history, 
+    h.id_inventory, 
+    h.id_material, 
+    m.name AS nombre_materia,
+    h.quantity, 
+    h.id_inventory_movement_type, 
+    h.movement_datetime
+FROM 
+    inventory_history h
+JOIN 
+    raw_material m ON h.id_material = m.id_material
+WHERE 
+    m.id_state = 1
+ORDER BY 
+    h.movement_datetime DESC;
+
+
+CREATE OR REPLACE VIEW vw_active_inventory_summary AS
+SELECT 
+    i.id_material AS ID_MATERIA, 
+    m.name AS NOMBRE_MATERIA, 
+    SUM(i.quantity) AS CANTIDAD_TOTAL, 
+    u.name AS UNIDAD
+FROM 
+    inventory i
+JOIN 
+    raw_material m ON i.id_material = m.id_material
+JOIN 
+    unit u ON m.id_unit = u.id_unit
+WHERE 
+    i.id_state = 1
+    AND m.id_state = 1
+    AND u.id_state = 1
+GROUP BY 
+    i.id_material, m.name, u.name;
+
+-------------------------------------PROCEDURES----------------------------------
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_get_cart_by_user(IN userId INT)
+BEGIN
+    SELECT * FROM vw_cart_by_user WHERE id_user = userId;
+END $$
+
+DELIMITER ;
+
+
+//REEMPLAZA LA LOGICA EN CARTMODEL.js
+
+DELIMITER $$
+CREATE PROCEDURE sp_save_cart(IN userId INT, IN items JSON)
+BEGIN
+    DECLARE existingCount INT;
+
+    SELECT COUNT(*) INTO existingCount FROM cart WHERE id_user = userId;
+
+    IF existingCount > 0 THEN
+        UPDATE cart SET items = items WHERE id_user = userId;
+    ELSE
+        INSERT INTO cart (id_user, items) VALUES (userId, items);
+    END IF;
+END $$
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_clear_cart(IN userId INT)
+BEGIN
+    UPDATE cart 
+    SET id_state = 3  -- Asumiendo que 3 es el estado de "eliminado"
+    WHERE id_user = userId;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_get_inventory()
+BEGIN
+    SELECT * FROM vw_active_inventory;
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_update_quantity(
+    IN p_id_inventory INT,
+    IN p_quantity INT
+)
+BEGIN
+    UPDATE inventory 
+    SET quantity = p_quantity 
+    WHERE id_inventory = p_id_inventory;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Registro no encontrado';
+    END IF;
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_update_raw_material(
+    IN p_id_inventory INT,
+    IN p_name VARCHAR(50),
+    IN p_id_material_type INT,
+    IN p_id_unit INT,
+    IN p_description VARCHAR(254)
+)
+BEGIN
+    DECLARE v_id_material INT;
+
+    -- Obtener ID_MATERIA desde el inventario
+    SELECT id_material INTO v_id_material 
+    FROM inventory 
+    WHERE id_inventory = p_id_inventory;
+
+    IF v_id_material IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Inventario no encontrado';
+    END IF;
+
+    -- Actualizar materia_prima
+    UPDATE raw_material 
+    SET name = p_name, 
+        id_material_type = p_id_material_type, 
+        id_unit = p_id_unit, 
+        description = p_description 
+    WHERE id_material = v_id_material;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Materia prima no actualizada';
+    END IF;
+END //
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_inventory(IN p_id_inventory INT)
+BEGIN
+    UPDATE inventory 
+    SET id_state = 3  -- Asumiendo que 3 es el estado de "eliminado"
+    WHERE id_inventory = p_id_inventory;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Inventario no encontrado';
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_get_material_types()
+BEGIN
+    SELECT * FROM vw_active_material_types;
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_get_units()
+BEGIN
+    SELECT * FROM vw_active_units;
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_add_new_raw_material(
+    IN p_nombre VARCHAR(50),
+    IN p_tipo_materia INT,
+    IN p_unidad INT,
+    IN p_cantidad INT,
+    IN p_descripcion VARCHAR(254),
+    IN p_id_administrador INT
+)
+BEGIN
+    DECLARE v_id_material INT;
+
+    -- Iniciar transacción
+    START TRANSACTION;
+
+    -- 1. Insertar en raw_material
+    INSERT INTO raw_material (name, id_material_type, id_unit, description)
+    VALUES (p_nombre, p_tipo_materia, p_unidad, p_descripcion);
+
+    SET v_id_material = LAST_INSERT_ID();
+
+    -- 2. Insertar en inventory
+    INSERT INTO inventory (id_material, id_user, quantity)
+    VALUES (v_id_material, p_id_administrador, p_cantidad);
+
+    -- Confirmar transacción
+    COMMIT;
+END //
+
+DELIMITER ;
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_get_inventory_history()
+BEGIN
+    SELECT * FROM vw_active_inventory_history;
+END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE PROCEDURE sp_get_inventory_summary()
+BEGIN
+    SELECT * FROM vw_active_inventory_summary;
+END //
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_calculate_average_rating(IN p_id_producto INT)
+BEGIN
+    DECLARE v_promedio DECIMAL(3,1);
+
+    -- Calcular el promedio de las calificaciones activas
+    SELECT AVG(rating)
+    INTO v_promedio
+    FROM review
+    WHERE id_product = p_id_producto AND id_state = 1;
+
+    -- Actualizar la nota del producto (si está activo)
+    UPDATE product
+    SET rating = v_promedio
+    WHERE id_product = p_id_producto AND id_state = 1;
+END $$
+
+DELIMITER ;
+
+///ACTUALMENTE MANEJA EL CALCULO DE LOS TOTALES PARA PEDIDO Y DETALLES(NOMBRES EN INGLES)
+//tiene que ser llamado para funcionar: CALL sp_calculate_order_totals(1100000);
+--PENDIENTE DE REVISION DE LOGICA
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_calculate_order_totals(IN p_id_order INT)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_id_product INT;
+    DECLARE v_quantity INT;
+    DECLARE v_price DECIMAL(10,2);
+    DECLARE v_discount DECIMAL(5,2);
+    DECLARE v_final_price DECIMAL(10,2);
+    DECLARE v_line_discount DECIMAL(10,2);
+
+    DECLARE total_descuento DECIMAL(10,2) DEFAULT 0;
+    DECLARE total_a_pagar DECIMAL(10,2) DEFAULT 0;
+
+    DECLARE cur CURSOR FOR
+        SELECT od.id_product, od.quantity
+        FROM order_detail od
+        WHERE od.id_order = p_id_order;
+
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN cur;
+
+    leer_productos: LOOP
+        FETCH cur INTO v_id_product, v_quantity;
+        IF done THEN
+            LEAVE leer_productos;
+        END IF;
+
+        -- Obtener precio del producto
+        SELECT price INTO v_price
+        FROM product
+        WHERE id_product = v_id_product;
+
+        -- Obtener descuento desde el catálogo (si no hay, se asume 0)
+        SELECT COALESCE(discount, 0) INTO v_discount
+        FROM catalog
+        WHERE id_product = v_id_product
+        LIMIT 1;
+
+        -- Calcular precio final con descuento
+        SET v_final_price = v_price * (1 - v_discount / 100);
+
+        -- Calcular el descuento total en esta línea
+        SET v_line_discount = (v_price - v_final_price) * v_quantity;
+
+        -- Actualizar order_detail con precio final
+        UPDATE order_detail
+        SET final_price = v_final_price
+        WHERE id_order = p_id_order AND id_product = v_id_product;
+
+        -- Sumar al total
+        SET total_descuento = total_descuento + v_line_discount;
+        SET total_a_pagar = total_a_pagar + (v_final_price * v_quantity);
+    END LOOP;
+
+    CLOSE cur;
+
+    -- Actualizar totales en order_header
+    UPDATE order_header
+    SET total_discount = total_descuento,
+        total_amount = total_a_pagar
+    WHERE id_order = p_id_order;
+
+END$$
+
+DELIMITER ;
+
+-------------------------------------TRIGGERS------------------------------------
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_role
+BEFORE DELETE ON role
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from role is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_product_type
+BEFORE DELETE ON product_type
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from product_type is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_material_type
+BEFORE DELETE ON material_type
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from material_type is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_order_status
+BEFORE DELETE ON order_status
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from order_status is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_production_status
+BEFORE DELETE ON production_status
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from production_status is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_state
+BEFORE DELETE ON state
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from state is not allowed. It is necessary for the correct functionality of the database.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_unit
+BEFORE DELETE ON unit
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from unit is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_user_account
+BEFORE DELETE ON user_account
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from user_account is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_user_role
+BEFORE DELETE ON user_role
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from user_role is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_user_profile
+BEFORE DELETE ON user_profile
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from user_profile is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_cart
+BEFORE DELETE ON cart
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from cart is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_order_header
+BEFORE DELETE ON order_header
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from order_header is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_inventory
+BEFORE DELETE ON inventory
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from inventory is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_production
+BEFORE DELETE ON production
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from production is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_production_history
+BEFORE DELETE ON production_history
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from production_history is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_inventory_history
+BEFORE DELETE ON inventory_history
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from inventory_history is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_review
+BEFORE DELETE ON review
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from review is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_order_history
+BEFORE DELETE ON order_history
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from order_history is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_order_detail
+BEFORE DELETE ON order_detail
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from order_detail is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_recipe
+BEFORE DELETE ON recipe
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from recipe is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_catalog
+BEFORE DELETE ON catalog
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from catalog is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_product
+BEFORE DELETE ON product
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from product is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_raw_material
+BEFORE DELETE ON raw_material
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from raw_material is not allowed. Use id_state to deactivate.';
+END;
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_production_detail
+BEFORE DELETE ON production_detail
+FOR EACH ROW
+BEGIN
+  SIGNAL SQLSTATE '45000'
+  SET MESSAGE_TEXT = 'Deleting records from production_detail is not allowed. Use id_state to deactivate.';
+END;
+
+//
+
+DELIMITER ;
+
+/////////////////////////////////////////////NO LOS MISMOS//////////////////////////////////////////////////
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_update_product_rating
+AFTER INSERT ON review
+FOR EACH ROW
+BEGIN
+    -- Solo calcular promedio si el review insertado está activo
+    IF NEW.id_state = 1 THEN
+        CALL sp_calculate_average_rating(NEW.id_product);
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+///TRIGGER CON LOGICA DE NEGOCIOS PENDIENTE POR REVISAR 
+// Impide el funcionamiento del procedimiento por reglas de integridad de MySQL, hay que cambiar la lógica al back(trigger eliminado)
+DELIMITER $$
+
+CREATE TRIGGER trg_get_order_totals
+AFTER INSERT ON order_detail
+FOR EACH ROW
+BEGIN
+    CALL sp_calculate_order_totals(NEW.id_order);
+END$$
+
+DELIMITER ;
+
+
+
+
