@@ -44,7 +44,7 @@ class UserModel {
   }
 
   async updatePasswordAndClearToken(userId, hashedPassword) {
-    await pool.query("CALL sp_update_password_and_clear_token(?, ?)", [
+    await pool.query("CALL sp_update_password_and_clean_token(?, ?)", [
       userId,
       hashedPassword,
     ]);
