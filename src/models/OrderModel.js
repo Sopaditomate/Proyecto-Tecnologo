@@ -9,22 +9,24 @@ class OrderModel {
       await connection.beginTransaction();
 
       // Insertar el pedido en la tabla PEDIDO (estado inicial: Recepción = 300000)
+      // Llamar al procedimiento para insertar el pedido y obtener el ID
       const [orderResult] = await connection.query(
-        "INSERT INTO pedido (ID_CLIENTE, ID_ESTADO) VALUES (?, 300000)",
-        [clientId]
+          "CALL sp_insert_order_header(?, 300000, @orderId); SELECT @orderId AS orderId;",//aqui se captura el id de la ultima order
+          [clientId]
       );
 
-      const orderId = orderResult.insertId;
+      orderId = orderResult[0][0].orderId; // Obtener el ID del pedido
 
       // Insertar los detalles del pedido
       for (const item of items) {
         await connection.query(
-          "INSERT INTO detalle_pedido (ID_PEDIDO, ID_PRODUCTO, CANTIDAD) VALUES (?, ?, ?)",
+          "CALL sp_insert_order_detail(?, ?, ?)",
           [orderId, item.id, item.cantidad]
         );
       }
 
       // El trigger trg_actualizar_totales_pedido_insert actualizará los totales
+      // de eso ya nada
 
       await connection.commit();
       return orderId;
@@ -41,13 +43,7 @@ class OrderModel {
   async getClientOrders(clientId) {
     try {
       const [rows] = await pool.query(
-        `
-        SELECT p.ID_PEDIDO, p.FECHA_HORA, p.TOTAL_PAGAR, e.NOMBRE as ESTADO
-        FROM pedido p
-        JOIN estado_pedido e ON p.ID_ESTADO = e.ID_ESTADO
-        WHERE p.ID_CLIENTE = ?
-        ORDER BY p.FECHA_HORA DESC
-      `,
+        `CALL sp_get_client_orders(?)`,
         [clientId]
       );
 
@@ -63,17 +59,7 @@ class OrderModel {
     try {
       // Obtener información del pedido
       const [orderInfo] = await pool.query(
-        `
-        SELECT p.ID_PEDIDO, p.FECHA_HORA, p.TOTAL_DESCUENTO, p.TOTAL_PAGAR, 
-               e.NOMBRE as ESTADO, c.ID_CLIENTE, 
-               du.NOMBRES, du.APELLIDOS, du.DIRECCION, du.TELEFONO
-        FROM pedido p
-        JOIN estado_pedido e ON p.ID_ESTADO = e.ID_ESTADO
-        JOIN cliente c ON p.ID_CLIENTE = c.ID_CLIENTE
-        JOIN usuario_sys us ON c.ID_USUARIO = us.ID_USUARIO
-        JOIN datos_usuario du ON us.ID_USUARIO = du.ID_USUARIO
-        WHERE p.ID_PEDIDO = ?
-      `,
+        `CALL sp_get_order_details(?)`,
         [orderId]
       );
 
@@ -81,19 +67,13 @@ class OrderModel {
 
       // Obtener detalles de los productos en el pedido
       const [items] = await pool.query(
-        `
-        SELECT dp.ID_DETALLE_PEDIDO, dp.ID_PRODUCTO, dp.CANTIDAD, dp.PRECIO_FINAL,
-               p.NOMBRE as PRODUCTO_NOMBRE, p.DESCRIPCION, p.IMAGEN_URL
-        FROM detalle_pedido dp
-        JOIN producto p ON dp.ID_PRODUCTO = p.ID_PRODUCTO
-        WHERE dp.ID_PEDIDO = ?
-      `,
+        `CALL sp_get_order_items(?)`,
         [orderId]
       );
 
       return {
-        order: orderInfo[0],
-        items,
+        order: orderInfo[0],// Retorna la información del pedido
+        items,// Retorna los detalles de los productos
       };
     } catch (error) {
       console.error("Error al obtener detalles del pedido:", error);
