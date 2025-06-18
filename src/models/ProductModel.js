@@ -19,7 +19,7 @@ class ProductModel {
       throw error;
     }
   }
-
+///////////////////////////////
   // Obtener un producto por ID
   async getProductById(id) {
     try {

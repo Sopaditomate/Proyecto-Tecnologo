@@ -846,6 +846,14 @@ WHERE p.id_state = 1
   AND c.id_state = 1;
 
 
+CREATE OR REPLACE VIEW vw_active_categories AS
+SELECT 
+    id_product_type AS id,
+    name AS categoryName
+FROM product_type
+WHERE id_state = 1;
+
+
 -------------------------------------PROCEDURES----------------------------------
 
 DELIMITER $$
@@ -1472,6 +1480,17 @@ BEGIN
 END$$
 DELIMITER ;
 
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_get_categories()
+BEGIN
+    SELECT 
+        id,
+        categoryName
+    FROM vw_active_categories;
+END$$
+DELIMITER ;
 
 
 -------------------------------------TRIGGERS------------------------------------

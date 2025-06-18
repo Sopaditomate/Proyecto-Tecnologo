@@ -14,6 +14,7 @@ class InventoryModel {
     }
   }
 
+
   async getRawMaterialTypes() {
     const conn = await pool.getConnection();
     try {
@@ -38,7 +39,6 @@ class InventoryModel {
     }
   }
 
-
   async updateQuantity(id, cantidad) {
     await pool.query(`CALL sp_update_quantity(?, ?)`, [id, cantidad]);
   }
@@ -55,9 +55,6 @@ class InventoryModel {
       return { message: 'Inventario eliminado correctamente' }; 
   }
 
-  
-
-  
 
   async addNewRawMaterial(nombre, tipoMateria, unidad, cantidad, descripcion, idAdministrador) {
     const conn = await pool.getConnection();
