@@ -43,7 +43,9 @@ export function AuthProvider({ children }) {
     // Prueba de conexión al servidor
     const checkServer = async () => {
       try {
-        const response = await axios.get(`${API_URL}/auth/check`);
+        const response = await axios.get(`${API_URL}/auth/check`,{
+          withCredentials: true
+        });
         console.log("Servidor está funcionando:", response.data);
       } catch (error) {
         console.error("Error de conexión al servidor:", error);

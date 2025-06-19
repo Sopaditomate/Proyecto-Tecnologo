@@ -1,10 +1,11 @@
 import pool from '../config/db.js';
 
 class InventoryModel {
+  //prueba para ver si esta bien el inventario/funciona
   async getInventory() {
     const conn = await pool.getConnection();
     try {
-      const [rows] = await conn.query(`CALL sp_get_inventory()`);
+      const [rows] = await conn.query(`SELECT * FROM vw_active_inventory`);
       return rows;
     } catch (error) {
       console.error('Error fetching inventory:', error);
@@ -14,11 +15,11 @@ class InventoryModel {
     }
   }
 
-
+  ////prueba para ver si esta bien el inventario/funciona
   async getRawMaterialTypes() {
     const conn = await pool.getConnection();
     try {
-      const [rows] = await conn.query(`CALL sp_get_material_types()`);
+      const [rows] = await conn.query(`SELECT * FROM vw_active_material_types`);
       return rows;
     } catch (error) {
       throw error;
@@ -30,7 +31,7 @@ class InventoryModel {
   async getUnits() {
     const conn = await pool.getConnection();
     try {
-      const [rows] = await conn.query(`CALL sp_get_units()`);
+      const [rows] = await conn.query(`SELECT * FROM vw_active_units`);
       return rows;
     } catch (error) {
       throw error;
