@@ -10,7 +10,6 @@ const app = express();
 
 const allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
 
-
 // Configuración de CORS
 const corsOptions = {
   origin: allowedOrigins, //origenes permitidos
@@ -31,21 +30,22 @@ const initializeDatabase = async () => {
     console.error(
       "❌ Failed to connect to the database. Please check your connection settings in .env"
     );
-    process.exit(1);//detiene el proceso si falla
+    process.exit(1); //detiene el proceso si falla
   }
 };
 
 // Inicializar la base de datos
-initializeDatabase().catch(console.error);//es un catch para los errores sin el try
-
+initializeDatabase().catch(console.error); //es un catch para los errores sin el try
 
 // Middleware de registro de solicitudes
 app.use((req, res, next) => {
   const start = Date.now(); // Mueve esta línea aquí para que `start` esté disponible en el ámbito
 
-  console.log(`[${new Date().toISOString()}] Solicitud: ${req.method} ${req.url}`);
-  
-  res.on('finish', () => {
+  console.log(
+    `[${new Date().toISOString()}] Solicitud: ${req.method} ${req.url}`
+  );
+
+  res.on("finish", () => {
     const duration = Date.now() - start; // Aquí `start` es accesible
     console.log(`Respuesta: ${res.statusCode} en ${duration}ms`);
   });
@@ -59,8 +59,8 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Error interno del servidor" });
 });
 
-app.use(express.json());// permite interpretar el cuerpo de las peticiones como JSON.
-app.use(cookieParser());// permite leer cookies que se envían con las peticiones.
+app.use(express.json()); // permite interpretar el cuerpo de las peticiones como JSON.
+app.use(cookieParser()); // permite leer cookies que se envían con las peticiones.
 
 // Rutas de las APIS
 import authRoutes from "./routes/authRoutes.js";
@@ -77,24 +77,18 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 
-
 //productos
-import productAdminRoutes from './routes/productAdminRoutes.js';
+import productAdminRoutes from "./routes/productAdminRoutes.js";
 app.use("/api/productos_crud", productAdminRoutes);
 
 //recetas
-import recetaRoutes from './routes/recetaRoutes.js'
+import recetaRoutes from "./routes/recetaRoutes.js";
 app.use("/api/recetas_crud", recetaRoutes);
 app.use("/api/inventario", inventoryRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running!");
 });
-
-
-
-
-
 
 //inicializador del servidor
 const PORT = process.env.PORT || 5001;

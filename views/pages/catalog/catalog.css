@@ -237,6 +237,7 @@
 
 .name-product-2 {
   font-size: 1.1rem;
+ text-align: start;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -297,7 +298,6 @@
     display: inline;
   }
 }
-
 
 /* Ajusta grid y paddings en tablet */
 @media (min-width: 481px) and (max-width: 767px) {

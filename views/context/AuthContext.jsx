@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-    // Verificar si hay una sesión activa al cargar la aplicación
+  // Verificar si hay una sesión activa al cargar la aplicación
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
@@ -27,31 +27,26 @@ export function AuthProvider({ children }) {
 
         if (response.data.isAuthenticated) {
           setUser(response.data.user);
+        } else {
+          setUser(null);
         }
       } catch (error) {
         if (error.response && error.response.status === 401) {
-          console.error("No autorizado. Verifica el token de autenticación.");
-          setUser(null); // Asegúrate de que el usuario esté en null si no está autenticado
+          if (process.env.NODE_ENV === "development") {
+            console.warn("No autorizado. El usuario no está autenticado.");
+          }
+          setUser(null);
         } else {
           console.error("Error al verificar autenticación:", error);
+          setError("Error al verificar autenticación");
         }
       } finally {
         setLoading(false);
       }
     };
 
-    // Prueba de conexión al servidor
-    const checkServer = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/auth/check`);
-        console.log("Servidor está funcionando:", response.data);
-      } catch (error) {
-        console.error("Error de conexión al servidor:", error);
-      }
-    };
-
+    // Solo una llamada, elimina checkServer para evitar doble 401
     checkAuthStatus();
-    checkServer(); // Llama a la función de prueba de conexión
   }, [API_URL]);
 
   // Función para iniciar sesión
@@ -65,21 +60,23 @@ export function AuthProvider({ children }) {
 
       if (response.data.success) {
         setUser(response.data.user);
-        // Configurar el token en los headers para futuras peticiones
+
+        // Configurar el token en los headers para futuras peticiones si viene el token
         if (response.data.token) {
           axios.defaults.headers.common[
             "Authorization"
           ] = `Bearer ${response.data.token}`;
         }
+
+        setError(null);
         return { success: true };
       }
     } catch (error) {
       console.error("Error en login:", error);
-      setError(error.response?.data?.message || "Error al iniciar sesión");
-      return {
-        success: false,
-        error: error.response?.data?.message || "Error al iniciar sesión",
-      };
+      const message =
+        error.response?.data?.message || "Error al iniciar sesión";
+      setError(message);
+      return { success: false, error: message };
     }
   };
 

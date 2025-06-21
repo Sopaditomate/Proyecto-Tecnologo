@@ -149,7 +149,7 @@ export function AppRoutes() {
         }
       />
       <Route
-        path="/reset-password"
+        path="/resetPassword"
         element={
           <PageLayout
             config={{
@@ -200,7 +200,7 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      { /* ruta para la gestion de productos y recetas */}
+      {/* ruta para la gestion de productos y recetas */}
       <Route
         path="/admin/products"
         element={
@@ -317,8 +317,6 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-
     </Routes>
   );
 }

@@ -115,9 +115,7 @@ export function ForgotPasswordPage() {
             </div>
             <div className="button-container">
               <Link to="/login">
-                <button type="button" >
-                  Regresar
-                </button>
+                <button type="button">Regresar</button>
               </Link>
             </div>
           </>
@@ -164,7 +162,9 @@ export function ForgotPasswordPage() {
                 {submitted ? "Enviando..." : "Confirmar"}
               </button>
               <Link to={"/login"}>
-                <button type="button" >Regresar</button>
+                <button type="button" id="btn-regresar">
+                  Regresar
+                </button>
               </Link>
             </div>
           </>
