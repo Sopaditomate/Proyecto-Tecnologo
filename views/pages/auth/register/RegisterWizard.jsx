@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { registerSchema } from "../../../utils/validationSchema";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,10 +9,10 @@ import "./register-form.css";
 const icons = {
   email: (
     <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-      <rect width="24" height="24" rx="12" fill="#E3F4FC" />
+      <rect width="24" height="24" rx="12" fill="#8b4513" />
       <path
         d="M7 8h10a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2Zm0 0 5 4 5-4"
-        stroke="#009ee3"
+        stroke="white"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -20,11 +21,11 @@ const icons = {
   ),
   user: (
     <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-      <rect width="24" height="24" rx="12" fill="#E3F4FC" />
-      <circle cx="12" cy="10" r="3" stroke="#009ee3" strokeWidth="1.5" />
+      <rect width="24" height="24" rx="12" fill="#8b4513" />
+      <circle cx="12" cy="10" r="3" stroke="white" strokeWidth="1.5" />
       <path
         d="M7 17a5 5 0 0 1 10 0"
-        stroke="#009ee3"
+        stroke="white"
         strokeWidth="1.5"
         strokeLinecap="round"
       />
@@ -32,17 +33,17 @@ const icons = {
   ),
   lock: (
     <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-      <rect width="24" height="24" rx="12" fill="#E3F4FC" />
+      <rect width="24" height="24" rx="12" fill="#8b4513" />
       <rect
         x="7"
         y="11"
         width="10"
         height="6"
         rx="2"
-        stroke="#009ee3"
+        stroke="white"
         strokeWidth="1.5"
       />
-      <path d="M9 11V9a3 3 0 1 1 6 0v2" stroke="#009ee3" strokeWidth="1.5" />
+      <path d="M9 11V9a3 3 0 1 1 6 0v2" stroke="#8b4513" strokeWidth="1.5" />
     </svg>
   ),
 };
@@ -89,19 +90,17 @@ export function RegisterWizard() {
   const getInitialState = () => {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      return (
-        saved || {
-          step: -1,
-          formData: {
-            email: "",
-            nombres: "",
-            apellidos: "",
-            password: "",
-            confirmPassword: "",
-          },
-          completedSteps: [],
-        }
-      );
+      return {
+        step: saved?.step ?? -1,
+        formData: saved?.formData ?? {
+          email: "",
+          nombres: "",
+          apellidos: "",
+          password: "",
+          confirmPassword: "",
+        },
+        completedSteps: saved?.completedSteps ?? [],
+      };
     } catch {
       return {
         step: -1,
@@ -117,24 +116,29 @@ export function RegisterWizard() {
     }
   };
 
-  const [step, setStep] = useState(getInitialState().step);
-  const [formData, setFormData] = useState(getInitialState().formData);
+  const initialState = getInitialState();
+
+  const [step, setStep] = useState(initialState.step);
+  const [formData, setFormData] = useState(initialState.formData);
+  const [completedSteps, setCompletedSteps] = useState(
+    initialState.completedSteps
+  );
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [completedSteps, setCompletedSteps] = useState(
-    getInitialState().completedSteps
-  );
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
 
   // Guardar en localStorage cada vez que cambia algo importante
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ step, formData, completedSteps })
+      JSON.stringify({ step, completedSteps, formData })
     );
-  }, [step, formData, completedSteps]);
+  }, [step, completedSteps, formData]);
 
   // Limpiar localStorage al finalizar registro
   useEffect(() => {
@@ -163,7 +167,7 @@ export function RegisterWizard() {
   // Pantalla de pasos
   if (step === -1) {
     return (
-      <section id="section-login" className="register-page ml-wizard-card">
+      <section className="register-page">
         <h2
           className="ml-wizard-title"
           style={{ marginBottom: 24, textAlign: "center" }}
@@ -180,8 +184,8 @@ export function RegisterWizard() {
             >
               <span className="ml-wizard-icon">{s.icon}</span>
               <div className="ml-wizard-step-content">
-                <div className="ml-wizard-label">{s.label}</div>
-                <div className="ml-wizard-desc">{s.description}</div>
+                <div className="ml-wizard-label-2">{s.label}</div>
+                <div className="ml-wizard-desc-2">{s.description}</div>
               </div>
               {completedSteps.includes(idx) && (
                 <span
@@ -221,15 +225,6 @@ export function RegisterWizard() {
             type="button"
             className="ml-wizard-btn-cancel"
             onClick={handleCancel}
-            style={{
-              background: "#fff",
-              color: "#009ee3",
-              border: "1px solid #009ee3",
-              borderRadius: 8,
-              padding: "8px 20px",
-              cursor: "pointer",
-              marginTop: 8,
-            }}
           >
             Cancelar registro
           </button>
@@ -322,7 +317,7 @@ export function RegisterWizard() {
   if (success) {
     return (
       <div
-        className="success-message"
+        className="success-message-register"
         style={{ textAlign: "center", marginTop: "2rem" }}
       >
         ¡Registro exitoso! Redirigiendo...
@@ -331,7 +326,7 @@ export function RegisterWizard() {
   }
 
   return (
-    <section id="section-login" className="register-page ml-wizard-card">
+    <section className="ml-wizard-card">
       <form
         className="ml-wizard-form-ml"
         onSubmit={step === steps.length - 1 ? handleSubmit : handleNext}
@@ -340,49 +335,94 @@ export function RegisterWizard() {
         <div className="ml-wizard-icon-big">{current.icon}</div>
         <h2 className="ml-wizard-title">{current.label}</h2>
         <div className="ml-wizard-desc">{current.description}</div>
-        <input
-          type={current.type}
-          name={current.name}
-          placeholder={current.label}
-          value={formData[current.name]}
-          onChange={handleChange}
-          className={`ml-wizard-input${
-            errors[current.name]
-              ? " input-error"
-              : formData[current.name]
-              ? " input-valid"
-              : ""
-          }`}
-          required
-          autoFocus
-        />
-        {errors[current.name] && (
+        {current.name !== "password" && (
+          <input
+            type={current.type}
+            name={current.name}
+            placeholder={current.label}
+            value={formData[current.name]}
+            onChange={handleChange}
+            className={`ml-wizard-input${
+              errors[current.name]
+                ? " input-error"
+                : formData[current.name]
+                ? " input-valid"
+                : ""
+            }`}
+            required
+            autoFocus
+          />
+        )}
+        {current.name !== "password" && errors[current.name] && (
           <div className="error-message">{errors[current.name]}</div>
         )}
 
-        {/* Confirmar contraseña solo en el último paso */}
         {current.name === "password" && (
           <>
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirmar contraseña"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`ml-wizard-input${
-                errors.confirmPassword
-                  ? " input-error"
-                  : formData.confirmPassword
-                  ? " input-valid"
-                  : ""
-              }`}
-              required
-            />
+            {/* Campo contraseña */}
+            <div className="input-password-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Crear contraseña"
+                value={formData.password}
+                onChange={handleChange}
+                className={`ml-wizard-input${
+                  errors.password
+                    ? " input-error"
+                    : formData.password
+                    ? " input-valid"
+                    : ""
+                }`}
+                required
+              />
+              <span
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="toggle-password-icon"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
+            {current.name === "password" && (
+              <>
+                {errors.password && (
+                  <div className="error-message">{errors.password}</div>
+                )}
+              </>
+            )}
+
+            {/* Campo confirmar contraseña */}
+            <div className="input-password-container">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirmar contraseña"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`ml-wizard-input${
+                  errors.confirmPassword
+                    ? " input-error"
+                    : formData.confirmPassword
+                    ? " input-valid"
+                    : ""
+                }`}
+                required
+              />
+              <span
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="toggle-password-icon"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
             {errors.confirmPassword && (
               <div className="error-message">{errors.confirmPassword}</div>
             )}
           </>
         )}
+
         {errors.general && (
           <div className="error-message" style={{ textAlign: "center" }}>
             {errors.general}
@@ -406,17 +446,8 @@ export function RegisterWizard() {
         <div style={{ marginTop: 12, textAlign: "center" }}>
           <button
             type="button"
-            className="ml-wizard-btn-cancel"
+            className="ml-wizard-btn-cancel-2"
             onClick={handleCancel}
-            style={{
-              background: "#fff",
-              color: "#009ee3",
-              border: "1px solid #009ee3",
-              borderRadius: 8,
-              padding: "8px 20px",
-              cursor: "pointer",
-              marginTop: 8,
-            }}
           >
             Cancelar registro
           </button>

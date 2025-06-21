@@ -22,7 +22,7 @@ export function ProductCard({ product }) {
       <div id="center-product">
         <div className="img-container">
           <img
-          //Se agrega interpolacion a la ruta para referenciar las imagenes correctamente
+            //Se agrega interpolacion a la ruta para referenciar las imagenes correctamente
             src={
               product.image
                 ? `/images/${product.image}`
@@ -60,7 +60,6 @@ export function ProductCard({ product }) {
           {/* Nombre del producto */}
           <h2
             className="name-product-2"
-            style={{ margin: "0.3rem 0 0.2rem 0" }}
           >
             {product.nameProduct}
           </h2>

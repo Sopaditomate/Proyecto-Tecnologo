@@ -1,382 +1,414 @@
+/* Reset y estilos base */
+* {
+  box-sizing: border-box;
+}
+
+.ml-wizard-label-2 {
+  color: #666;
+  font-weight: 600;
+}
+
+/* Container principal */
 .register-form-container {
   width: 100%;
 }
 
-.register-form-columns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
+/* Sección principal del formulario */
+.register-page {
+  max-width: 520px;
+  min-height: auto;
+  margin: 10px auto;
+  padding: 0;
 }
 
-.register-form-column {
-  flex: 1;
-  min-width: 250px;
-}
-
-.container-icons-input {
-  position: relative;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-}
-
-.icons-input {
-  width: 24px;
-  height: 24px;
-  margin-right: 10px;
-}
-
-.input-email-user,
-.input-input {
-  flex: 1;
-  padding-left: 5px;
-  border: none;
-  border-bottom: 2px solid #5c3317;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.input-valid {
-  border-bottom: 2px solid #388e3c !important;
-}
-
-.input-error {
-  border-bottom: 2px solid #d32f2f !important;
-}
-
-.password-requirements {
-  margin-top: -1rem;
-  margin-bottom: 1rem;
-  font-size: 0.8rem;
-}
-
-.requirements-error-password-1-input {
-  padding-left: 1.5rem;
-  margin-top: 0.5rem;
-}
-
-.requirements-error-password-1-input li {
-  margin-bottom: 0.25rem;
-}
-
-.div-password-no-match {
-  width: 100%;
-}
-
-.password-no-match-2 {
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
-}
-
-/* Ajustes para el formulario de registro */
-#section-login.register-page {
-  max-width: 800px;
-  padding: 2rem;
-  margin: 2vh auto;
-  box-sizing: border-box;
-}
-
-.register-page .form-login {
-  max-width: 700px;
-  width: 100%;
-}
-
-@media (min-width: 769px) {
-  #section-login.register-page {
-    max-width: 800px;
-  }
-
-  .register-page .form-login {
-    max-width: 700px;
-  }
-}
-
-@media (max-width: 750px) {
-  #section-login.register-page {
-    padding: 1.5rem;
-    margin: 2vh auto;
-  }
-}
-
-@media (max-width: 653px) {
-  .register-form-columns {
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .register-form-column {
-    width: 100%;
-  }
-}
-
-/* Estilos para wizard tipo Mercado Libre */
-.ml-wizard-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  margin: 0 auto;
-  max-width: 420px;
-}
-
-.ml-wizard-step {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-  padding: 18px 20px;
-  gap: 18px;
-  opacity: 0.7;
-  position: relative;
-  transition: box-shadow 0.2s, opacity 0.2s;
-}
-
-.ml-wizard-step.active {
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
-  opacity: 1;
-  border: 2px solid #009ee3;
-  z-index: 2;
-}
-
-.ml-wizard-step.done {
-  opacity: 0.4;
-}
-
-.ml-wizard-icon {
-  width: 38px;
-  height: 38px;
-  margin-right: 10px;
-  margin-top: 6px;
-}
-
-.ml-wizard-label {
-  font-weight: 500;
-  font-size: 14px;
-  color: #222;
-}
-
-.ml-wizard-desc {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 2px;
-}
-
-.ml-wizard-form {
-  margin-left: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 180px;
-}
-
-.ml-wizard-input {
-  border-bottom: 2px solid #5c3317;
-  font-size: 1rem;
-  padding: 7px 2px;
-  background: transparent;
-  transition: border-color 0.2s;
-}
-
-.ml-wizard-input.input-error {
-  border-bottom: 2px solid #d32f2f !important;
-}
-.ml-wizard-input.input-valid {
-  border-bottom: 2px solid #388e3c !important;
-}
-
-.ml-wizard-btn {
-  background: #009ee3;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 0;
-  font-size: 14px;
-  font-weight: 500;
-  margin-top: 4px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.ml-wizard-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* Wizard Mercado Libre compacto */
+/* Card principal */
 .ml-wizard-card {
-  margin: 40px auto 0 auto;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-  padding: 2.2rem 2rem 2rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.ml-wizard-form-ml {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.7rem;
-}
-
-.ml-wizard-icon-big {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 0.7rem;
-}
-
-.ml-wizard-title {
-  font-size: 1.35rem;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 0.2rem;
-}
-
-.ml-wizard-desc {
-  font-size: 14px;
-  color: #666;
-  text-align: center;
-  margin-bottom: 1.1rem;
-}
-
-.ml-wizard-input {
-  border: solid 1px black;
-  border-bottom: 2px solid #5c3317;
-  font-size: 1.08rem;
-  padding: 10px 4px;
-  background: transparent;
-  transition: border-color 0.2s;
-  margin-bottom: 0.2rem;
-  border-radius: 8px;
-}
-
-.ml-wizard-input.input-error {
-  border-bottom: 2px solid #d32f2f !important;
-}
-.ml-wizard-input.input-valid {
-  border-bottom: 2px solid #388e3c !important;
-}
-
-.ml-wizard-btn-ml {
-  background: #009ee3;
-  color: #fff;
-  border: none;
   border-radius: 6px;
-  padding: 12px 0;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-  width: 10px;
+  max-width: 408px;
+  width: 100%;
 }
 
-.ml-wizard-btn-ml:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.ml-wizard-login-link {
+/* Título principal */
+.ml-wizard-title {
+  font-size: 24px;
+  font-weight: 400;
+  color: #333;
   text-align: center;
-  margin-top: 1.1rem;
-  font-size: 0.97rem;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
 }
 
-.ml-wizard-login-link a {
-  color: #009ee3;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.success-message {
-  color: #388e3c;
-  font-size: 1rem;
-  font-weight: bold;
-  margin-top: 10px;
-  text-align: center;
-}
-
-.error-message {
-  color: #d32f2f;
-  font-size: 0.95rem;
-  margin-top: -5px;
-  margin-bottom: 10px;
-}
-
+/* Lista de pasos */
 .ml-wizard-steps-list {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
   gap: 18px;
   margin: 0 auto;
-  max-width: 370px;
 }
 
 .ml-wizard-step-list {
   display: flex;
   align-items: center;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-  padding: 16px 18px;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  padding: 16px 20px;
   gap: 14px;
-  opacity: 0.85;
-  width: 150%;
-  height: 80px;
+  width: 100%;
+  height: auto;
+  min-height: auto;
   position: relative;
-  transition: box-shadow 0.2s, opacity 0.2s;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.ml-wizard-step-list:hover {
+  border-color: #8b4513;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
 .ml-wizard-step-list.active {
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
   opacity: 1;
-  border: 2px solid #009ee3;
-  z-index: 2;
-  width: 150%;
-  height: 80px;
+  border: 2px solid #8b4513;
 }
 
+.ml-wizard-step-list.done {
+  opacity: 0.7;
+  background: #f5f5f5;
+}
+
+/* Iconos de los pasos */
+.ml-wizard-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.ml-wizard-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Contenido del paso */
 .ml-wizard-step-content {
-  margin-top: 15px;
+  flex: 1;
+  width: 10px;
 }
 
+.ml-wizard-label {
+  font-size: 16px;
+  font-weight: 400;
+  color: #333;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+}
+
+.ml-wizard-desc,
+.ml-wizard-desc-2 {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.ml-wizard-desc-2 {
+  text-align: start;
+}
+
+/* Botones de los pasos */
 .ml-wizard-btn-ml {
-  background: #009ee3;
+  background: #8b4513;
   color: #fff;
   border: none;
   border-radius: 6px;
-  padding: 8px 18px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s ease;
+  margin-left: auto;
+  width: 100px;
 }
 
 .ml-wizard-btn-ml:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.ml-wizard-terms {
-  font-size: 0.95rem;
-  color: #444;
-  margin: 0.7rem 0 0.2rem 0;
+/* Check de completado */
+.ml-wizard-check {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.ml-wizard-check svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Formulario de paso individual */
+.ml-wizard-form-ml {
+  width: 100%;
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: none;
+  border-radius: 20px;
+  background-color: rgba(116, 115, 115, 0.041);
+}
+
+.ml-wizard-icon-big {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.ml-wizard-icon-big svg {
+  width: 48px;
+  height: 48px;
+}
+
+/* Inputs de password */
+.input-password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-password-container input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.toggle-password-icon {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  color: #555;
+  font-size: 1.2rem;
+}
+
+/* Inputs del formulario */
+.ml-wizard-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #333;
+  background: #fff;
+  transition: border-color 0.2s ease;
+  outline: none;
+  margin: 0;
+}
+
+.ml-wizard-input.input-error {
+  border-color: #f23d4f;
+}
+
+.ml-wizard-input.input-valid {
+  border-color: #00a650;
+}
+
+.ml-wizard-input::placeholder {
+  color: #999;
+}
+
+/* Botón principal del formulario */
+.ml-wizard-btn-ml-2 {
+  background: #8b4513;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 100%;
+  height: 48px;
+  margin-top: 8px;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.ml-wizard-btn-ml-2:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #ccc;
+}
+
+/* Botón cancelar */
+.ml-wizard-btn-cancel,
+.ml-wizard-btn-cancel-2 {
+  background: #e53935;
+  color: #fff;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Enlaces */
+.ml-wizard-login-link {
+  text-align: center;
+  margin: 16px 0 0 0;
+  font-size: 14px;
+}
+
+.ml-wizard-login-link a {
+  color: #3483fa;
+  text-decoration: none;
+  font-weight: 400;
+}
+
+.ml-wizard-login-link a:hover {
+  text-decoration: underline;
+}
+
+/* Mensajes de error y éxito */
+.error-message {
+  color: #f23d4f;
+  font-size: 12px;
+  margin: 4px 0 0 0;
+  line-height: 1.3;
+}
+
+.success-message,
+.success-message-register {
+  color: #00a650;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  margin: 8px 0;
+  padding: 8px;
+  background-color: none;
+  border-radius: 4px;
+}
+
+.success-message-register {
+  font-size: 20px;
+}
+
+/* Términos y condiciones */
+.ml-wizard-terms {
+  font-size: 12px;
+  color: #666;
+  margin: 16px 0 0 0;
+  line-height: 1.4;
 }
 
 .ml-wizard-terms label {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.ml-wizard-terms input[type="checkbox"] {
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .ml-wizard-terms a {
-  color: #009ee3;
+  color: #3483fa;
+  text-decoration: none;
+}
+
+.ml-wizard-terms a:hover {
   text-decoration: underline;
-  font-size: 0.95rem;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .register-form-container {
+    padding: 16px 8px;
+  }
+
+  .ml-wizard-card {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+  }
+
+  .ml-wizard-step-content {
+    width: 100%;
+  }
+
+  .ml-wizard-step-list {
+    padding: 10px;
+    gap: 10px;
+    width: 90%;
+    margin-left: 20px;
+  }
+
+  .ml-wizard-btn-cancel {
+    width: 90%;
+  }
+  .ml-wizard-title {
+    font-size: 20px;
+  }
+
+  .ml-wizard-step-list {
+    padding: 12px;
+    min-height: 64px;
+  }
+
+  .ml-wizard-label {
+    font-size: 15px;
+  }
+
+  .ml-wizard-desc {
+    font-size: 13px;
+  }
+
+  .ml-wizard-input {
+    padding: 10px 12px;
+    font-size: 16px; /* Evita zoom en iOS */
+  }
+
+  #section-login.register-page {
+    max-width: 520px;
+    height: auto;
+    margin: 10px auto;
+    padding: 0;
+    margin-top: 50px;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 370px) {
+  .ml-wizard-step-list {
+    padding: 10px;
+    gap: 10px;
+    width: 95%;
+    margin-left: 10px;
+  }
+
+  .ml-wizard-btn-cancel {
+    width: 95%;
+  }
+
+  .ml-wizard-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .ml-wizard-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  #section-login.register-page {
+    max-width: 520px;
+    height: auto;
+    margin: 10px auto;
+    padding: 0;
+    margin-top: 50px;
+  }
 }

@@ -27,7 +27,7 @@ body {
   width: 100%;
   overflow-x: hidden;
   min-height: 100vh;
-  background-color: var(--body-bg);
+  background-color: var(--body-bg) !important;
   color: var(--color-amber-950);
   line-height: 1.6;
 }

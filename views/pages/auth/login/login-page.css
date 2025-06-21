@@ -20,15 +20,13 @@ body {
   background-color: #fffbeb;
 }
 
-
-.logo-link{
+.logo-link {
   text-decoration: none;
 }
 
 .link-register {
   text-decoration: none;
 }
-
 
 /* Variables de color */
 :root {
@@ -120,14 +118,19 @@ body {
 .form-login {
   width: 100%;
   max-width: 400px;
-  padding: 1rem;
   border: none;
+  border-radius: 20px;
+  padding: 1rem;
   background-color: white;
 }
 
 /* ===== VALIDACIÓN DE CAMPOS ===== */
 .input-error {
   border-bottom: 2px solid var(--error-color) !important;
+}
+
+.input-valid {
+  border-bottom: 2px solid var(--success-color) !important;
 }
 
 .error-message {
@@ -167,7 +170,8 @@ input:focus {
   width: 100%;
 }
 
-.input-email-user, .input-password-login{
+.input-email-user,
+.input-password-login {
   margin-bottom: 12px;
 }
 
@@ -206,8 +210,6 @@ input:focus {
   transition: color 0.2s ease;
   margin-bottom: 0;
 }
-
-
 
 .link-forgot-your-password:hover {
   text-decoration: underline;
@@ -290,11 +292,9 @@ button:active {
   position: relative;
 }
 
-.input-password{
+.input-password {
   padding: 0;
 }
-
-
 
 .toggle-password-icon {
   background: none;
@@ -302,6 +302,7 @@ button:active {
   cursor: pointer;
   position: absolute;
   right: 5px;
+  top: 10px;
 }
 
 /* ===== MENSAJE DE CONFIRMACIÓN ===== */
@@ -343,7 +344,7 @@ button:active {
   height: 20px;
 }
 
-button{
+button {
   text-decoration: none;
 }
 
@@ -397,8 +398,8 @@ button{
 
   .btn-login,
   .btn-register {
-    font-size: 14px;
-    padding: 10px;
+    font-size: 16px;
+    padding: 12px;
   }
 
   .title-head {
