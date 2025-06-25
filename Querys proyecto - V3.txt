@@ -352,13 +352,6 @@ INSERT INTO production_status (name) VALUES
 ('Finalizado');
 
 
-INSERT INTO inventory_movement_type (name, description) VALUES 
-('Entrada', 'Movimiento de entrada de inventario'),
-('Salida', 'Movimiento de salida de inventario'),
-('Actualizado', 'Movimiento de actualización de inventario'),
-('Eliminado', 'Movimiento de eliminación de inventario');
-
-
 INSERT INTO production_movement_type (name, description) VALUES 
 ('Ingreso', 'Movimiento de ingreso en producción'),
 ('Salida', 'Movimiento de salida de producción'),
@@ -388,6 +381,13 @@ INSERT INTO user_profile (id_user, first_name, last_name, address, phone) VALUES
 (700002, 'Guillermo', 'Medina', 'Avenida 456', '5555678'),
 (700003, 'María', 'López', 'Calle Las Rosas 789', '5556789'),
 (700004, 'Pedro', 'Martínez', 'Calle Los Almendros 456', '5557890');
+
+
+INSERT INTO inventory_movement_type (name, description, id_state) VALUES
+('Creación', 'Movimiento de creación de inventario', 1),
+('Ingreso', 'Movimiento de ingreso de material al inventario', 1),
+('Salida', 'Movimiento de salida de material del inventario', 1),
+('Eliminación', 'Movimiento de eliminación de registro de inventario', 1);
 
 
 INSERT INTO product (id_product_type, name, price, description, image_url, rating, warning) VALUES 
@@ -689,12 +689,14 @@ SELECT
     h.id_material AS ID_MATERIA, 
     m.name AS NOMBRE_MATERIA,
     h.quantity AS CANTIDAD, 
-    h.id_inventory_movement_type AS TIPO_MOVIMIENTO, 
+    hm.name AS TIPO_MOVIMIENTO, 
     h.movement_datetime AS FECHA_MOVIMIENTO
 FROM 
     inventory_history h
 JOIN 
     raw_material m ON h.id_material = m.id_material
+JOIN 
+    inventory_movement_type hm ON hm.id_inventory_movement_type = h.id_inventory_movement_type
 WHERE 
     m.id_state = 1
 ORDER BY 
@@ -976,18 +978,40 @@ DELIMITER ;
 
 DELIMITER $$
 
-CREATE PROCEDURE sp_delete_inventory(IN p_id_inventory INT)
+CREATE or REPLACE PROCEDURE sp_delete_inventory(IN p_id_inventory INT)
 BEGIN
+    DECLARE v_quantity INT;
+
+    -- Obtener la cantidad actual antes de actualizar
+    SELECT quantity INTO v_quantity FROM inventory WHERE id_inventory = p_id_inventory;
+
+    -- Actualizar el estado a eliminado
     UPDATE inventory 
     SET id_state = 3  -- Asumiendo que 3 es el estado de "eliminado"
     WHERE id_inventory = p_id_inventory;
 
     IF ROW_COUNT() = 0 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Inventario no encontrado';
+    ELSE
+        -- Registrar el movimiento en inventory_history
+        INSERT INTO inventory_history (
+            id_inventory,
+            id_material,
+            id_inventory_movement_type,
+            quantity,
+            id_state
+        ) VALUES (
+            p_id_inventory,
+            (SELECT id_material FROM inventory WHERE id_inventory = p_id_inventory),
+            8, -- ID de 'Eliminación'
+            v_quantity,
+            3 -- Estado de eliminado
+        );
     END IF;
 END $$
 
 DELIMITER ;
+
 
 ///no se esta usando este
 DELIMITER //
@@ -1043,7 +1067,7 @@ END //
 DELIMITER ;
 
 
-
+//ya no se va a usar de momento(temporalmente)
 DELIMITER //
 
 CREATE or REPLACE PROCEDURE sp_get_inventory_history()
@@ -1846,6 +1870,22 @@ END;
 
 DELIMITER ;
 
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_inventory_movement_type
+BEFORE DELETE ON inventory_movement_type
+FOR EACH ROW
+BEGIN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Deleting records from inventory_movement_type is not allowed. Use id_state to deactivate.';
+END;
+
+//
+
+DELIMITER ;
+
+
 /////////////////////////////////////////////NO LOS MISMOS//////////////////////////////////////////////////
 
 
@@ -1876,6 +1916,79 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_inventory_insert
+AFTER INSERT ON inventory
+FOR EACH ROW
+BEGIN
+    INSERT INTO inventory_history (
+        id_inventory,
+        id_material,
+        id_inventory_movement_type,
+        quantity,
+        id_state
+    ) VALUES (
+        NEW.id_inventory,
+        NEW.id_material,
+        5, -- ID de 'Creación'
+        NEW.quantity,
+        NEW.id_state
+    );
+END;
+
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_inventory_update
+AFTER UPDATE ON inventory
+FOR EACH ROW
+BEGIN
+    DECLARE v_movement_type INT;
+
+    IF NEW.quantity > OLD.quantity THEN
+        SET v_movement_type = 6; -- ID de 'Ingreso'
+        INSERT INTO inventory_history (
+            id_inventory,
+            id_material,
+            id_inventory_movement_type,
+            quantity,
+            id_state
+        ) VALUES (
+            NEW.id_inventory,
+            NEW.id_material,
+            v_movement_type,
+            NEW.quantity - OLD.quantity, -- Cantidad ingresada
+            NEW.id_state
+        );
+    ELSEIF NEW.quantity < OLD.quantity THEN
+        SET v_movement_type = 7; -- ID de 'Salida'
+        INSERT INTO inventory_history (
+            id_inventory,
+            id_material,
+            id_inventory_movement_type,
+            quantity,
+            id_state
+        ) VALUES (
+            NEW.id_inventory,
+            NEW.id_material,
+            v_movement_type,
+            OLD.quantity - NEW.quantity, -- Cantidad salida
+            NEW.id_state
+        );
+    END IF;
+END;
+
+//
+
+DELIMITER ;
+
 
 
 
