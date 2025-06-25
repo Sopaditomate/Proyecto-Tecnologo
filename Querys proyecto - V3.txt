@@ -856,6 +856,55 @@ FROM product_type
 WHERE id_state = 1;
 
 
+CREATE OR REPLACE VIEW vw_active_recipe AS
+SELECT 
+    r.id_product AS ID_RECETA,
+    p.name AS NOMBRE_PROD,
+    m.name AS NOMBRE_MATE,
+    m.id_material AS ID_MATERIA,
+    r.quantity_required AS CANTIDAD_USAR
+FROM recipe r
+JOIN product p ON p.id_product = r.id_product
+JOIN raw_material m ON m.id_material = r.id_material
+WHERE 
+    r.id_state = 1
+    AND p.id_state = 1
+    AND m.id_state = 1;
+
+
+CREATE OR REPLACE VIEW vw_active_recipe_pdf AS
+SELECT 
+    r.id_product AS ID_RECETA,
+    p.name AS NOMBRE_PROD,
+    m.name AS NOMBRE_MATE,
+    m.id_material AS ID_MATERIA,
+    r.quantity_required AS CANTIDAD_USAR
+FROM recipe r
+JOIN product p ON p.id_product = r.id_product
+JOIN raw_material m ON m.id_material = r.id_material
+WHERE 
+    r.id_state = 1
+    AND p.id_state = 1
+    AND m.id_state = 1;
+
+
+CREATE OR REPLACE VIEW vw_active_product_admin AS
+SELECT 
+  p.id_product AS ID_PRODUCTO,
+  p.id_product_type AS ID_TIPO_PRO,
+  t.name AS NOMBRE_TIPO_PRO,
+  p.name AS NOMBRE_PROD,
+  p.price AS PRECIO,
+  p.description AS DESCRIPCION,
+  p.image_url AS IMAGEN_URL,
+  p.rating AS NOTA_ACTUAL,
+  p.warning AS ADVERTENCIA
+FROM product p
+JOIN product_type t ON p.id_product_type = t.id_product_type
+WHERE 
+  p.id_state = 1
+  AND t.id_state = 1;
+
 -------------------------------------PROCEDURES----------------------------------
 
 DELIMITER $$
@@ -1241,6 +1290,131 @@ BEGIN
     WHERE ID_PEDIDO = p_order_id;
 END //
 
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_insert_recipe;
+DELIMITER $$
+
+CREATE PROCEDURE sp_insert_recipe(
+    IN p_id_product INT,
+    IN p_id_material INT,
+    IN p_quantity_required INT
+)
+BEGIN
+    INSERT INTO recipe (id_product, id_material, quantity_required)
+    VALUES (p_id_product, p_id_material, p_quantity_required);
+END $$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_update_recipe;
+DELIMITER $$
+
+CREATE PROCEDURE sp_update_recipe(
+    IN p_id_product INT,
+    IN p_id_material INT,
+    IN p_quantity_required INT
+)
+BEGIN
+    UPDATE recipe
+    SET quantity_required = p_quantity_required
+    WHERE id_product = p_id_product AND id_material = p_id_material;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Recipe entry not found';
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+
+DROP PROCEDURE IF EXISTS sp_delete_recipe;
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_recipe(
+    IN p_id_product INT,
+    IN p_id_material INT
+)
+BEGIN
+    UPDATE recipe
+    SET id_state = 3 -- assuming 3 means deleted
+    WHERE id_product = p_id_product AND id_material = p_id_material;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Recipe entry not found';
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_insert_product_admin;
+DELIMITER $$
+CREATE PROCEDURE sp_insert_product_admin(
+  IN p_id_product_type INT,
+  IN p_name VARCHAR(30),
+  IN p_price DECIMAL(10, 2),
+  IN p_description VARCHAR(200),
+  IN p_image_url VARCHAR(254),
+  IN p_rating DECIMAL(3,1),
+  IN p_warning VARCHAR(254)
+)
+BEGIN
+  INSERT INTO product (
+    id_product_type, name, price, description, image_url, rating, warning
+  ) VALUES (
+    p_id_product_type, p_name, p_price, p_description, p_image_url, p_rating, p_warning
+  );
+END $$
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_update_product_admin;
+DELIMITER $$
+CREATE PROCEDURE sp_update_product_admin(
+  IN p_id_product INT,
+  IN p_id_product_type INT,
+  IN p_name VARCHAR(30),
+  IN p_price DECIMAL(10, 2),
+  IN p_description VARCHAR(200),
+  IN p_image_url VARCHAR(254),
+  IN p_rating DECIMAL(3,1),
+  IN p_warning VARCHAR(254)
+)
+BEGIN
+  UPDATE product
+  SET
+    id_product_type = p_id_product_type,
+    name = p_name,
+    price = p_price,
+    description = p_description,
+    image_url = p_image_url,
+    rating = p_rating,
+    warning = p_warning
+  WHERE id_product = p_id_product AND id_state = 1;
+
+  IF ROW_COUNT() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'product not found or inactive';
+  END IF;
+END $$
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_delete_product_admin;
+DELIMITER $$
+CREATE PROCEDURE sp_delete_product_admin(IN p_id_product INT)
+BEGIN
+  UPDATE product
+  SET id_state = 3
+  WHERE id_product = p_id_product;
+
+  IF ROW_COUNT() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'product not found';
+  END IF;
+END $$
 DELIMITER ;
 
 

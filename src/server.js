@@ -86,6 +86,11 @@ app.use("/api/export", product_pdf);
 //recetas
 import recetaRoutes from './routes/recetaRoutes.js';
 import receta_pdf from "../views/pages/admin/receta/receta_pdf.js";
+
+//para inventario generacion de excel y pdf
+import inventario_pdf from "../views/pages/admin/inventory/inventario_pdf.js";
+app.use("/api/export", inventario_pdf);
+
 app.use("/api/export/", receta_pdf);
 
 app.use("/api/recetas_crud", recetaRoutes);

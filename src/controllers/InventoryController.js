@@ -124,6 +124,25 @@ class InventoryController {
       res.status(500).json({ message: 'Error al obtener resumen del inventario' });
     }
   }
+
+
+  async getInventoryByUnit(req, res) {
+
+    const { id } = req.params;
+    
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ message: 'El parámetro debe ser un número válido.' });
+    }
+
+    try {
+      const inventoryUnit = await InventoryModel.getInventoryByUnitType(Number(id));
+      res.status(200).json(inventoryUnit);
+    } catch (error) {
+      console.error('Error al obtener el inventario por unidad:', error);
+      res.status(500).json({ message: 'Error al obtener el inventario por unidad.' });
+    }
+  }
+
 }
 
 export default new InventoryController();
