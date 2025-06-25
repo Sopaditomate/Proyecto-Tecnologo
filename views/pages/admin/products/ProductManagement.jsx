@@ -44,8 +44,8 @@ export const AdminProducts = () => {
   const openEditModal = (producto) => {
     setEditProd(producto);
     setFormProd({
-      ID_TIPO_PRO: producto.ID_TIPO_PRO || "",
-      NOMBRE: producto.NOMBRE || "",
+      ID_TIPO_PRO: producto.NOMBRE_TIPO_PRO || "",
+      NOMBRE: producto.NOMBRE_PROD || "",
       PRECIO: producto.PRECIO || "",
       DESCRIPCION: producto.DESCRIPCION || "",
       IMAGEN_URL: producto.IMAGEN_URL || "",
@@ -121,7 +121,7 @@ export const AdminProducts = () => {
 
   const tiposProducto = Array.from(
     new Map(
-      productos.map(p => [p.ID_TIPO_PRO, { ID_TIPO_PRO: p.ID_TIPO_PRO, NOMBRE: p.NOMBRE_TIPO }])
+      productos.map(p => [p.ID_TIPO_PRO, { ID_TIPO_PRO: p.ID_TIPO_PRO, NOMBRE: p.NOMBRE_TIPO_PRO }])
     ).values()
   );
 
@@ -167,7 +167,23 @@ export const AdminProducts = () => {
   return (
     <Container className="mt-4">
       <h2>Gestión de Productos</h2>
+ {/* Export Buttons */}
+  <div className="mb-3">
+    <Button
+      variant="outline-primary"
+      className="me-2"
+      onClick={() => window.open(`http://localhost:5001/api/export/pdf`)}
+    >
+      Exportar PDF
+    </Button>
 
+    <Button
+      variant="outline-success"
+      onClick={() => window.open(`http://localhost:5001/api/export/excel`)}
+    >
+      Exportar Excel
+    </Button>
+  </div>
       <Button variant="success" className="mb-3" onClick={openInsertModal}>
         Agregar Nuevo Producto
       </Button>
@@ -188,8 +204,8 @@ export const AdminProducts = () => {
         <tbody>
           {productos.map((prod) => (
             <tr key={prod.ID_PRODUCTO}>
-              <td>{prod.NOMBRE_TIPO}</td>
-              <td>{prod.NOMBRE}</td>
+              <td>{prod.NOMBRE_TIPO_PRO}</td>
+              <td>{prod.NOMBRE_PROD}</td>
               <td>{prod.PRECIO}</td>
               <td>{prod.DESCRIPCION}</td>
               <td>{prod.NOTA_ACTUAL}</td>

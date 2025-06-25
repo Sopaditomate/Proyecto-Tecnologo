@@ -94,6 +94,7 @@ CREATE TABLE user_account (
 ) AUTO_INCREMENT = 700000;
 
 
+
 CREATE TABLE user_role (
     id_user INT NOT NULL,
     id_role INT NOT NULL,
@@ -637,25 +638,21 @@ ADD COLUMN verified TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Indicate if the accou
 
 --------------------------------------VIEWS--------------------------------------
 
-///
-CREATE VIEW vw_active_cart_by_user AS
-SELECT id_cart as id, id_user as id_usuario, items, updated_at as actualizado FROM cart
-WHERE id_state = 1;
-
-
+CREATE VIEW vw_cart_by_user AS
+SELECT * FROM cart;
 
 ///Inventario
 
 CREATE OR REPLACE VIEW vw_active_inventory AS
 SELECT 
-  inv.id_inventory AS ID_INVENTARIO,
-  inv.quantity AS CANTIDAD,
-  mat.name AS MATERIA_PRIMA,
-  uni.name AS UNIDAD,
-  uni.id_unit AS ID_UNIDAD,
-  typ.name AS TIPO,
-  typ.id_type_material AS ID_TIP_MATERIA,
-  mat.description AS DESCRIPCION
+  inv.id_inventory,
+  inv.quantity,
+  mat.name AS raw_material,
+  uni.name AS unit,
+  uni.id_unit,
+  typ.name AS type,
+  typ.id_type_material,
+  mat.description
 FROM inventory inv
 JOIN raw_material mat ON inv.id_material = mat.id_material
 JOIN unit uni ON mat.id_unit = uni.id_unit
@@ -665,32 +662,26 @@ WHERE inv.id_state = 1
   AND uni.id_state = 1
   AND typ.id_state = 1;
 
-
 CREATE VIEW vw_active_material_types AS
-SELECT 
-  id_type_material AS ID_TIP_MATERIA,
-  name AS NOMBRE
-FROM material_type
+SELECT id_type_material, name 
+FROM material_type 
 WHERE id_state = 1;
 
 CREATE VIEW vw_active_units AS
-SELECT 
-  id_unit AS ID_UNIDAD,
-  name AS NOMBRE
-FROM unit
+SELECT id_unit, name 
+FROM unit 
 WHERE id_state = 1;
 
---------------------------------------------------------------------------
 
 CREATE OR REPLACE VIEW vw_active_inventory_history AS
 SELECT 
-    h.id_inventory_history AS ID_HYS_INVENTARIO, 
-    h.id_inventory AS ID_INVENTARIO, 
-    h.id_material AS ID_MATERIA, 
-    m.name AS NOMBRE_MATERIA,
-    h.quantity AS CANTIDAD, 
-    h.id_inventory_movement_type AS TIPO_MOVIMIENTO, 
-    h.movement_datetime AS FECHA_MOVIMIENTO
+    h.id_inventory_history, 
+    h.id_inventory, 
+    h.id_material, 
+    m.name AS nombre_materia,
+    h.quantity, 
+    h.id_inventory_movement_type, 
+    h.movement_datetime
 FROM 
     inventory_history h
 JOIN 
@@ -777,45 +768,42 @@ JOIN
 WHERE 
     od.id_state = 1; -- se queda asi de momento, pero esto hace que productos eliminados, se sigan viendo.
 
-------------------------------------------------------------
+
 CREATE OR REPLACE VIEW vw_active_find_user_by_id AS
 SELECT 
-    id_user AS ID_USUARIO, 
-    email AS USUARIO, 
-    password AS PASSWORD, 
-    id_state AS ESTADO
+    id_user, 
+    email, 
+    password, 
+    id_state
 FROM 
     user_account
 WHERE 
     id_state = 1;
 
-
-------------------------------------------------------------
 
 CREATE OR REPLACE VIEW vw_active_find_user_by_email AS
 SELECT 
-    id_user AS ID_USUARIO, 
-    email AS USUARIO, 
-    password AS PASSWORD, 
-    id_state AS ESTADO
+    id_user, 
+    email, 
+    password, 
+    id_state
 FROM 
     user_account
 WHERE 
     id_state = 1;
-
 
 
 CREATE OR REPLACE VIEW vw_active_get_user_info AS
 SELECT 
-    u.id_user AS ID_USUARIO,
-    u.email AS USUARIO,
-    u.password AS PASSWORD,
-    r.id_role AS ID_ROL,
-    r.name AS ROL_NOMBRE,
-    d.first_name AS NOMBRES,
-    d.last_name AS APELLIDOS,
-    d.address AS DIRECCION,
-    d.phone AS TELEFONO
+    u.id_user,
+    u.email,
+    u.password,
+    r.id_role,
+    r.name AS role_name,
+    d.first_name,
+    d.last_name,
+    d.address,
+    d.phone
 FROM 
     user_account u
 JOIN 
@@ -829,7 +817,6 @@ WHERE
     AND ur.id_state = 1
     AND r.id_state = 1
     AND d.id_state = 1;
-------------------------------------------------------------
 
 
 CREATE OR REPLACE VIEW vw_active_get_client_id AS
@@ -869,12 +856,11 @@ WHERE id_state = 1;
 
 -------------------------------------PROCEDURES----------------------------------
 
-/////procedimiento en espera
 DELIMITER $$
 
-CREATE or REPLACE PROCEDURE sp_get_cart_by_user(IN userId INT)
+CREATE PROCEDURE sp_get_cart_by_user(IN userId INT)
 BEGIN
-    SELECT * FROM vw_active_cart_by_user WHERE id_usuario = userId;
+    SELECT * FROM vw_cart_by_user WHERE id_user = userId;
 END $$
 
 DELIMITER ;
@@ -896,6 +882,7 @@ BEGIN
     END IF;
 END $$
 
+
 DELIMITER $$
 
 CREATE PROCEDURE sp_clear_cart(IN userId INT)
@@ -907,7 +894,7 @@ END $$
 
 DELIMITER ;
 
-//no se esta usando de momento
+
 DELIMITER //
 
 CREATE PROCEDURE sp_get_inventory()
@@ -989,7 +976,7 @@ END $$
 
 DELIMITER ;
 
-///no se esta usando este
+
 DELIMITER //
 
 CREATE PROCEDURE sp_get_material_types()
@@ -999,7 +986,7 @@ END //
 
 DELIMITER ;
 
-//no se esta usando
+
 DELIMITER //
 
 CREATE PROCEDURE sp_get_units()
@@ -1046,13 +1033,12 @@ DELIMITER ;
 
 DELIMITER //
 
-CREATE or REPLACE PROCEDURE sp_get_inventory_history()
+CREATE PROCEDURE sp_get_inventory_history()
 BEGIN
     SELECT * FROM vw_active_inventory_history;
 END //
 
 DELIMITER ;
-
 
 
 DELIMITER //
@@ -1293,7 +1279,6 @@ END$$
 DELIMITER ;
 
 
-DROP PROCEDURE IF EXISTS sp_find_user_by_email; 
 DELIMITER $$
 
 CREATE PROCEDURE sp_find_user_by_email (IN p_email VARCHAR(100))
@@ -1302,7 +1287,7 @@ BEGIN
     FROM 
         vw_active_find_user_by_email
     WHERE 
-        USUARIO COLLATE utf8mb4_general_ci = p_email COLLATE utf8mb4_general_ci
+        email COLLATE utf8mb4_general_ci = p_email COLLATE utf8mb4_general_ci
     LIMIT 1;
 END $$
 
@@ -1314,20 +1299,19 @@ DELIMITER $$
 CREATE PROCEDURE sp_get_user_info (IN p_userId INT)
 BEGIN
     SELECT 
-        ID_USUARIO,
-        USUARIO,
-        PASSWORD,
-        ID_ROL,
-        ROL_NOMBRE,
-        NOMBRES,
-        APELLIDOS,
-        DIRECCION,
-        TELEFONO
+        id_user,
+        email,
+        password,
+        id_role,
+        role_name,
+        first_name,
+        last_name,
+        address,
+        phone
     FROM 
         vw_active_get_user_info
     WHERE 
-        ID_USUARIO = p_userId 
-    LIMIT 1;
+        id_user = p_userId LIMIT 1;
 END $$
 
 DELIMITER ;
