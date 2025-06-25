@@ -1,2 +1,5 @@
-GET http://localhost:5001/api/cart/
+POST  http://localhost:5001/api/recetas_crud/1200000/1400002/2
+
+
+
 //pa hacer pruebas, pero todavia no he visto si se maneja bien el back
