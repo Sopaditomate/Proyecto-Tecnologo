@@ -23,11 +23,7 @@ export function ProductCard({ product }) {
         <div className="img-container">
           <img
             //Se agrega interpolacion a la ruta para referenciar las imagenes correctamente
-            src={
-              product.image
-                ? `/images/${product.image}`
-                : "/images/url_imagen_integral.jpg"
-            }
+            src={product.image}
             alt={product.nameProduct}
             className="img-product"
           />
@@ -58,11 +54,7 @@ export function ProductCard({ product }) {
           </div>
 
           {/* Nombre del producto */}
-          <h2
-            className="name-product-2"
-          >
-            {product.nameProduct}
-          </h2>
+          <h2 className="name-product-2">{product.nameProduct}</h2>
 
           {/* Descripción corta y leer más/menos */}
           <p className="description-product compact">
