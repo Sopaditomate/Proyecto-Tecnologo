@@ -186,7 +186,7 @@ useEffect(() => {
     UNIDAD: '',
     TIPO: '',
     DESCRIPCION: '',
-    ID_ADMINISTRADOR: 1000000, // admin actual, hay que dudar si hacerlo dinamico
+    ID_ADMINISTRADOR: 700002, // admin actual, hay que dudar si hacerlo dinamico
   });
 
   const handleShowModal = () => setShowModal(true);
@@ -201,7 +201,7 @@ useEffect(() => {
       UNIDAD: '',
       TIPO: '',
       DESCRIPCION: '',
-      ID_ADMINISTRADOR: 1000000,
+      ID_ADMINISTRADOR: 700002,
     });
   };
 
@@ -218,7 +218,7 @@ useEffect(() => {
         UNIDAD: insumo.ID_UNIDAD,
         TIPO: insumo.ID_TIP_MATERIA,
         DESCRIPCION: insumo.DESCRIPCION,
-        ID_ADMINISTRADOR: 1000000,
+        ID_ADMINISTRADOR: 700002,
     });
     setIsEditing(true);
     setShowModal(true);

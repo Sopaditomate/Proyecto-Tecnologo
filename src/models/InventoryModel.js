@@ -80,7 +80,7 @@ class InventoryModel {
   async getInventoryHistory() {
     const conn = await pool.getConnection();
     try {
-      const [rows] = await conn.query(`CALL sp_get_inventory_history()`);
+      const [rows] = await conn.query(`SELECT * FROM vw_active_inventory_history`);
       return rows;
     } catch (error) {
       throw error;
@@ -89,6 +89,7 @@ class InventoryModel {
     }
   }
 
+  
   async getInventorySummary() {
     const conn = await pool.getConnection();
     try {
