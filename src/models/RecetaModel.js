@@ -1,75 +1,97 @@
-import pool from "../config/db.js"; // Importa el pool correctamente
+import pool from "../config/db.js";
 
 class RecetasModel {
-
-  async GetReceta(id) {
-    const [rows] = await pool.query(`
-    SELECT 
-    r.ID_RECETA,
-    p.ID_PRODUCTO,
-    p.NOMBRE as NOMBRE_PROD,
-    m.NOMBRE as NOMBRE_MATE,
-    m.ID_MATERIA,
-    r.CANTIDAD_USAR
-    FROM recetas r 
-    JOIN producto p ON p.ID_PRODUCTO = r.ID_PRODUCTO
-    JOIN materia_prima m ON m.ID_MATERIA = r.ID_MATERIA 
-    WHERE r.ID_PRODUCTO = ? `, [id]);
-    return rows;
-  }
-
-async UpdateReceta(id, ID_MATERIA, CANTIDAD_USAR) {
-  const [result] = await pool.query(
-    `UPDATE recetas SET ID_MATERIA = ?, CANTIDAD_USAR = ? WHERE ID_RECETA = ?`,
-    [ID_MATERIA, CANTIDAD_USAR, id]
-  );
-
-  if (result.affectedRows === 0) {
-    throw new Error("Receta no encontrada");
-  }
-}
-
-  async DeleteReceta(id) {
-    const [producto] = await pool.query(`DELETE FROM recetas WHERE ID_RECETA = ?`, [id]);
-
-    if (producto.affectedRows === 0) {
-      throw new error(" producto no encontrado")
+  // Get recipe by product ID using the view
+  async getReceta(id) {
+    const conn = await pool.getConnection();
+    try {
+      const [rows] = await conn.query(
+        `SELECT * FROM vw_active_recipe WHERE ID_RECETA = ?`,
+        [id]
+      );
+      return rows;
+    } catch (error) {
+      console.error("Error al obtener la receta:", error);
+      throw new Error("No se pudo obtener la receta.");
+    } finally {
+      conn.release();
     }
   }
 
-  async AddReceta(ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) {
-    const [producto] = await pool.query(`INSERT INTO recetas (ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) VALUES (?, ?, ?)`,
-      [ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR]);
-    if (producto.affectedRows === 0) {
-      throw new error("producto no encontrado");
-
+  // Insert new recipe
+async addReceta(ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) {
+    if (!ID_PRODUCTO || !ID_MATERIA || CANTIDAD_USAR <= 0) {
+        throw new Error("Parámetros inválidos.");
     }
-    return producto.insertId
-  }
+
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        await conn.query(
+            `CALL sp_insert_recipe(?, ?, ?)`,
+            [ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR]
+        );
+
+        await conn.commit();
+    } catch (error) {
+        await conn.rollback();
+        console.error("Error al insertar receta:", error);
+        throw new Error("No se pudo insertar la receta.");
+    } finally {
+        conn.release();
+    }
 }
+
+  // Update existing recipe
+async updateReceta(id_product, id_material, CANTIDAD_USAR) {
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        await conn.query(
+            `CALL sp_update_recipe(?, ?, ?)`,
+            [id_product, id_material, CANTIDAD_USAR]
+        );
+
+        await conn.commit();
+    } catch (error) {
+        await conn.rollback();
+        if (error.sqlState === "45000") {
+            throw new Error(error.message); // 'Recipe entry not found'
+        }
+        console.error("Error al actualizar la receta:", error);
+        throw new Error("No se pudo actualizar la receta.");
+    } finally {
+        conn.release();
+    }
+}
+
+
+  // Logical delete of a recipe
+async deleteReceta(ID_PRODUCT, ID_MATERIA) {
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        await conn.query(
+            `CALL sp_delete_recipe(?, ?)`,
+            [ID_PRODUCT, ID_MATERIA]
+        );
+
+        await conn.commit();
+    } catch (error) {
+        await conn.rollback();
+        if (error.sqlState === "45000") {
+            throw new Error(error.message); // 'Recipe entry not found'
+        }
+        console.error("Error al eliminar la receta:", error);
+        throw new Error("No se pudo eliminar la receta.");
+    } finally {
+        conn.release();
+    }
+}
+
+}
+
 export default new RecetasModel();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
