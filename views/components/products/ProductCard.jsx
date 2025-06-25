@@ -10,7 +10,7 @@ export function ProductCard({ product }) {
 
   // Función para truncar la descripción
   const maxDesc = 60;
-  const isLongDesc =
+  const isLongDesc = 
     product.description && product.description.length > maxDesc;
   const shortDesc = isLongDesc
     ? product.description.slice(0, maxDesc) + "..."

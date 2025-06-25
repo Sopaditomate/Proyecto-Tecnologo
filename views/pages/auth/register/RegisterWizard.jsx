@@ -9,7 +9,7 @@ import "./register-form.css";
 const icons = {
   email: (
     <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-      <rect width="24" height="24" rx="12" fill="#8b4513" />
+      <rect width="24" height="24" rx="12" fill="green" />
       <path
         d="M7 8h10a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2Zm0 0 5 4 5-4"
         stroke="white"
@@ -21,7 +21,7 @@ const icons = {
   ),
   user: (
     <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-      <rect width="24" height="24" rx="12" fill="#8b4513" />
+      <rect width="24" height="24" rx="12" fill="green" />
       <circle cx="12" cy="10" r="3" stroke="white" strokeWidth="1.5" />
       <path
         d="M7 17a5 5 0 0 1 10 0"
@@ -33,7 +33,7 @@ const icons = {
   ),
   lock: (
     <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-      <rect width="24" height="24" rx="12" fill="#8b4513" />
+      <rect width="24" height="24" rx="12" fill="green" />
       <rect
         x="7"
         y="11"
@@ -43,7 +43,7 @@ const icons = {
         stroke="white"
         strokeWidth="1.5"
       />
-      <path d="M9 11V9a3 3 0 1 1 6 0v2" stroke="#8b4513" strokeWidth="1.5" />
+      <path d="M9 11V9a3 3 0 1 1 6 0v2" stroke="white" strokeWidth="1.5" />
     </svg>
   ),
 };
