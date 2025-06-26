@@ -13,6 +13,20 @@ class RecetaController {
             res.status(500).json({ message: "error al obtener receta" });
         }
     }
+
+ async getMaterias(req, res) {
+        const { id } = req.params;
+
+        try {
+            const producto = await RecetaModel.getMateria(id);
+            res.json(producto);
+        } catch (err) {
+            console.error("error al obtener receta", err);
+            res.status(500).json({ message: "error al obtener receta" });
+        }
+    }
+
+
 async UpdateRecetas(req, res) {
     const { id_product, id_material } = req.params; // Ahora obtienes ambos parámetros
     const { CANTIDAD_USAR } = req.body; // Asegúrate de que este campo esté en el cuerpo de la solicitud
