@@ -6,6 +6,7 @@ import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
 
 export function Recetasform() {
   const [recetas, setRecetas] = useState([]);
+  const [materiasPrimas, setMateriasPrimas] = useState([]);
   const [editReceta, setEditReceta] = useState(null);
   const [formData, setFormData] = useState(initialFormState());
   const [showInsertModal, setShowInsertModal] = useState(false);
@@ -31,9 +32,17 @@ export function Recetasform() {
   useEffect(() => {
     if (id) {
       fetchRecetas(); // Fetch recipes when the ID changes
+       fetchMateriasPrimas(); 
     }
   }, [id]);
 
+
+  const fetchMateriasPrimas = () => {
+    axios
+      .get(`http://localhost:5001/api/materia/${id}`) // Ajusta la URL según tu API
+      .then((res) => setMateriasPrimas(res.data))
+      .catch((err) => console.error("Error al cargar materias primas:", err));
+  };
   const openInsertModal = () => {
     setFormData(initialFormState());
     setShowInsertModal(true);
@@ -82,6 +91,7 @@ export function Recetasform() {
             .then(() => {
                 alert("Receta agregada correctamente");
                 fetchRecetas();
+                fetchMateriasPrimas();
                 closeModals();
             })
             .catch((err) => {
@@ -109,6 +119,7 @@ export function Recetasform() {
       .then(() => {
         alert("Receta actualizada correctamente");
         fetchRecetas();
+        fetchMateriasPrimas();
         closeModals();
       })
       .catch((err) => {
@@ -125,6 +136,7 @@ export function Recetasform() {
         .then(() => {
           alert("Receta eliminada correctamente");
           fetchRecetas();
+         fetchMateriasPrimas();
         })
         .catch((err) => {
           console.error("Error al eliminar receta", err);
@@ -142,7 +154,7 @@ export function Recetasform() {
   // Extract unique materia prima options for the select input
   const tipoMateria = Array.from(
     new Map(
-      recetas.map(p => [p.ID_MATERIA, { ID_MATERIA: p.ID_MATERIA, NOMBRE: p.NOMBRE_MATE }])
+      materiasPrimas.map(p => [p.ID_MATERIA, { ID_MATERIA: p.ID_MATERIA, NOMBRE: p.NOMBRE_MATE }])
     ).values()
   );
 
