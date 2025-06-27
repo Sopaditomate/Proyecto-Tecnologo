@@ -13,6 +13,9 @@ router.get('/tipos', InventoryController.getTiposMateria);
 router.get('/unidades', InventoryController.getUnidades);
 router.get("/historial", InventoryController.getHistorialInventario);
 router.get("/resumen", InventoryController.getResumenInventario);
+router.get("/grafica/:id(\\d+)", InventoryController.getInventoryByUnit);
+
+
 
 // Operaciones CRUD
 router.post("/nuevo", InventoryController.agregarNuevoInsumo);

@@ -1,71 +1,95 @@
 import pool from "../config/db.js"; // importas el pool correctamente
 
 class ProductAdminModel {
-  async getProduct() {
-    const [rows] = await pool.query(`
-      SELECT 
-      p.ID_PRODUCTO,
-      t.ID_TIPO_PRO,
-      t.NOMBRE AS NOMBRE_TIPO,
-      p.NOMBRE,
-      p.PRECIO,
-      p.DESCRIPCION,
-      p.IMAGEN_URL,
-      p.NOTA_ACTUAL,
-      p.ADVERTENCIA
-      FROM producto p
-      JOIN tipo_producto t ON p.ID_TIPO_PRO = t.ID_TIPO_PRO
-      `);
-    return rows;
-  }
-
-
-  async UpdateProduct(id,ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA) {
-    const [producto] = await pool.query(`UPDATE producto 
-       SET ID_TIPO_PRO = ?, NOMBRE = ?, PRECIO = ?, DESCRIPCION = ?, IMAGEN_URL = ?, NOTA_ACTUAL = ?, ADVERTENCIA = ? 
-       WHERE ID_PRODUCTO = ?`,
-      [
-        ID_TIPO_PRO,
-        NOMBRE,
-        PRECIO,
-        DESCRIPCION,
-        IMAGEN_URL,
-        NOTA_ACTUAL,
-        ADVERTENCIA,
-        id,
-      ]
-    );
-
-    if (producto.affectedRows === 0) {
-      throw new error('producto no encontrado');
+   async getProduct() {
+    const conn = await pool.getConnection();
+    try {
+      const [rows] = await conn.query(`SELECT * FROM vw_active_product_admin`);
+      return rows;
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      throw new Error("No se pudo obtener los productos.");
+    } finally {
+      conn.release();
     }
   }
 
 
-  async DeleteProduct(id) {
-    const [result] = await pool.query(`
-      DELETE FROM producto WHERE ID_PRODUCTO = ?`, [id]);
 
-    if (result.affectedRows === 0) {
-      throw new error('producto no encontrado');
+async UpdateProduct(
+    ID_PRODUCTO,       
+    ID_TIPO_PRO,
+    NOMBRE_PROD,
+    PRECIO,
+    DESCRIPCION,
+    IMAGEN_URL,
+    NOTA_ACTUAL,
+    ADVERTENCIA
+) {
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        await conn.query(
+            "CALL sp_update_product_admin(?, ?, ?, ?, ?, ?, ?, ?)",
+            [ID_PRODUCTO, ID_TIPO_PRO, NOMBRE_PROD, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA]
+        );
+        await conn.commit();
+    } catch (err) {
+        await conn.rollback();
+        if (err.sqlState === "45000") {
+            throw new Error(err.message);
+        }
+        console.error("Error updating product:", err);
+        throw new Error("No se pudo actualizar el producto.");
+    } finally {
+        conn.release();
+    }
+}
+
+
+
+ async DeleteProduct(id) {
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+      await conn.query("CALL sp_delete_product_admin(?)", [id]);
+      await conn.commit();
+    } catch (err) {
+      await conn.rollback();
+      if (err.sqlState === "45000") {
+        throw new Error(err.message);
+      }
+      console.error("Error deleting product:", err);
+      throw new Error("No se pudo eliminar el producto.");
+    } finally {
+      conn.release();
     }
   }
 
-  async AddProduct(ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA) {
-    const [producto] = await pool.query("INSERT INTO producto (ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [
-        ID_TIPO_PRO,
-        NOMBRE,
-        PRECIO,
-        DESCRIPCION,
-        IMAGEN_URL,
-        NOTA_ACTUAL,
-        ADVERTENCIA,
-      ]
-    );
 
-    if (producto.affectedRows === 0) {
-      throw new error('producto no creado');
+ async AddProduct(
+    ID_TIPO_PRO,
+    NOMBRE_PROD,
+    PRECIO,
+    DESCRIPCION,
+    IMAGEN_URL,
+    NOTA_ACTUAL,
+    ADVERTENCIA
+  ) {
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+      await conn.query(
+        "CALL sp_insert_product_admin(?, ?, ?, ?, ?, ?, ?)",
+        [ID_TIPO_PRO, NOMBRE_PROD, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA]
+      );
+      await conn.commit();
+    } catch (error) {
+      await conn.rollback();
+      console.error("Error adding product:", error);
+      throw new Error("No se pudo crear el producto.");
+    } finally {
+      conn.release();
     }
   }
 
