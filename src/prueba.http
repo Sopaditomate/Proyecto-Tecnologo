@@ -1,4 +1,4 @@
-POST  http://localhost:5001/api/recetas_crud/1200000/1400002/2
+GET http://localhost:5001/api/grafica/500000
 
 
 

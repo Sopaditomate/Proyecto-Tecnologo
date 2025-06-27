@@ -16,6 +16,21 @@ const InventoryPieChartModal = () => {
   const [show, setShow] = useState(false);
   const [unitType, setUnitType] = useState(1); // por ejemplo 1 = Kilogramos
   const [chartData, setChartData] = useState(null);
+  const [units, setUnits] = useState([]);
+
+  const fetchUnits = async () => {
+    try {
+      const response = await axios.get('http://localhost:5001/api/unidades'); // Asegúrate de que este endpoint exista
+      setUnits(response.data);
+      //para probar
+      console.log(response)
+    } catch (error) {
+      console.error('Error al obtener unidades:', error);
+       //para probar
+      console.log(response)
+    }
+  };
+
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -24,6 +39,11 @@ const InventoryPieChartModal = () => {
     try {
       const response = await axios.get(`http://localhost:5001/api/grafica/${unitId}`);
       const data = response.data;
+      console.log(data);
+
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('No se encontraron datos.');
+      }
 
       // Agrupar por tipo de materia prima
       const grouped = {};
@@ -49,8 +69,13 @@ const InventoryPieChartModal = () => {
       });
     } catch (error) {
       console.error('Error al obtener datos para la gráfica:', error);
+      setChartData(null); // Resetea los datos de la gráfica en caso de error
     }
   };
+
+  useEffect(() => {
+    fetchUnits();
+  }, []);
 
   // Cargar al abrir el modal o al cambiar unidad
   useEffect(() => {
@@ -76,12 +101,14 @@ const InventoryPieChartModal = () => {
               value={unitType}
               onChange={(e) => setUnitType(Number(e.target.value))}
             >
-              <option value={1}>Kilogramos</option>
-              <option value={2}>Litros</option>
-              <option value={3}>Unidades</option>
-              {/* Añade más si tienes más unidades */}
+              {units.map(unit => (
+                <option key={unit.ID_UNIDAD} value={unit.ID_UNIDAD}>
+                  {unit.NOMBRE}
+                </option>
+              ))}
             </Form.Select>
           </Form.Group>
+
 
           {chartData ? (
             <Pie data={chartData} />
