@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Modal, Button, Form } from 'react-bootstrap';
 import { useTable, usePagination, useGlobalFilter } from 'react-table';
+// para probar el componente de torta
+import InventoryPieChartModal from './InventoryPieChartModal';
+
 import './inventory.css';
 
 const InventoryManagement = () => {
@@ -186,7 +189,7 @@ useEffect(() => {
     UNIDAD: '',
     TIPO: '',
     DESCRIPCION: '',
-    ID_ADMINISTRADOR: 1000000, // admin actual, hay que dudar si hacerlo dinamico
+    ID_ADMINISTRADOR: 700002, // admin actual, hay que dudar si hacerlo dinamico
   });
 
   const handleShowModal = () => setShowModal(true);
@@ -201,7 +204,7 @@ useEffect(() => {
       UNIDAD: '',
       TIPO: '',
       DESCRIPCION: '',
-      ID_ADMINISTRADOR: 1000000,
+      ID_ADMINISTRADOR: 700002,
     });
   };
 
@@ -218,7 +221,7 @@ useEffect(() => {
         UNIDAD: insumo.ID_UNIDAD,
         TIPO: insumo.ID_TIP_MATERIA,
         DESCRIPCION: insumo.DESCRIPCION,
-        ID_ADMINISTRADOR: 1000000,
+        ID_ADMINISTRADOR: 700002,
     });
     setIsEditing(true);
     setShowModal(true);
@@ -244,8 +247,8 @@ useEffect(() => {
             // Lógica para agregar un nuevo insumo
             await axios.post('http://localhost:5001/api/inventario/nuevo', {
                 nombre: MATERIA_PRIMA,
-                tipoMateria: TIPO, // Asegúrate de que esto coincida con lo que espera tu controlador
-                unidad: UNIDAD, // Asegúrate de que esto coincida con lo que espera tu controlador
+                tipoMateria: TIPO,
+                unidad: UNIDAD,
                 cantidad: CANTIDAD,
                 descripcion: DESCRIPCION,
                 idAdministrador: ID_ADMINISTRADOR,
@@ -291,17 +294,33 @@ useEffect(() => {
         >
           Ver Historial
         </Button>
+
+        <Button 
+            onClick={handleShowModal} 
+            className="custom-button" // Clase personalizada para el botón
+        >
+            Agregar Insumo
+        </Button>
       </div>
-      
-      
       <div className="Cont-Butt">
-          <Button 
-              onClick={handleShowModal} 
-              className="custom-button" // Clase personalizada para el botón
-          >
-              Agregar Insumo
-          </Button>
+        <Button
+          variant="outline-primary"
+          className="me-2"
+          onClick={() => window.open('http://localhost:5001/api/export/pdfinventario', '_blank')}
+        >
+          Exportar PDF
+        </Button>
+
+        <Button
+          variant="outline-success"
+          onClick={() => window.open('http://localhost:5001/api/export/excelinventario', '_blank')}
+        >
+          Exportar Excel
+        </Button>
       </div>
+
+
+      
 
       <div className="filtros-contenedor">
         <div>
@@ -547,6 +566,8 @@ useEffect(() => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <InventoryPieChartModal />
 
 
     </Container>

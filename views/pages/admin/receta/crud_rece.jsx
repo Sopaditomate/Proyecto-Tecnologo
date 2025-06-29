@@ -40,7 +40,10 @@ export function Recetasform() {
   };
 
   const openEditModal = (receta) => {
-    setEditReceta(receta);
+    setEditReceta({
+      ID_PRODUCT: receta.ID_PRODUCTO || id, // el ID del producto puede venir de la URL
+      ID_MATERIAL: receta.ID_MATERIA
+    });
     setFormData({
       ID_MATERIA: receta.ID_MATERIA || "",
       CANTIDAD_USAR: receta.CANTIDAD_USAR || ""
@@ -61,25 +64,31 @@ export function Recetasform() {
   };
 
   // Handle adding a new recipe
-  const handleInsert = (e) => {
-    e.preventDefault();
-    if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
-      alert("Por favor complete todos los campos");
-      return;
-    }
+    const handleInsert = (e) => {
+        e.preventDefault();
+        if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
+            alert("Por favor complete todos los campos");
+            return;
+        }
 
-    axios
-      .post(`http://localhost:5001/api/recetas_crud/${id}`, formData)
-      .then(() => {
-        alert("Receta agregada correctamente");
-        fetchRecetas();
-        closeModals();
-      })
-      .catch((err) => {
-        console.error("Error al agregar receta:", err);
-        alert("Error al insertar receta");
-      });
-  };
+        const dataToSend = {
+            ID_PRODUCTO: id, // Asegúrate de que el ID del producto esté incluido
+            ID_MATERIA: formData.ID_MATERIA,
+            CANTIDAD_USAR: formData.CANTIDAD_USAR
+        };
+
+        axios
+            .post(`http://localhost:5001/api/recetas_crud/${id}`, dataToSend)
+            .then(() => {
+                alert("Receta agregada correctamente");
+                fetchRecetas();
+                closeModals();
+            })
+            .catch((err) => {
+                console.error("Error al agregar receta:", err);
+                alert("Error al insertar receta");
+            });
+    };
 
   // Handle updating a selected recipe
   const handleUpdate = (e) => {
@@ -89,7 +98,14 @@ export function Recetasform() {
       return;
     }
 
-    axios.put(`http://localhost:5001/api/recetas_crud/${editReceta.ID_RECETA}`, formData)
+    // Verifica que los datos a actualizar estén presentes
+    console.log("Datos a actualizar:", editReceta, formData);
+
+    // Realiza el PUT con los dos parámetros necesarios en la URL
+    axios.put(
+      `http://localhost:5001/api/recetas_crud/${editReceta.ID_PRODUCT}/${editReceta.ID_MATERIAL}`,
+      { CANTIDAD_USAR: formData.CANTIDAD_USAR } // Asegúrate de que este campo esté en el cuerpo
+    )
       .then(() => {
         alert("Receta actualizada correctamente");
         fetchRecetas();
@@ -99,13 +115,13 @@ export function Recetasform() {
         console.error("Error al actualizar receta:", err);
         alert("Error al actualizar receta");
       });
-  };
 
+  };
   // Handle deleting a recipe
-  const handleDelete = (id) => {
+  const handleDelete = (receta) => {
     if (window.confirm("¿Estás seguro de eliminar esta receta?")) {
       axios
-        .delete(`http://localhost:5001/api/recetas_crud/${id}`)
+        .delete(`http://localhost:5001/api/recetas_crud/${id}/${receta.ID_MATERIA}`)
         .then(() => {
           alert("Receta eliminada correctamente");
           fetchRecetas();
@@ -116,6 +132,7 @@ export function Recetasform() {
         });
     }
   };
+
 
   // Handle going back to the previous page
   const handleGoBack = () => {
@@ -163,7 +180,23 @@ export function Recetasform() {
   return (
     <Container className="container mt-4">
       <h2>Recetas del Producto </h2>
+      {/* Export Buttons */}
+      <div className="mb-3">
+        <Button
+          variant="outline-primary"
+          className="me-2"
+          onClick={() => window.open(`http://localhost:5001/api/export/pdfreceta/${id}`, '_blank')}
+        >
+          Exportar PDF
+        </Button>
 
+        <Button
+          variant="outline-success"
+          onClick={() => window.open(`http://localhost:5001/api/export/excelreceta/${id}`, '_blank')}
+        >
+          Exportar Excel
+        </Button>
+      </div>
       <Button className="btn btn-secondary mb-3" onClick={handleGoBack}>
         Volver
       </Button>
@@ -182,7 +215,7 @@ export function Recetasform() {
         </thead>
         <tbody>
           {recetas.map((receta) => (
-            <tr key={receta.ID_RECETA}>
+            <tr key={`${receta.ID_PRODUCT}_${receta.ID_MATERIAL}`}>
               <td>{receta.NOMBRE_PROD}</td>
               <td>{receta.NOMBRE_MATE}</td>
               <td>{receta.CANTIDAD_USAR}</td>
@@ -197,10 +230,11 @@ export function Recetasform() {
                 <Button
                   variant="danger"
                   className="btn-sm"
-                  onClick={() => handleDelete(receta.ID_RECETA)}
+                  onClick={() => handleDelete(receta)} // Cambiado aquí para pasar el objeto receta completo
                 >
                   Eliminar
                 </Button>
+
               </td>
             </tr>
           ))}
