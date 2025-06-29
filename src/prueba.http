@@ -1,2 +1,5 @@
-GET http://localhost:5001/api/inventario/historial
-//pa hacer pruebas
+GET http://localhost:5001/api/grafica/500000
+
+
+
+//pa hacer pruebas, pero todavia no he visto si se maneja bien el back

@@ -17,6 +17,10 @@ class InventoryController {
     const { id } = req.params;
     const { nombre, id_tipo_materia, id_unidad, cantidad, descripcion } = req.body; // Agregar descripcion
 
+    if (!nombre || !id_tipo_materia || !id_unidad || !cantidad || !descripcion) {
+      return res.status(400).json({ message: "Faltan datos obligatorios" });
+    }
+
     try {
         await InventoryModel.updateRawMaterial(id, nombre, id_tipo_materia, id_unidad, descripcion); // Pasar descripcion
         await InventoryModel.updateQuantity(id, cantidad);
@@ -120,6 +124,27 @@ class InventoryController {
       res.status(500).json({ message: 'Error al obtener resumen del inventario' });
     }
   }
+
+
+  async getInventoryByUnit(req, res) {
+
+    const { id } = req.params;
+    //para probar
+    console.log(id);
+    
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ message: 'El parámetro debe ser un número válido.' });
+    }
+
+    try {
+      const inventoryUnit = await InventoryModel.getInventoryByUnitType(Number(id));
+      res.status(200).json(inventoryUnit);
+    } catch (error) {
+      console.error('Error al obtener el inventario por unidad:', error);
+      res.status(500).json({ message: 'Error al obtener el inventario por unidad.' });
+    }
+  }
+
 }
 
 export default new InventoryController();
