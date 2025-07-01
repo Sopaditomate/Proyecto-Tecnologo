@@ -46,5 +46,18 @@ class ProductAdminController {
             res.status(500).json({error:"error al agregar el producto"})
         }
     }
+
+    async AddProductosToCart (req,res){
+        const {id_catalog, id_product, discount} = req.body;
+        try{
+            await ProductAdminModel.addProductToCart(id_catalog, id_product, discount);
+            res.status(201).json({message:"producto agregado correctamente"});
+        }catch(err){
+            console.error("error al agregar producto",err)
+            res.status(500).json({error:"error al agregar el producto"})
+        }
+    }
+
+
 }
 export default new ProductAdminController();
