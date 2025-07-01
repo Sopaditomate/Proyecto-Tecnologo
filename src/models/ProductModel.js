@@ -41,7 +41,7 @@ class ProductModel {
     }
   }
 
-  // Obtener categorías únicas
+  // Obtener categorías únicas - ya funciona
   async getCategories() {
     try {
       const [[rows]] = await pool.query("CALL sp_get_categories()");
@@ -52,7 +52,7 @@ class ProductModel {
     }
   }
 
-  // Filtrar productos por término de búsqueda y categoría
+  // Filtrar productos por término de búsqueda y categoría - funciona el endpoint, pero no la barra de busqueda
   async filterProducts(searchTerm, selectedCategory) {
     try {
       const [[rows]] = await pool.query("CALL sp_filter_products(?, ?)", [
@@ -74,7 +74,7 @@ class ProductModel {
     }
   }
 
-  // Obtener productos destacados por calificación
+  // Obtener productos destacados por calificación - tambien funciona el endpoint, el problema de la barra de busqueda persiste
   async getFeaturedProducts(limit = 3) {
     try {
       const [[rows]] = await pool.query("CALL sp_get_featured_products(?)", [

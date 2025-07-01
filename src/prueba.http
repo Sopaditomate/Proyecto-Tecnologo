@@ -1,4 +1,4 @@
-GET http://localhost:5001/api/grafica/500000
+GET http://localhost:5001/api/products/featured?limit=5
 
 
 

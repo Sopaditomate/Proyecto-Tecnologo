@@ -850,8 +850,7 @@ WHERE p.id_state = 1
 
 CREATE OR REPLACE VIEW vw_active_categories AS
 SELECT 
-    id_product_type AS id,
-    name AS categoryName
+    name AS NOMBRE
 FROM product_type
 WHERE id_state = 1;
 
@@ -1643,7 +1642,7 @@ DELIMITER ;
 //este tenia dos versiones, me quede con la primera, si sale error, es culpa de Guillermo por no aclarar cual era la funcional
 DELIMITER $$
 
-CREATE PROCEDURE sp_filter_products(
+CREATE or REPLACE PROCEDURE sp_filter_products(
     IN p_searchTerm VARCHAR(255),
     IN p_category VARCHAR(255)
 )
@@ -1657,6 +1656,11 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+
+b:
+
+
 
 
 DELIMITER $$
@@ -1680,13 +1684,9 @@ DELIMITER ;
 
 
 DELIMITER $$
-
-CREATE PROCEDURE sp_get_categories()
+CREATE or REPLACE PROCEDURE sp_get_categories()
 BEGIN
-    SELECT 
-        id,
-        categoryName
-    FROM vw_active_categories;
+    SELECT * FROM vw_active_categories;
 END$$
 DELIMITER ;
 
