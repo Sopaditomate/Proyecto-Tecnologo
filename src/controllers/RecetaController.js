@@ -15,10 +15,10 @@ class RecetaController {
     }
 
  async getMaterias(req, res) {
-        const { id } = req.params;
+     
 
         try {
-            const producto = await RecetaModel.getMateria(id);
+            const producto = await RecetaModel.getMateria();
             res.json(producto);
         } catch (err) {
             console.error("error al obtener receta", err);

@@ -20,12 +20,11 @@ class RecetasModel {
 
 
 
-    async getMateria(id) {
+    async getMateria() {
         const conn = await pool.getConnection();
         try {
             const [rows] = await conn.query(
-                `SELECT  NOMBRE_MATE, ID_MATERIA  FROM vw_active_recipe WHERE ID_RECETA = ?`,
-                [id]
+                `SELECT  NOMBRE_MATE, ID_MATERIA  FROM vw_active_recipe `
             );
             return rows;
         } catch (error) {

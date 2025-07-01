@@ -3,7 +3,6 @@
   max-width: 1500px;
   margin: 2rem auto;
   padding: 1.5rem;
-  background-color: #fefefe;
   border: 1px solid #ddd;
   border-radius: 8px;
   font-family: 'Segoe UI', sans-serif;
@@ -29,7 +28,7 @@ h2 {
   width: 80%;
   max-width: 1200px;
   border-collapse: collapse;
-  background-color: white;
+
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -45,7 +44,6 @@ h2 {
 
 /* Cabecera de la tabla */
 .Custom th {
-  background-color: #f8f9fa;
   color: #333;
   font-weight: bold;
   padding: 12px 20px;
@@ -61,15 +59,9 @@ h2 {
   border: 1px solid #ddd;
 }
 
-/* Hover filas */
-.Custom tr:hover {
-  background-color: #f1f1f1 !important;
-}
+/* Hover filas *
 
 /* Filas impares */
-.Custom tr:nth-child(odd) {
-  background-color: #fafafa;
-}
 
 /* Paginación */
 .pagination-container {
@@ -148,7 +140,7 @@ h2 {
 
 /* Modal contenido */
 .modal-content {
-  background-color: #fefefe;
+
   margin: 10% auto;
   padding: 20px;
   border: 1px solid #888;
@@ -200,7 +192,7 @@ h2 {
 
 .CustomWidth table {
   border-collapse: collapse;
-  background-color: white;
+
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -217,9 +209,7 @@ h2 {
   background-color: #f1f1f1 !important;
 }
 
-.CustomWidth tr:nth-child(odd) {
-  background-color: #fafafa;
-}
+
 
 /* Tabla productos básica */
 /* Sobrescribiendo para tablas genéricas que no tengan .Custom */
@@ -301,7 +291,7 @@ button:hover {
 form {
   margin-top: 2rem;
   padding: 1rem;
-  background-color: #fafafa;
+
   border: 1px solid #ccc;
   border-radius: 6px;
 }
@@ -357,4 +347,11 @@ form .form-row {
   button {
     margin-top: 0.25rem;
   }
+
+
 }
+.bg-danger {
+background-color: red
+}
+
+

@@ -32,17 +32,18 @@ export function Recetasform() {
   useEffect(() => {
     if (id) {
       fetchRecetas(); // Fetch recipes when the ID changes
-       fetchMateriasPrimas(); 
+      fetchMateriasPrimas();
     }
   }, [id]);
 
 
   const fetchMateriasPrimas = () => {
     axios
-      .get(`http://localhost:5001/api/materia/${id}`) // Ajusta la URL según tu API
+
+      .get(`http://localhost:5001/api/materia/`) // Ajusta la URL según tu API
       .then((res) => setMateriasPrimas(res.data))
       .catch((err) => console.error("Error al cargar materias primas:", err));
-  };
+  };console.log(fetchMateriasPrimas)
   const openInsertModal = () => {
     setFormData(initialFormState());
     setShowInsertModal(true);
@@ -73,32 +74,32 @@ export function Recetasform() {
   };
 
   // Handle adding a new recipe
-    const handleInsert = (e) => {
-        e.preventDefault();
-        if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
-            alert("Por favor complete todos los campos");
-            return;
-        }
+  const handleInsert = (e) => {
+    e.preventDefault();
+    if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
+      alert("Por favor complete todos los campos");
+      return;
+    }
 
-        const dataToSend = {
-            ID_PRODUCTO: id, // Asegúrate de que el ID del producto esté incluido
-            ID_MATERIA: formData.ID_MATERIA,
-            CANTIDAD_USAR: formData.CANTIDAD_USAR
-        };
-
-        axios
-            .post(`http://localhost:5001/api/recetas_crud/${id}`, dataToSend)
-            .then(() => {
-                alert("Receta agregada correctamente");
-                fetchRecetas();
-                fetchMateriasPrimas();
-                closeModals();
-            })
-            .catch((err) => {
-                console.error("Error al agregar receta:", err);
-                alert("Error al insertar receta");
-            });
+    const dataToSend = {
+      ID_PRODUCTO: id, 
+      ID_MATERIA: formData.ID_MATERIA,
+      CANTIDAD_USAR: formData.CANTIDAD_USAR
     };
+console.log("Datos a enviar:", dataToSend);
+    axios
+      .post(`http://localhost:5001/api/recetas_crud/${id}/${formData.ID_MATERIA}`, dataToSend)
+      .then(() => {
+        alert("Receta agregada correctamente");
+        fetchRecetas();
+        fetchMateriasPrimas();
+        closeModals();
+      })
+      .catch((err) => {
+        console.error("Error al agregar receta:", err);
+        alert("Error al insertar receta");
+      });
+  };
 
   // Handle updating a selected recipe
   const handleUpdate = (e) => {
@@ -136,7 +137,7 @@ export function Recetasform() {
         .then(() => {
           alert("Receta eliminada correctamente");
           fetchRecetas();
-         fetchMateriasPrimas();
+          fetchMateriasPrimas();
         })
         .catch((err) => {
           console.error("Error al eliminar receta", err);
@@ -152,11 +153,12 @@ export function Recetasform() {
   };
 
   // Extract unique materia prima options for the select input
+  
   const tipoMateria = Array.from(
     new Map(
       materiasPrimas.map(p => [p.ID_MATERIA, { ID_MATERIA: p.ID_MATERIA, NOMBRE: p.NOMBRE_MATE }])
     ).values()
-  );
+  ); console.log(tipoMateria)
 
   // Render the form fields
   const renderFormFields = () => (
@@ -225,32 +227,35 @@ export function Recetasform() {
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody>
-          {recetas.map((receta) => (
-            <tr key={`${receta.ID_PRODUCT}_${receta.ID_MATERIAL}`}>
-              <td>{receta.NOMBRE_PROD}</td>
-              <td>{receta.NOMBRE_MATE}</td>
-              <td>{receta.CANTIDAD_USAR}</td>
-              <td>
-                <Button
-                  variant="warning"
-                  className="btn-sm me-2"
-                  onClick={() => openEditModal(receta)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  variant="danger"
-                  className="btn-sm"
-                  onClick={() => handleDelete(receta)} // Cambiado aquí para pasar el objeto receta completo
-                >
-                  Eliminar
-                </Button>
+   <tbody>
+  {recetas.map((receta) => {
+    const key = receta.ID_PRODUCT && receta.ID_MATERIAL ? `${receta.ID_PRODUCT}_${receta.ID_MATERIAL}` : receta.ID_MATERIA; // Cambia esto según tu lógica
+    return (
+      <tr key={key}>
+        <td>{receta.NOMBRE_PROD}</td>
+        <td>{receta.NOMBRE_MATE}</td>
+        <td>{receta.CANTIDAD_USAR}</td>
+        <td>
+          <Button
+            variant="warning"
+            className="btn-sm me-2"
+            onClick={() => openEditModal(receta)}
+          >
+            Editar
+          </Button>
+          <Button
+            variant="danger"
+            className="btn-sm"
+            onClick={() => handleDelete(receta)}
+          >
+            Eliminar
+          </Button>
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
 
-              </td>
-            </tr>
-          ))}
-        </tbody>
       </Table>
 
       {/* Modal Insertar */}

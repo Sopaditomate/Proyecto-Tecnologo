@@ -93,6 +93,30 @@ async UpdateProduct(
     }
   }
 
+  
+  async addProductToCart(
+  id_catalog,
+  id_product,
+  discount
+) {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    await conn.query(
+      "CALL sp_insert_product_carrito_admin(?, ?, ?)",
+      [id_catalog, id_product, discount]
+    );
+    await conn.commit();
+  } catch (error) {
+    await conn.rollback();
+    console.error("Error adding product to cart:", error);
+    throw new Error("No se pudo agregar el producto al carrito.");
+  } finally {
+    conn.release();
+  }
+}
+
+
 }
 export default new ProductAdminModel();
 
