@@ -1,3 +1,42 @@
+/* ====== INPUT ERROR STYLES FOR PASSWORD CHANGE ====== */
+.input-error {
+  border: 1.5px solid #e53935 !important;
+  background: #fff6f6 !important;
+}
+.input-error-text {
+  color: #e53935;
+  font-size: 0.93em;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.btn-primary-inline {
+  background: var(--color-amber-600, #d97706);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary-inline:hover {
+  background: var(--color-amber-700, #b45309);
+}
+.btn-secondary-inline {
+  background: #f0f0f0;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-secondary-inline:hover {
+  background: #e0e0e0;
+}
 /* Estilos para el carrito deslizable */
 
 /* =========================
@@ -676,6 +715,22 @@
   position: relative;
   margin-left: 2rem;
   bottom: 5px;
+}
+
+.warning-text-cart::before {
+  content: "⚠️";
+  position: absolute;
+  left: -1.5rem;
+  font-size: 1.2rem;
+  top: -2px;
+  color: red;
+}
+
+/* =========================
+   CONTRASEÑA Y CAMBIO DE CONTRASEÑA
+   ========================= */
+.profile-main {
+  border: none;
 }
 
 /* =========================

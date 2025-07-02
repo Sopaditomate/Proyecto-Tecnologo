@@ -1,3 +1,79 @@
+/* Success and error input styles for password change */
+/* Password change input validation styles */
+.input-error {
+  border: 2px solid #e53935 !important;
+  background: #fff6f6 !important;
+}
+.input-success {
+  border: 2px solid #22c55e !important;
+  background: #f6fff8 !important;
+}
+.input-error-text {
+  color: #e53935;
+  font-size: 0.93em;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Password requirements checklist styles */
+.password-check-list {
+  margin: 10px 0 0 0;
+  padding: 0 0 0 18px;
+  list-style: none;
+}
+.password-check-list li {
+  display: flex;
+  align-items: center;
+  font-size: 0.97em;
+  margin-bottom: 4px;
+  color: #e53935;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.password-check-list li.valid {
+  color: #22c55e;
+}
+.password-check-list .checkmark {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: #e53935;
+  color: #fff;
+  font-size: 1em;
+  text-align: center;
+  line-height: 18px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+.password-check-list li.valid .checkmark {
+  background: #22c55e;
+}
+.password-check-list .checkmark::before {
+  content: "\2717"; /* X */
+}
+.password-check-list li.valid .checkmark::before {
+  content: "\2713"; /* Check */
+}
+
+.label-change-password-profile
+{
+  position: relative;
+  top: 8px;
+}
+
+
+.form-change-password{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+
 * {
   box-sizing: border-box;
 }
@@ -221,6 +297,11 @@
   flex-direction: column;
 }
 
+form {
+  border: none;
+  background-color: white;
+}
+
 .form-group label {
   font-weight: 600;
   color: #374151;
@@ -241,9 +322,34 @@
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.13);
   transform: translateY(-1px);
+}
+
+/* Password strength and match feedback */
+.password-check-list {
+  margin: 8px 0 0 0;
+  padding: 0 0 0 18px;
+  font-size: 0.97em;
+  color: #374151;
+  list-style: none;
+}
+.password-check-list li {
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.password-check-list .check {
+  color: #22c55e;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+.password-check-list .cross {
+  color: #e53935;
+  font-weight: bold;
+  font-size: 1.1em;
 }
 
 .form-group input:disabled {

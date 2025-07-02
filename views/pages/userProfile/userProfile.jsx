@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+
+import ChangePasswordSection from "./ChangePasswordSection";
 import "./user-profile.css";
 import ProfileSidebar from "./ProfileSidebar";
 import ProfileForm from "./ProfileForm";
@@ -560,6 +562,11 @@ export default function Profile() {
                 sendEmailCode={sendEmailCode}
                 verificationLink={verificationLink}
                 getMessageClass={getMessageClass}
+              />
+            )}
+            {activeTab === "password" && (
+              <ChangePasswordSection
+                email={profile.USUARIO || profile.email || ""}
               />
             )}
           </div>
