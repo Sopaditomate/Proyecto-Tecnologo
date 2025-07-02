@@ -1,12 +1,21 @@
 // Componente de pie de página
 import { forwardRef } from "react"; // Importación de 'forwardRef' para pasar referencias al componente
-import { Link } from "react-router-dom"; // Importación de 'Link' para crear enlaces de navegación
+import { Link, useLocation } from "react-router-dom"; // Importación de 'Link' y 'useLocation' para crear enlaces de navegación y obtener la ruta actual
 import "./footer.css"; // Importación del archivo CSS para el estilo del pie de página
 
 // Componente funcional de pie de página, utilizando forwardRef para permitir el uso de referencias
 const Footer = forwardRef((props, ref) => {
   // Obtención del año actual para mostrar en el pie de página
   const currentYear = new Date().getFullYear();
+  const location = useLocation(); // Obtención de la ruta actual
+
+  // Rutas donde NO se debe mostrar el footer
+  const hideFooterRoutes = ["/login", "/register", "/reset-password"];
+
+  // Si la ruta actual está en la lista, no renderizar el footer
+  if (hideFooterRoutes.some((route) => location.pathname.startsWith(route))) {
+    return null;
+  }
 
   return (
     <footer className="footer" ref={ref}>

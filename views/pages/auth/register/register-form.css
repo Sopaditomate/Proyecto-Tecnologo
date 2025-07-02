@@ -11,6 +11,7 @@
 /* Container principal */
 .register-form-container {
   width: 100%;
+  background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 50%, #fef3c7 100%);
 }
 
 /* Sección principal del formulario */
@@ -19,6 +20,8 @@
   min-height: auto;
   margin: 10px auto;
   padding: 0;
+  /* Animación de entrada */
+  animation: fadeInUp 0.6s ease-out;
 }
 
 /* Card principal */
@@ -26,16 +29,18 @@
   border-radius: 6px;
   max-width: 408px;
   width: 100%;
+  /* Animación de entrada */
+  animation: fadeInUp 0.8s ease-out;
 }
 
 /* Título principal */
 .ml-wizard-title {
-  font-size: 24px;
-  font-weight: 400;
-  color: #333;
+  font-family: "Roboto", sans-serif;
+  font-size: 1.5rem;
+  color: #5c3317;
   text-align: center;
-  margin: 0 0 8px 0;
-  line-height: 1.2;
+  /* Animación de entrada con delay */
+  animation: fadeInUp 0.6s ease-out 0.2s both;
 }
 
 /* Lista de pasos */
@@ -44,6 +49,8 @@
   flex-direction: column;
   gap: 18px;
   margin: 0 auto;
+  /* Animación de entrada con delay */
+  animation: fadeInUp 0.8s ease-out 0.3s both;
 }
 
 .ml-wizard-step-list {
@@ -60,15 +67,34 @@
   position: relative;
   transition: all 0.2s ease;
   cursor: default;
-  opacity: .7;
+  opacity: 0.7;
+  /* Animación individual para cada paso */
+  animation: slideInLeft 0.5s ease-out forwards;
 }
 
+/* Animación escalonada para cada paso */
+.ml-wizard-step-list:nth-child(1) {
+  animation-delay: 0.4s;
+}
 
+.ml-wizard-step-list:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.ml-wizard-step-list:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+.ml-wizard-step-list:nth-child(4) {
+  animation-delay: 0.7s;
+}
 
 .ml-wizard-step-list.active {
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
   opacity: 1;
   border: 2px solid rgb(151, 240, 17);
+  /* Animación especial para el paso activo */
+  animation: pulseActive 0.6s ease-out;
 }
 
 .ml-wizard-step-list.done {
@@ -81,6 +107,8 @@
   width: 32px;
   height: 32px;
   flex-shrink: 0;
+  /* Animación de rotación suave */
+  animation: rotateIn 0.5s ease-out;
 }
 
 .ml-wizard-icon svg {
@@ -117,16 +145,23 @@
 
 /* Botones de los pasos */
 .ml-wizard-btn-ml {
-  background: green;
+  background: #d97706;
   color: #fff;
   border: none;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
   margin-left: auto;
   width: 100px;
+  /* Animación de entrada del botón */
+  animation: bounceIn 0.6s ease-out;
+}
+
+.ml-wizard-btn-ml:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
 }
 
 .ml-wizard-btn-ml:disabled {
@@ -138,6 +173,8 @@
 .ml-wizard-check {
   margin-left: auto;
   flex-shrink: 0;
+  /* Animación de check */
+  animation: checkmark 0.5s ease-out;
 }
 
 .ml-wizard-check svg {
@@ -154,12 +191,16 @@
   border: none;
   border-radius: 20px;
   background-color: rgba(116, 115, 115, 0.041);
+  /* Animación de entrada del formulario */
+  animation: fadeInScale 0.7s ease-out;
 }
 
 .ml-wizard-icon-big {
   display: flex;
   justify-content: center;
   margin-bottom: 8px;
+  /* Animación del icono grande */
+  animation: bounceIn 0.8s ease-out 0.2s both;
 }
 
 .ml-wizard-icon-big svg {
@@ -172,6 +213,8 @@
   position: relative;
   display: flex;
   align-items: center;
+  /* Animación de entrada */
+  animation: slideInRight 0.5s ease-out 0.4s both;
 }
 
 .input-password-container input {
@@ -185,6 +228,12 @@
   cursor: pointer;
   color: #555;
   font-size: 1.2rem;
+  transition: all 0.2s ease;
+}
+
+.toggle-password-icon:hover {
+  color: #d97706;
+  transform: scale(1.1);
 }
 
 /* Inputs del formulario */
@@ -196,13 +245,22 @@
   font-size: 16px;
   color: #333;
   background: #fff;
-  transition: border-color 0.2s ease;
+  transition: all 0.2s ease;
   outline: none;
   margin: 0;
+  /* Animación de entrada */
+  animation: slideInRight 0.5s ease-out 0.3s both;
+}
+
+.ml-wizard-input:focus {
+  border-color: #d97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+  transform: translateY(-1px);
 }
 
 .ml-wizard-input.input-error {
   border-color: #f23d4f;
+  animation: shake 0.5s ease-out;
 }
 
 .ml-wizard-input.input-valid {
@@ -215,7 +273,7 @@
 
 /* Botón principal del formulario */
 .ml-wizard-btn-ml-2 {
-  background: green;
+  background: #d97706;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -223,14 +281,18 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
   width: 100%;
   height: 48px;
   margin-top: 8px;
+  /* Animación de entrada */
+  animation: slideInUp 0.6s ease-out 0.5s both;
 }
 
-button:hover {
-  opacity: 0.9;
+.ml-wizard-btn-ml-2:hover:not(:disabled) {
+  background: #b45309;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
 }
 
 .ml-wizard-btn-ml-2:disabled {
@@ -249,6 +311,15 @@ button:hover {
   font-size: 16px;
   border: none;
   cursor: pointer;
+  transition: all 0.2s ease;
+  /* Animación de entrada */
+  animation: fadeIn 0.5s ease-out 0.6s both;
+}
+
+.ml-wizard-btn-cancel:hover,
+.ml-wizard-btn-cancel-2:hover {
+  background: #c62828;
+  transform: translateY(-1px);
 }
 
 /* Enlaces */
@@ -256,16 +327,20 @@ button:hover {
   text-align: center;
   margin: 16px 0 0 0;
   font-size: 14px;
+  /* Animación de entrada */
+  animation: fadeIn 0.5s ease-out 0.7s both;
 }
 
 .ml-wizard-login-link a {
   color: #3483fa;
   text-decoration: none;
   font-weight: 400;
+  transition: all 0.2s ease;
 }
 
 .ml-wizard-login-link a:hover {
   text-decoration: underline;
+  color: #1976d2;
 }
 
 /* Mensajes de error y éxito */
@@ -274,6 +349,8 @@ button:hover {
   font-size: 12px;
   margin: 4px 0 0 0;
   line-height: 1.3;
+  /* Animación de error */
+  animation: slideInDown 0.3s ease-out;
 }
 
 .success-message,
@@ -284,12 +361,17 @@ button:hover {
   text-align: center;
   margin: 8px 0;
   padding: 8px;
-  background-color: none;
+  background-color: rgba(76, 175, 80, 0.1);
   border-radius: 4px;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  /* Animación de éxito */
+  animation: successPulse 0.6s ease-out;
 }
 
 .success-message-register {
   font-size: 20px;
+  /* Animación especial para registro exitoso */
+  animation: celebrationBounce 1s ease-out;
 }
 
 /* Términos y condiciones */
@@ -321,6 +403,209 @@ button:hover {
   text-decoration: underline;
 }
 
+/* ANIMACIONES */
+
+/* Animación principal de entrada */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación de entrada desde la izquierda */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 0.7;
+    transform: translateX(0);
+  }
+}
+
+/* Animación de entrada desde la derecha */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Animación de entrada desde abajo */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación de entrada desde arriba */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación de fade simple */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Animación de escala con fade */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animación de rebote */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animación de rotación */
+@keyframes rotateIn {
+  from {
+    opacity: 0;
+    transform: rotate(-180deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+}
+
+/* Animación de pulso para elemento activo */
+@keyframes pulseActive {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(151, 240, 17, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
+  }
+}
+
+/* Animación de checkmark */
+@keyframes checkmark {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(45deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(45deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Animación de shake para errores */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-5px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+/* Animación de pulso para éxito */
+@keyframes successPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animación de celebración */
+@keyframes celebrationBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(50px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1) translateY(-10px);
+  }
+  70% {
+    transform: scale(0.95) translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 480px) {
   .register-form-container {
@@ -348,6 +633,7 @@ button:hover {
   .ml-wizard-btn-cancel {
     width: 90%;
   }
+
   .ml-wizard-title {
     font-size: 20px;
   }
@@ -408,5 +694,14 @@ button:hover {
     margin: 10px auto;
     padding: 0;
     margin-top: 50px;
+  }
+}
+
+/* Desactivar animaciones para usuarios que prefieren movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -28,6 +28,7 @@
     "framer-motion": "12.4.10",
     "json2xls": "^0.1.2",
     "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.525.0",
     "mysql2": "^3.14.1",
     "nodemailer": "^7.0.3",
     "pdfkit": "^0.17.1",
