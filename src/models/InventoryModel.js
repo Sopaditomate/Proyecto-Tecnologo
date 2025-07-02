@@ -42,7 +42,7 @@ class InventoryModel {
     } finally {
       conn.release();
     }
-  }Ñ
+  }
 
   async getUnits() {
     const conn = await pool.getConnection();

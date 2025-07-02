@@ -1,4 +1,5 @@
-GET http://localhost:5001/api/products/featured?limit=5
+POST http://localhost:5001/api/recetas_crud/1200000/1400013/2 
+
 
 
 
