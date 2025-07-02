@@ -39,9 +39,11 @@ export function Recetasform() {
 
   const fetchMateriasPrimas = () => {
     axios
-
-      .get(`http://localhost:5001/api/materia/`) // Ajusta la URL según tu API
-      .then((res) => setMateriasPrimas(res.data))
+      .get(`http://localhost:5001/api/recetas_crud/materia/${id}`) // Ajusta la URL según tu API
+      .then((res) => { 
+        console.log("Datos de materias primas recibidos:", res.data[0]);
+        setMateriasPrimas(res.data[0]);
+      })
       .catch((err) => console.error("Error al cargar materias primas:", err));
   };console.log(fetchMateriasPrimas)
   const openInsertModal = () => {

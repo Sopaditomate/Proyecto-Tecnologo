@@ -18,26 +18,28 @@ class RecetasModel {
         }
     }
 
-
-
-    async getMateria() {
+    //dropdown de insumos
+    async getMateria(idProduct) {
         const conn = await pool.getConnection();
         try {
+            // Ejecutar el procedimiento almacenado pasándole el id_product como parámetro
             const [rows] = await conn.query(
-                `SELECT  NOMBRE_MATE, ID_MATERIA  FROM vw_active_recipe `
+                `CALL sp_get_recipe_material(?)`,
+                [idProduct]
             );
+
             return rows;
         } catch (error) {
-            console.error("Error al obtener la receta:", error);
-            throw new Error("No se pudo obtener la receta.");
+            console.error("Error al obtener los materiales:", error);
+            throw new Error("No se pudo obtener los materiales.");
         } finally {
             conn.release();
         }
     }
 
     // Insert new recipe
-    async addReceta(ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR) {
-        if (!ID_PRODUCTO || !ID_MATERIA || CANTIDAD_USAR <= 0) {
+    async addReceta(ID_PRODUCT, ID_MATERIA, CANTIDAD_USAR) {
+        if (!ID_PRODUCT || !ID_MATERIA || CANTIDAD_USAR <= 0) {
             throw new Error("Parámetros inválidos.");
         }
 
@@ -47,9 +49,9 @@ class RecetasModel {
 
             await conn.query(
                 `CALL sp_insert_recipe(?, ?, ?)`,
-                [ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR]
+                [ID_PRODUCT, ID_MATERIA, CANTIDAD_USAR]
             );
-
+            console.log('exito')
             await conn.commit();
         } catch (error) {
             await conn.rollback();
