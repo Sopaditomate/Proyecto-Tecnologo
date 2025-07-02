@@ -15,7 +15,6 @@ class RecetaController {
     }
 
  async getMaterias(req, res) {
-     
 
         try {
             const producto = await RecetaModel.getMateria();
@@ -25,6 +24,29 @@ class RecetaController {
             res.status(500).json({ message: "error al obtener receta" });
         }
     }
+
+async getMaterias(req, res) {
+    const { id } = req.params;  // Extraemos el idProduct desde los parámetros de la URL
+
+    try {
+        // Llamamos al modelo para obtener los insumos no utilizados
+        const materiales = await RecetaModel.getMateria(id);
+        
+        if (materiales.length === 0) {
+            return res.status(404).json({
+                message: "No se encontraron materiales no utilizados en la receta o usas todos los insumos posibles."
+            });
+        }
+
+        // Devolvemos los materiales encontrados
+        res.json(materiales);
+    } catch (err) {
+        console.error("Error al obtener los materiales:", err);
+        res.status(500).json({
+            message: "Error al obtener los materiales. Por favor, intente más tarde."
+        });
+    }
+}
 
 
 async UpdateRecetas(req, res) {
@@ -55,9 +77,8 @@ async DeleteRecetas(req, res) {
 
 
     async AddRecetas(req, res) {
-        const ID_PRODUCTO = req.params.id;
-        const { ID_MATERIA, CANTIDAD_USAR } = req.body;
-
+        
+        const { ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR } = req.body;
         
         if (!ID_MATERIA || !CANTIDAD_USAR) {
             return res.status(400).json({ error: "Faltan campos requeridos" });

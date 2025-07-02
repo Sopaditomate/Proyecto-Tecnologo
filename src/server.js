@@ -87,7 +87,6 @@ app.use("/api/export", product_pdf);
 import recetaRoutes from './routes/recetaRoutes.js';
 import receta_pdf from "../views/pages/admin/receta/receta_pdf.js";
 app.use("/api/export/", receta_pdf);
-app.use("/api/materia", recetaRoutes);
 app.use("/api/recetas_crud", recetaRoutes);
 app.use("/api/inventario", inventoryRoutes);
 

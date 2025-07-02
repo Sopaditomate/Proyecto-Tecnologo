@@ -7,8 +7,10 @@ const router = express.Router();
 //router.use(verifyToken, isAdmin);
 
 router.get('/:id(\\d+)', RecetaController.getRecetas);
-router.get('/', RecetaController.getMaterias);
+router.get('/materia/:id(\\d+)', RecetaController.getMaterias);
+
+router.post('/:id_product(\\d+)/:id_material(\\d+)', RecetaController.AddRecetas); 
 router.put('/:id_product(\\d+)/:id_material(\\d+)', RecetaController.UpdateRecetas);
 router.delete('/:id_product(\\d+)/:id_material(\\d+)', RecetaController.DeleteRecetas); 
-router.post('/:id_product(\\d+)/:id_material(\\d+)', RecetaController.AddRecetas); 
+
 export default router;
