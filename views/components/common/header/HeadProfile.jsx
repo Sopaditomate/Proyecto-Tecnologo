@@ -3,13 +3,13 @@ export function HeadProfile({ titleHead, subtittleHead }) {
   return (
     <section className="header-icon-profile">
       <header id="section-header-profile">
-        <figure className="circle-icon-profile">
+        {/* <figure className="circle-icon-profile">
           <img
             src="/assets/profileicon.svg"
             alt="Icono de perfil"
             className="profile-icon"
           />
-        </figure>
+        </figure> */}
         <h3 className="title-head">{titleHead}</h3>
         {subtittleHead && <p className="subtittle-head">{subtittleHead}</p>}
       </header>

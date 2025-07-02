@@ -45,23 +45,12 @@ export const getMenuItems = (UserType) => {
   switch (UserType) {
     case "catalog": //se hizo un pequeño cambio en catalogo respecto a las rutas y es que quito la parte de cuenta
       return [
-        {
-          name: "Inicio",
-          path: "/",
-        },
-        {
-          name: "Catalogo",
-          path: "/catalogo",
-        },
-        {
-          name: "Servicios",
-        },
-        {
-          name: "Contacto",
-        },
-        {
-          name: "Cerrar Sesion",
-        },
+        { name: "Inicio", path: "/" },
+        { name: "Catalogo", path: "/catalogo" },
+        { name: "Servicios" },
+        { name: "Contacto" },
+        { name: "Perfil", path: "/profile" }, // <-- AGREGA ESTO
+        { name: "Cerrar Sesion" },
       ];
     case "login":
       return [
@@ -71,7 +60,11 @@ export const getMenuItems = (UserType) => {
           path: "/catalogo",
           icon: "/assets/baguette-catalog.svg",
         },
-        { name: "Cuenta", icon: "/assets/profileiconwhite.svg" },
+        {
+          name: "Perfil",
+          path: "/profile",
+          icon: "/assets/profileiconwhite.svg",
+        }, // <-- CAMBIA "Cuenta" por "Perfil" y agrega path
         { name: "Contacto", icon: "/assets/contact.svg" },
         {
           name: "Cerrar Sesion",

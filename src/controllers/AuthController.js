@@ -199,7 +199,7 @@ class AuthController {
 
       // 5. Crear enlace de recuperación
       const resetUrl = `${
-        process.env.FRONTEND_URL || "http://localhost:5173"
+        process.env.CLIENT_URL || "http://localhost:5173"
       }/reset-password?token=${resetToken}`;
 
       // 6. Enviar correo
@@ -232,17 +232,14 @@ class AuthController {
     const { token, newPassword } = req.body;
     try {
       // Verifica el token
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET
-      );
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const user = await UserModel.findById(decoded.userId);
 
       if (
         !user ||
         user.reset_token !== token ||
-        !user.reset_token_expira ||
-        new Date(user.reset_token_expira) < new Date()
+        !user.reset_token_expires ||
+        new Date(user.reset_token_expires) < new Date()
       ) {
         return res.status(400).json({ message: "Token inválido o expirado." });
       }
@@ -263,7 +260,27 @@ class AuthController {
     }
   }
 
-  // Endpoint para verificar el correo
+  // Validar token de reset password
+  async validateResetToken(req, res) {
+    const { token } = req.body;
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await UserModel.findById(decoded.userId);
+
+      if (
+        !user ||
+        user.reset_token !== token ||
+        !user.reset_token_expires ||
+        new Date(user.reset_token_expires) < new Date()
+      ) {
+        return res.status(400).json({ message: "Token inválido o expirado." });
+      }
+
+      res.json({ message: "Token válido." });
+    } catch (error) {
+      return res.status(400).json({ message: "Token inválido o expirado." });
+    }
+  }
 }
 
 export default new AuthController();
