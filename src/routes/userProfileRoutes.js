@@ -1,6 +1,7 @@
 import express from "express";
 import * as UserProfileController from "../controllers/UserProfileController.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
+import { changePassword } from "../controllers/UserProfileController.js";
 
 const router = express.Router();
 
@@ -15,6 +16,9 @@ router.use(verifyToken);
 
 router.get("/profile", UserProfileController.getProfile);
 router.put("/profile", UserProfileController.updateProfile);
+
+// Cambiar contraseña
+router.post("/change-password", changePassword);
 
 // Rutas de verificación de teléfono
 router.post("/verify-phone/send", UserProfileController.sendPhoneVerification);

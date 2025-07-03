@@ -3,6 +3,8 @@ import { sendSMS } from "../services/sendSMS.js";
 import { sendEmail } from "../services/sendEmail.js";
 import jwt from "jsonwebtoken";
 import db from "../config/db.js";
+import bcrypt from "bcrypt";
+import userModel from "../models/userModel.js";
 
 export const getProfile = async (req, res) => {
   try {
@@ -312,6 +314,62 @@ export const getUserOrders = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error al obtener pedidos",
+    });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Todos los campos son obligatorios.",
+      });
+    }
+
+    // Busca el usuario
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuario no encontrado.",
+      });
+    }
+
+    // Verifica la contraseña actual
+    const valid = await bcrypt.compare(currentPassword, user.PASSWORD);
+    if (!valid) {
+      return res.status(400).json({
+        success: false,
+        message: "La contraseña actual es incorrecta.",
+      });
+    }
+
+    // No permitir la misma contraseña
+    const same = await bcrypt.compare(newPassword, user.PASSWORD);
+    if (same) {
+      return res.status(400).json({
+        success: false,
+        message: "La nueva contraseña debe ser diferente a la actual.",
+      });
+    }
+
+    // Hashea y actualiza la contraseña
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await userModel.updatePasswordAndClearToken(userId, hashed);
+
+    res.json({
+      success: true,
+      message: "¡Contraseña cambiada exitosamente!",
+    });
+  } catch (error) {
+    console.error("Error al cambiar contraseña:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error al cambiar la contraseña.",
     });
   }
 };

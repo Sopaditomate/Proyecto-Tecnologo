@@ -1,3 +1,46 @@
+/* Password input container with eye toggle */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container input {
+  padding-right: 50px !important;
+  width: 100%;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.password-toggle-btn:hover {
+  color: #374151;
+  background-color: #f1f5f9;
+}
+
+.password-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.password-toggle-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
 /* Success and error input styles for password change */
 /* Password change input validation styles */
 .input-error {
@@ -5,8 +48,8 @@
   background: #fff6f6 !important;
 }
 .input-success {
-  border: 2px solid #22c55e !important;
-  background: #f6fff8 !important;
+  border: 2px solid #10b981 !important;
+  background-color: #f0fdf4;
 }
 .input-error-text {
   color: #e53935;
@@ -59,20 +102,17 @@
   content: "\2713"; /* Check */
 }
 
-.label-change-password-profile
-{
+.label-change-password-profile {
   position: relative;
   top: 8px;
 }
 
-
-.form-change-password{
+.form-change-password {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 20px;
 }
-
 
 * {
   box-sizing: border-box;
@@ -255,11 +295,19 @@
 .profile-main {
   flex: 1;
   padding: 40px;
-  overflow-y: auto;
 }
 
 .tab-content {
   animation: fadeIn 0.4s ease-out;
+}
+
+.tab-content-2 {
+  display: flex;
+  justify-content: center;
+}
+
+#change-password-section {
+  width: 60%;
 }
 
 @keyframes fadeIn {
@@ -925,6 +973,14 @@ form {
     flex-direction: column;
     gap: 10px;
   }
+
+  .password-input-container input {
+    padding-right: 45px !important;
+  }
+
+  .password-toggle-btn {
+    right: 10px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -956,5 +1012,18 @@ form {
 
   .verification-card {
     padding: 20px;
+  }
+
+  .password-input-container input {
+    padding-right: 40px !important;
+  }
+
+  .password-toggle-btn {
+    right: 8px;
+  }
+
+  .password-toggle-btn svg {
+    width: 18px;
+    height: 18px;
   }
 }

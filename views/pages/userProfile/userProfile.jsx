@@ -5,10 +5,11 @@ import axios from "axios";
 
 import ChangePasswordSection from "./ChangePasswordSection";
 import "./user-profile.css";
-import ProfileSidebar from "./ProfileSidebar";
+import ProfileSidebar from "./ProfileSideBar";
 import ProfileForm from "./ProfileForm";
 import OrdersSection from "./OrdersSection";
 import VerificationSection from "./VerificationSection";
+import { registerSchema } from "../../utils/validationSchema";
 
 // Configurar la URL base de la API
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -32,6 +33,7 @@ export default function Profile() {
   const [verificationLink, setVerificationLink] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [touchedFields, setTouchedFields] = useState({});
+  const [errors, setErrors] = useState({});
 
   // Configurar axios con el token y URL base
   useEffect(() => {
@@ -535,6 +537,9 @@ export default function Profile() {
                 setForm={setForm}
                 setTouchedFields={setTouchedFields}
                 getFieldError={getFieldError}
+                touchedFields={touchedFields}
+                errors={errors}
+                setErrors={setErrors}
               />
             )}
             {activeTab === "orders" && (
@@ -567,6 +572,7 @@ export default function Profile() {
             {activeTab === "password" && (
               <ChangePasswordSection
                 email={profile.USUARIO || profile.email || ""}
+                showNotification={showNotification}
               />
             )}
           </div>
