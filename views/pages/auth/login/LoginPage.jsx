@@ -1,5 +1,5 @@
 "use client";
-
+import { BackToHome } from "../../../components/common/backToHome/BackToHome.jsx";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -7,6 +7,7 @@ import { HeadProfile } from "../../../components/common/header/HeadProfile.jsx";
 import axios from "axios";
 import { useAuth } from "../../../context/AuthContext";
 import { loginSchema } from "../../../utils/validationSchema";
+import { User, Lock } from "lucide-react";
 import "./login-page.css";
 
 export function LoginPage() {
@@ -18,7 +19,6 @@ export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { setUser } = useAuth();
-
   const redirectPath = location.state?.path;
 
   const handleChange = async (e) => {
@@ -56,12 +56,13 @@ export function LoginPage() {
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/auth/login`,
         formData,
-        { withCredentials: true }
+        {
+          withCredentials: true,
+        }
       );
 
       if (response.data.success) {
         setUser(response.data.user);
-
         // Redirección condicional según el rol
         if (redirectPath) {
           navigate(redirectPath);
@@ -86,82 +87,134 @@ export function LoginPage() {
   }
 
   return (
-    <section id="section-login">
-      <form onSubmit={handleLogin} className="form-login">
-        <HeadProfile titleHead={"Iniciar Sesión"} />
-
-        {serverError && <p className="error-message">{serverError}</p>}
-
-        <div id="container-email-password">
-          <input
-            type="email"
-            name="email"
-            placeholder="Usuario (Correo electrónico)"
-            className={`input-email-user${
-              errors.email
-                ? " input-error"
-                : formData.email
-                ? " input-valid"
-                : ""
-            }`}
-            value={formData.email}
-            onChange={handleChange}
-          />
-          {errors.email && <p className="error-message">{errors.email}</p>}
-
-          <div className="input-password-container">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Contraseña"
-              className={`input-password-login${
-                errors.password
-                  ? " input-error"
-                  : formData.password
-                  ? " input-valid"
-                  : ""
-              }`}
-              value={formData.password}
-              onChange={handleChange}
-            />
-            <span
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="toggle-password-icon"
-            >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </span>
+    <section className="login-section">
+      <div className="login-container">
+        <BackToHome />
+        {/* Logo y encabezado */}
+        {/* <div className="login-header">
+          <div className="logo-container">
+            
           </div>
-          {errors.password && (
-            <p className="error-message">{errors.password}</p>
-          )}
-        </div>
+          <h1 className="bakery-title">Panadería Artesanal</h1>
+          <p className="bakery-subtitle">El sabor de la tradición</p>
+        </div> */}
 
-        <div id="container-checkbox-forgot">
-          <div className="div-checkbox-p">
-            <input
-              type="checkbox"
-              className="input-checkbox"
-              id="remember-me"
-            />
-            <label htmlFor="remember-me">Recordar datos</label>
+        <div className="login-card">
+          <div className="card-header">
+            <HeadProfile titleHead={"Iniciar Sesión"} />
+            <p className="card-description">
+              Accede a tu cuenta para gestionar tu panadería
+            </p>
           </div>
-          <Link to="/forgotYourPassword" className="link-forgot-your-password">
-            <span>¿Olvidaste tu contraseña?</span>
-          </Link>
+
+          <form onSubmit={handleLogin} className="login-form">
+            {serverError && <div className="server-error">{serverError}</div>}
+
+            <div className="form-fields">
+              {/* Campo Email */}
+              <div className="field-group">
+                <label htmlFor="email" className="field-label">
+                  Correo Electrónico
+                </label>
+                <div className="input-container">
+                  <User className="input-icon" />
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    placeholder="tu@email.com"
+                    className={`form-input ${
+                      errors.email
+                        ? "input-error"
+                        : formData.email
+                        ? "input-valid"
+                        : ""
+                    }`}
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+                {errors.email && (
+                  <p className="error-message">{errors.email}</p>
+                )}
+              </div>
+
+              {/* Campo Contraseña */}
+              <div className="field-group">
+                <label htmlFor="password" className="field-label">
+                  Contraseña
+                </label>
+                <div className="input-container">
+                  <Lock className="input-icon" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    id="password"
+                    placeholder="••••••••"
+                    className={`form-input ${
+                      errors.password
+                        ? "input-error"
+                        : formData.password
+                        ? "input-valid"
+                        : ""
+                    }`}
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="password-toggle"
+                  >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="error-message">{errors.password}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Recordar sesión y recuperar contraseña */}
+            <div className="form-options">
+              <div className="checkbox-container">
+                <input
+                  type="checkbox"
+                  className="checkbox-input"
+                  id="remember-me"
+                />
+                <label htmlFor="remember-me" className="checkbox-label">
+                  Recordar datos
+                </label>
+              </div>
+              <Link to="/forgot-password" className="forgot-password-link">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+
+            {/* Botones */}
+            <div className="button-group">
+              <button type="submit" className="login-button" disabled={loading}>
+                {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+              </button>
+
+              <div className="register-section">
+                <p className="register-text">
+                  ¿No tienes una cuenta?{" "}
+                  <Link to="/register" className="register-link">
+                    Regístrate aquí
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </form>
         </div>
 
-        <div className="button-container">
-          <button type="submit" className="btn-login" disabled={loading}>
-            {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
-          </button>
-          <Link to="/register" className="link-register">
-            <button type="button" className="btn-register">
-              Registrarse
-            </button>
-          </Link>
+        {/* Footer */}
+        <div className="login-footer">
+          <p>© 2024 Panadería Artesanal. Todos los derechos reservados.</p>
         </div>
-      </form>
+      </div>
     </section>
   );
 }

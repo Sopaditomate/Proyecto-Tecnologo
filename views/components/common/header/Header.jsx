@@ -112,14 +112,11 @@ export function Header({
         />
 
         <span className="header-profile-name">
-          {
-            // Cambiar el nombre según el rol con interpolacion de variables o expresiones
-            isAdmin
-              ? `Administrador ${user?.nombres}`
-              : user?.nombres
-              ? `Cliente ${user.nombres}`
-              : "Usuario"
-          }
+          {isAdmin
+            ? `Administrador ${user?.nombres}`
+            : user?.nombres
+            ? `Cliente ${user.nombres}`
+            : "Usuario"}
         </span>
 
         {/* Opciones del desplegable: mostrar para ambos (admin y usuario) */}
@@ -154,7 +151,13 @@ export function Header({
   };
 
   // ====== MENÚ LATERAL ======
-  const menuItems = itemMenu.filter((item) => item.name !== "Cerrar Sesion");
+  const menuItems = itemMenu.filter(
+    (item) =>
+      item.name !== "Cerrar Sesion" &&
+      (isAuthenticated || (!isAuthenticated && item.name !== "Perfil"))
+  );
+  // Así, "Perfil" solo aparece si isAuthenticated es true
+
   const cerrarSesionItem = itemMenu.find(
     (item) => item.name === "Cerrar Sesion"
   );

@@ -3,6 +3,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap");
 
+body {
+  background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 50%, #fef3c7 100%);
+}
 /* ===== ESTILOS GENERALES DE LA PÁGINA DE INICIO ===== */
 .home-container {
   width: 100%;

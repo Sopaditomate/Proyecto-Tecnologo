@@ -9,7 +9,7 @@ import "./register-form.css";
 const icons = {
   email: (
     <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-      <rect width="24" height="24" rx="12" fill="green" />
+      <rect width="24" height="24" rx="12" fill="#d97706" />
       <path
         d="M7 8h10a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2Zm0 0 5 4 5-4"
         stroke="white"
@@ -21,7 +21,7 @@ const icons = {
   ),
   user: (
     <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-      <rect width="24" height="24" rx="12" fill="green" />
+      <rect width="24" height="24" rx="12" fill="#d97706" />
       <circle cx="12" cy="10" r="3" stroke="white" strokeWidth="1.5" />
       <path
         d="M7 17a5 5 0 0 1 10 0"
@@ -33,7 +33,7 @@ const icons = {
   ),
   lock: (
     <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-      <rect width="24" height="24" rx="12" fill="green" />
+      <rect width="24" height="24" rx="12" fill="#d97706" />
       <rect
         x="7"
         y="11"
@@ -92,7 +92,7 @@ export function RegisterWizard() {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
       return {
         step: saved?.step ?? -1,
-        formData: saved?.formData ?? {
+        formData: {
           email: "",
           nombres: "",
           apellidos: "",
@@ -136,9 +136,9 @@ export function RegisterWizard() {
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ step, completedSteps, formData })
+      JSON.stringify({ step, completedSteps }) // <-- sin formData
     );
-  }, [step, completedSteps, formData]);
+  }, [step, completedSteps]);
 
   // Limpiar localStorage al finalizar registro
   useEffect(() => {
