@@ -53,11 +53,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Manejo de errores
-app.use((err, req, res, next) => {
-  console.error("Error en el servidor:", err);
-  res.status(500).json({ error: "Error interno del servidor" });
-});
+
 
 app.use(express.json()); // permite interpretar el cuerpo de las peticiones como JSON.
 app.use(cookieParser()); // permite leer cookies que se envían con las peticiones.
@@ -68,38 +64,45 @@ import productRoutes from "./routes/productRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
-
-//Se importan las nuevas rutas para inventario, los endpoints de la api
 import inventoryRoutes from "./routes/inventoryRoutes.js";
+import productAdminRoutes from "./routes/productAdminRoutes.js";
+import product_pdf from "../views/pages/admin/products/product_pdf.js";
+
+import recetaRoutes from "./routes/recetaRoutes.js";
+import receta_pdf from "../views/pages/admin/receta/receta_pdf.js";
+
+import inventario_pdf from "../views/pages/admin/inventory/inventario_pdf.js";
+import userProfileRoutes from "./routes/userProfileRoutes.js";
+
+
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
-
-//productos
-import productAdminRoutes from "./routes/productAdminRoutes.js";
 app.use("/api/productos_crud", productAdminRoutes);
-import product_pdf from "../views/pages/admin/products/product_pdf.js";
-app.use("/api/export", product_pdf);
-//recetas
-import recetaRoutes from "./routes/recetaRoutes.js";
-import receta_pdf from "../views/pages/admin/receta/receta_pdf.js";
 
-//para inventario generacion de excel y pdf
-import inventario_pdf from "../views/pages/admin/inventory/inventario_pdf.js";
-app.use("/api/export", inventario_pdf);
+//esto hay que actualizarlo en otros archivos para no tener errores de colision:
+// app.use("/api/export/products", product_pdf);
+// app.use("/api/export/inventory", inventario_pdf);
+// app.use("/api/export/recipes", receta_pdf);
 
-//usuario
-import userProfileRoutes from "./routes/userProfileRoutes.js";
-app.use("/api/user", userProfileRoutes);
-
+app.use("/api/export/", product_pdf);
+app.use("/api/export/", inventario_pdf);
 app.use("/api/export/", receta_pdf);
+
+app.use("/api/user", userProfileRoutes);
 app.use("/api/recetas_crud", recetaRoutes);
 app.use("/api/inventario", inventoryRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running!");
+});
+
+// Manejo de errores
+app.use((err, req, res, next) => {
+  console.error("Error en el servidor:", err);
+  res.status(500).json({ error: "Error interno del servidor" });
 });
 
 //inicializador del servidor

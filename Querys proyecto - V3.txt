@@ -897,12 +897,10 @@ SELECT
   p.description AS DESCRIPCION,
   p.image_url AS IMAGEN_URL,
   p.rating AS NOTA_ACTUAL,
-  p.warning AS ADVERTENCIA
+  p.warning AS ADVERTENCIA,
+  p.id_state AS ID_STATE  -- Agregar esta línea
 FROM product p
 JOIN product_type t ON p.id_product_type = t.id_product_type
-WHERE 
-  p.id_state = 1
-  AND t.id_state = 1;
 
 -------------------------------------PROCEDURES----------------------------------
 
@@ -1657,12 +1655,6 @@ END $$
 
 DELIMITER ;
 
-
-b:
-
-
-
-
 DELIMITER $$
 
 CREATE PROCEDURE sp_get_featured_products(IN p_limit INT)
@@ -1682,12 +1674,61 @@ BEGIN
 END$$
 DELIMITER ;
 
-
 DELIMITER $$
 CREATE or REPLACE PROCEDURE sp_get_categories()
 BEGIN
     SELECT * FROM vw_active_categories;
 END$$
+DELIMITER ;
+
+//lo de recetas de brandon
+
+DROP PROCEDURE IF EXISTS sp_insert_product_carrito_admin;
+DELIMITER $$
+CREATE PROCEDURE sp_insert_product_carrito_admin(
+    IN p_id_catalog INT,
+    IN p_id_product INT,
+    IN p_discount DECIMAL(5,2)
+)
+BEGIN
+    DECLARE v_id_state INT;
+
+    -- Obtener el estado actual del producto
+    SELECT id_state INTO v_id_state
+    FROM product
+    WHERE id_product = p_id_product;
+
+    -- Actualizar el estado si es 3 (Inactivo)
+    IF v_id_state = 3 THEN
+        UPDATE product
+        SET id_state = 1
+        WHERE id_product = p_id_product;
+    END IF;
+
+    -- Insertar el producto en la tabla catalog
+    INSERT INTO catalog (id_catalog, id_product, discount)
+    VALUES (p_id_catalog, p_id_product, p_discount);
+END $$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_get_recipe_material(IN product_id INT)
+BEGIN
+    SELECT 
+        rm.id_material AS ID_MATERIA, 
+        rm.name AS NOMBRE_MATE
+    FROM 
+        raw_material rm
+    WHERE 
+        rm.id_state = 1
+        AND rm.id_material NOT IN (
+            SELECT r.id_material
+            FROM recipe r
+            WHERE r.id_product = product_id  -- Usamos el parámetro product_id
+        );
+END $$
+
 DELIMITER ;
 
 
