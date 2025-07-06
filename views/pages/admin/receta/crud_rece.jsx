@@ -3,9 +3,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import './receta.css';
 import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export function Recetasform() {
   const [recetas, setRecetas] = useState([]);
+  const [materiasPrimas, setMateriasPrimas] = useState([]);
   const [editReceta, setEditReceta] = useState(null);
   const [formData, setFormData] = useState(initialFormState());
   const [showInsertModal, setShowInsertModal] = useState(false);
@@ -31,8 +34,19 @@ export function Recetasform() {
   useEffect(() => {
     if (id) {
       fetchRecetas(); // Fetch recipes when the ID changes
+      fetchMateriasPrimas();
     }
   }, [id]);
+
+  const fetchMateriasPrimas = () => {
+    axios
+      .get(`http://localhost:5001/api/recetas_crud/materia/${id}`) // Ajusta la URL según tu API
+      .then((res) => { 
+        console.log("Datos de materias primas recibidos:", res.data[0]);
+        setMateriasPrimas(res.data[0]);
+      })
+      .catch((err) => console.error("Error al cargar materias primas:", err));
+  };
 
   const openInsertModal = () => {
     setFormData(initialFormState());
@@ -64,37 +78,38 @@ export function Recetasform() {
   };
 
   // Handle adding a new recipe
-    const handleInsert = (e) => {
-        e.preventDefault();
-        if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
-            alert("Por favor complete todos los campos");
-            return;
-        }
+  const handleInsert = (e) => {
+    e.preventDefault();
+    if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
+      toast.error("Por favor complete todos los campos", { closeButton: false });
+      return;
+    }
 
-        const dataToSend = {
-            ID_PRODUCTO: id, // Asegúrate de que el ID del producto esté incluido
-            ID_MATERIA: formData.ID_MATERIA,
-            CANTIDAD_USAR: formData.CANTIDAD_USAR
-        };
-
-        axios
-            .post(`http://localhost:5001/api/recetas_crud/${id}`, dataToSend)
-            .then(() => {
-                alert("Receta agregada correctamente");
-                fetchRecetas();
-                closeModals();
-            })
-            .catch((err) => {
-                console.error("Error al agregar receta:", err);
-                alert("Error al insertar receta");
-            });
+    const dataToSend = {
+      ID_PRODUCTO: id, 
+      ID_MATERIA: formData.ID_MATERIA,
+      CANTIDAD_USAR: formData.CANTIDAD_USAR
     };
+    console.log("Datos a enviar:", dataToSend);
+    axios
+      .post(`http://localhost:5001/api/recetas_crud/${id}/${formData.ID_MATERIA}`, dataToSend)
+      .then(() => {
+        toast.success("Receta agregada correctamente", { closeButton: false });
+        fetchRecetas();
+        fetchMateriasPrimas();
+        closeModals();
+      })
+      .catch((err) => {
+        console.error("Error al agregar receta:", err);
+        toast.error("Error al insertar receta", { closeButton: false });
+      });
+  };
 
   // Handle updating a selected recipe
   const handleUpdate = (e) => {
     e.preventDefault();
     if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
-      alert("Por favor complete todos los campos");
+      toast.error("Por favor complete todos los campos", { closeButton: false });
       return;
     }
 
@@ -107,32 +122,33 @@ export function Recetasform() {
       { CANTIDAD_USAR: formData.CANTIDAD_USAR } // Asegúrate de que este campo esté en el cuerpo
     )
       .then(() => {
-        alert("Receta actualizada correctamente");
+        toast.success("Receta actualizada correctamente", { closeButton: false });
         fetchRecetas();
+        fetchMateriasPrimas();
         closeModals();
       })
       .catch((err) => {
         console.error("Error al actualizar receta:", err);
-        alert("Error al actualizar receta");
+        toast.error("Error al actualizar receta", { closeButton: false });
       });
-
   };
+
   // Handle deleting a recipe
   const handleDelete = (receta) => {
     if (window.confirm("¿Estás seguro de eliminar esta receta?")) {
       axios
         .delete(`http://localhost:5001/api/recetas_crud/${id}/${receta.ID_MATERIA}`)
         .then(() => {
-          alert("Receta eliminada correctamente");
+          toast.success("Receta eliminada correctamente", { closeButton: false });
           fetchRecetas();
+          fetchMateriasPrimas();
         })
         .catch((err) => {
           console.error("Error al eliminar receta", err);
-          alert("No se pudo eliminar la receta");
+          toast.error("No se pudo eliminar la receta", { closeButton: false });
         });
     }
   };
-
 
   // Handle going back to the previous page
   const handleGoBack = () => {
@@ -142,9 +158,10 @@ export function Recetasform() {
   // Extract unique materia prima options for the select input
   const tipoMateria = Array.from(
     new Map(
-      recetas.map(p => [p.ID_MATERIA, { ID_MATERIA: p.ID_MATERIA, NOMBRE: p.NOMBRE_MATE }])
+      materiasPrimas.map(p => [p.ID_MATERIA, { ID_MATERIA: p.ID_MATERIA, NOMBRE: p.NOMBRE_MATE }])
     ).values()
-  );
+  ); 
+  console.log(tipoMateria)
 
   // Render the form fields
   const renderFormFields = () => (
@@ -179,7 +196,7 @@ export function Recetasform() {
 
   return (
     <Container className="container mt-4">
-      <h2>Recetas del Producto </h2>
+      <h2>Recetas del Producto</h2>
       {/* Export Buttons */}
       <div className="mb-3">
         <Button
@@ -214,30 +231,32 @@ export function Recetasform() {
           </tr>
         </thead>
         <tbody>
-          {recetas.map((receta) => (
-            <tr key={`${receta.ID_PRODUCT}_${receta.ID_MATERIAL}`}>
-              <td>{receta.NOMBRE_PROD}</td>
-              <td>{receta.NOMBRE_MATE}</td>
-              <td>{receta.CANTIDAD_USAR}</td>
-              <td>
-                <Button
-                  variant="warning"
-                  className="btn-sm me-2"
-                  onClick={() => openEditModal(receta)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  variant="danger"
-                  className="btn-sm"
-                  onClick={() => handleDelete(receta)} // Cambiado aquí para pasar el objeto receta completo
-                >
-                  Eliminar
-                </Button>
-
-              </td>
-            </tr>
-          ))}
+          {recetas.map((receta) => {
+            const key = receta.ID_PRODUCT && receta.ID_MATERIAL ? `${receta.ID_PRODUCT}_${receta.ID_MATERIAL}` : receta.ID_MATERIA; // Cambia esto según tu lógica
+            return (
+              <tr key={key}>
+                <td>{receta.NOMBRE_PROD}</td>
+                <td>{receta.NOMBRE_MATE}</td>
+                <td>{receta.CANTIDAD_USAR}</td>
+                <td>
+                  <Button
+                    variant="warning"
+                    className="btn-sm me-2"
+                    onClick={() => openEditModal(receta)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    variant="danger"
+                    className="btn-sm"
+                    onClick={() => handleDelete(receta)}
+                  >
+                    Eliminar
+                  </Button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </Table>
 
@@ -272,6 +291,9 @@ export function Recetasform() {
           </Form>
         </Modal.Body>
       </Modal>
+
+      {/* Toast Container */}
+      <ToastContainer />
     </Container>
   );
 }
