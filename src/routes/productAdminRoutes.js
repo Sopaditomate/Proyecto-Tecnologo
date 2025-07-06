@@ -10,4 +10,5 @@ router.get('/', ProductAdminController.getProductos);
 router.put('/:id(\\d+)', ProductAdminController.UpdateProductos);
 router.delete('/product/:id(\\d+)', ProductAdminController.DeleteProductos);
 router.post('/', ProductAdminController.AddProductos);
+router.post('/cart', ProductAdminController.AddProductosToCart);
 export default router;

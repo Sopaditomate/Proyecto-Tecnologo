@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import './Products.css';
 import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const AdminProducts = () => {
   const [productos, setProductos] = useState([]);
@@ -10,6 +12,8 @@ export const AdminProducts = () => {
   const [formProd, setFormProd] = useState(initialFormState());
   const [showInsertModal, setShowInsertModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [formCartProd, setFormCartProd] = useState(initialCartFormState());
+  const [showCartModal, setShowCartModal] = useState(false);
 
   const navigate = useNavigate();
 
@@ -22,6 +26,13 @@ export const AdminProducts = () => {
       IMAGEN_URL: "",
       NOTA_ACTUAL: "",
       ADVERTENCIA: ""
+    };
+  }
+  
+  function initialCartFormState() {
+    return {
+      id_product: "",
+      discount: ""
     };
   }
 
@@ -55,9 +66,36 @@ export const AdminProducts = () => {
     setShowEditModal(true);
   };
 
+  const openCartModal = (producto) => {
+    setFormCartProd({
+      id_product: producto.ID_PRODUCTO,
+      discount: ""
+    });
+    setShowCartModal(true);
+  };
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    if (!formCartProd.discount) {
+      toast.error("Por favor completa el descuento", { closeButton: false });
+      return;
+    }
+
+    axios.post("http://localhost:5001/api/productos_crud/cart", formCartProd)
+      .then(() => {
+        toast.success("Producto agregado al carrito correctamente", { closeButton: false });
+        closeModals();
+      })
+      .catch(err => {
+        console.error("Error al agregar producto al carrito", err);
+        toast.error("Error al agregar producto al carrito", { closeButton: false });
+      });
+  };
+
   const closeModals = () => {
     setShowInsertModal(false);
     setShowEditModal(false);
+    setShowCartModal(false);
     setEditProd(null);
   };
 
@@ -69,38 +107,38 @@ export const AdminProducts = () => {
   const handleInsert = (e) => {
     e.preventDefault();
     if (!formProd.NOMBRE || !formProd.PRECIO) {
-      alert("Por favor completa al menos el nombre y precio");
+      toast.error("Por favor completa al menos el nombre y precio", { closeButton: false });
       return;
     }
 
     axios.post("http://localhost:5001/api/productos_crud", formProd)
       .then(() => {
-        alert("Producto insertado correctamente");
+        toast.success("Producto insertado correctamente", { closeButton: false });
         fetchProductos();
         closeModals();
       })
       .catch(err => {
         console.error("Error al insertar producto", err);
-        alert("Error al insertar producto");
+        toast.error("Error al insertar producto", { closeButton: false });
       });
   };
 
   const handleUpdate = (e) => {
     e.preventDefault();
     if (!formProd.NOMBRE || !formProd.PRECIO) {
-      alert("Por favor completa al menos el nombre y precio");
+      toast.error("Por favor completa al menos el nombre y precio", { closeButton: false });
       return;
     }
 
     axios.put(`http://localhost:5001/api/productos_crud/${editProd.ID_PRODUCTO}`, formProd)
       .then(() => {
-        alert("Producto actualizado correctamente");
+        toast.success("Producto actualizado correctamente", { closeButton: false });
         fetchProductos();
         closeModals();
       })
       .catch(err => {
         console.error("Error al actualizar producto", err);
-        alert("Error al actualizar producto");
+        toast.error("Error al actualizar producto", { closeButton: false });
       });
   };
 
@@ -109,12 +147,12 @@ export const AdminProducts = () => {
       axios
         .delete(`http://localhost:5001/api/productos_crud/product/${id}`)
         .then(() => {
-          alert("Producto eliminado correctamente");
+          toast.success("Producto eliminado correctamente", { closeButton: false });
           fetchProductos();
         })
         .catch((err) => {
           console.error("Error al eliminar producto", err);
-          alert("No se pudo eliminar el producto");
+          toast.error("No se pudo eliminar el producto", { closeButton: false });
         });
     }
   };
@@ -167,23 +205,23 @@ export const AdminProducts = () => {
   return (
     <Container className="mt-4">
       <h2>Gestión de Productos</h2>
- {/* Export Buttons */}
-  <div className="mb-3">
-    <Button
-      variant="outline-primary"
-      className="me-2"
-      onClick={() => window.open(`http://localhost:5001/api/export/pdf`)}
-    >
-      Exportar PDF
-    </Button>
+      {/* Export Buttons */}
+      <div className="mb-3">
+        <Button
+          variant="outline-primary"
+          className="me-2"
+          onClick={() => window.open(`http://localhost:5001/api/export/pdf`)}
+        >
+          Exportar PDF
+        </Button>
 
-    <Button
-      variant="outline-success"
-      onClick={() => window.open(`http://localhost:5001/api/export/excel`)}
-    >
-      Exportar Excel
-    </Button>
-  </div>
+        <Button
+          variant="outline-success"
+          onClick={() => window.open(`http://localhost:5001/api/export/excel`)}
+        >
+          Exportar Excel
+        </Button>
+      </div>
       <Button variant="success" className="mb-3" onClick={openInsertModal}>
         Agregar Nuevo Producto
       </Button>
@@ -199,6 +237,7 @@ export const AdminProducts = () => {
             <th>IMAGEN</th>
             <th>ADVERTENCIA</th>
             <th>ACCIONES</th>
+            <th>ESTADO</th>
           </tr>
         </thead>
         <tbody>
@@ -211,15 +250,21 @@ export const AdminProducts = () => {
               <td>{prod.NOTA_ACTUAL}</td>
               <td>{prod.IMAGEN_URL}</td>
               <td>{prod.ADVERTENCIA}</td>
+              <td className={`${prod.ID_STATE === 3 ? 'bg-danger' : prod.ID_STATE === 2 ? 'bg-warning' : ''}`}>
+                {prod.ID_STATE === 3 ? 'Inactivo' : prod.ID_STATE === 1 ? 'Activo' : 'Activo'}
+              </td>
               <td className="container-buttons-product">
                 <Button variant="warning" size="sm" onClick={() => openEditModal(prod)} className="me-2">
                   Editar
                 </Button>
                 <Button variant="danger" size="sm" onClick={() => handleDelete(prod.ID_PRODUCTO)} className="me-2">
-                  Eliminar
+                  Inactivar
                 </Button>
                 <Button variant="info" size="sm" onClick={() => navigate(`/crud_rece/${prod.ID_PRODUCTO}`)}>
                   Ver
+                </Button>
+                <Button variant="success" size="sm" onClick={() => openCartModal(prod)}>
+                  Insertar Carrito
                 </Button>
               </td>
             </tr>
@@ -258,6 +303,33 @@ export const AdminProducts = () => {
           </Form>
         </Modal.Body>
       </Modal>
+
+      {/* Modal Agregar al Carrito */}
+      <Modal show={showCartModal} onHide={closeModals}>
+        <Modal.Header closeButton>
+          <Modal.Title>Agregar Producto al Carrito</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleAddToCart}>
+            <Form.Group className="mb-3">
+              <Form.Label>Descuento</Form.Label>
+              <Form.Control
+                type="text"
+                name="discount"
+                value={formCartProd.discount}
+                onChange={(e) => setFormCartProd(prev => ({ ...prev, discount: e.target.value }))}
+              />
+            </Form.Group>
+            <Button type="submit" variant="primary">Agregar al Carrito</Button>
+            <Button type="button" variant="secondary" className="ms-2" onClick={closeModals}>
+              Cancelar
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Toast Container */}
+      <ToastContainer />
     </Container>
   );
 };

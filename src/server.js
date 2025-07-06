@@ -95,7 +95,6 @@ import userProfileRoutes from "./routes/userProfileRoutes.js";
 app.use("/api/user", userProfileRoutes);
 
 app.use("/api/export/", receta_pdf);
-
 app.use("/api/recetas_crud", recetaRoutes);
 app.use("/api/inventario", inventoryRoutes);
 
