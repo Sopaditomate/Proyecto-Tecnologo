@@ -19,7 +19,7 @@ class ProductModel {
       throw error;
     }
   }
-///////////////////////////////
+
   // Obtener un producto por ID
   async getProductById(id) {
     try {
@@ -41,18 +41,24 @@ class ProductModel {
     }
   }
 
-  // Obtener categorías únicas - ya funciona
+  // Obtener categorías únicas
   async getCategories() {
     try {
       const [[rows]] = await pool.query("CALL sp_get_categories()");
-      return ["Todos", ...rows.map((row) => row.NOMBRE)];
+      return [
+        { id: 0, nombre: "Todos" },
+        ...rows.map((row) => ({
+          id: row.ID,
+          nombre: row.NOMBRE,
+        })),
+      ];
     } catch (error) {
       console.error("Error al obtener categorías:", error);
       throw error;
     }
   }
 
-  // Filtrar productos por término de búsqueda y categoría - funciona el endpoint, pero no la barra de busqueda
+  // Filtrar productos por término de búsqueda y categoría
   async filterProducts(searchTerm, selectedCategory) {
     try {
       const [[rows]] = await pool.query("CALL sp_filter_products(?, ?)", [
@@ -74,7 +80,7 @@ class ProductModel {
     }
   }
 
-  // Obtener productos destacados por calificación - tambien funciona el endpoint, el problema de la barra de busqueda persiste
+  // Obtener productos destacados por calificación
   async getFeaturedProducts(limit = 3) {
     try {
       const [[rows]] = await pool.query("CALL sp_get_featured_products(?)", [

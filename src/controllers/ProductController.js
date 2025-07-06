@@ -68,12 +68,10 @@ class ProductController {
       res.json(products);
     } catch (error) {
       console.error("Error al obtener productos destacados:", error);
-      res
-        .status(500)
-        .json({
-          message: "Error al obtener productos destacados",
-          error: error.message,
-        });
+      res.status(500).json({
+        message: "Error al obtener productos destacados",
+        error: error.message,
+      });
     }
   }
 }

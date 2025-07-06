@@ -7,7 +7,6 @@ class UserModel {
     return rows[0];
   }
 
-
   async create({
     email,
     password,
@@ -25,24 +24,20 @@ class UserModel {
     return rows[0]?.userId;
   }
 
-   
   async getUserInfo(userId) {
     const [[rows]] = await pool.query("CALL sp_get_user_info(?)", [userId]);
     return rows[0] || null;
   }
-    
 
   async getClientId(userId) {
     const [[rows]] = await pool.query("CALL sp_get_client_id(?)", [userId]);
     return rows.length ? rows[0].ID_CLIENTE : null;
   }
-   
 
   async findById(userId) {
-    const [[rows]] = await pool.query("CALL sp_find_user_by_id(?)", [userId]);
-    return rows[0] || null;
+    const [[rows]] = await pool.query("CALL sp_get_user_by_id(?)", [userId]);
+    return rows[0]; 
   }
- 
 
   async saveResetToken(userId, token) {
     await pool.query("CALL sp_save_reset_token(?, ?)", [userId, token]);

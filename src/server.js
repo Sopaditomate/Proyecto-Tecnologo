@@ -83,12 +83,16 @@ app.use("/api/productos_crud", productAdminRoutes);
 import product_pdf from "../views/pages/admin/products/product_pdf.js";
 app.use("/api/export", product_pdf);
 //recetas
-import recetaRoutes from './routes/recetaRoutes.js';
+import recetaRoutes from "./routes/recetaRoutes.js";
 import receta_pdf from "../views/pages/admin/receta/receta_pdf.js";
 
 //para inventario generacion de excel y pdf
 import inventario_pdf from "../views/pages/admin/inventory/inventario_pdf.js";
 app.use("/api/export", inventario_pdf);
+
+//usuario
+import userProfileRoutes from "./routes/userProfileRoutes.js";
+app.use("/api/user", userProfileRoutes);
 
 app.use("/api/export/", receta_pdf);
 
