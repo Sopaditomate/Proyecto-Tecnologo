@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import './receta.css';
 import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export function Recetasform() {
   const [recetas, setRecetas] = useState([]);
@@ -36,7 +38,6 @@ export function Recetasform() {
     }
   }, [id]);
 
-
   const fetchMateriasPrimas = () => {
     axios
       .get(`http://localhost:5001/api/recetas_crud/materia/${id}`) // Ajusta la URL según tu API
@@ -45,7 +46,8 @@ export function Recetasform() {
         setMateriasPrimas(res.data[0]);
       })
       .catch((err) => console.error("Error al cargar materias primas:", err));
-  };console.log(fetchMateriasPrimas)
+  };
+
   const openInsertModal = () => {
     setFormData(initialFormState());
     setShowInsertModal(true);
@@ -79,7 +81,7 @@ export function Recetasform() {
   const handleInsert = (e) => {
     e.preventDefault();
     if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
-      alert("Por favor complete todos los campos");
+      toast.error("Por favor complete todos los campos", { closeButton: false });
       return;
     }
 
@@ -88,18 +90,18 @@ export function Recetasform() {
       ID_MATERIA: formData.ID_MATERIA,
       CANTIDAD_USAR: formData.CANTIDAD_USAR
     };
-console.log("Datos a enviar:", dataToSend);
+    console.log("Datos a enviar:", dataToSend);
     axios
       .post(`http://localhost:5001/api/recetas_crud/${id}/${formData.ID_MATERIA}`, dataToSend)
       .then(() => {
-        alert("Receta agregada correctamente");
+        toast.success("Receta agregada correctamente", { closeButton: false });
         fetchRecetas();
         fetchMateriasPrimas();
         closeModals();
       })
       .catch((err) => {
         console.error("Error al agregar receta:", err);
-        alert("Error al insertar receta");
+        toast.error("Error al insertar receta", { closeButton: false });
       });
   };
 
@@ -107,7 +109,7 @@ console.log("Datos a enviar:", dataToSend);
   const handleUpdate = (e) => {
     e.preventDefault();
     if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
-      alert("Por favor complete todos los campos");
+      toast.error("Por favor complete todos los campos", { closeButton: false });
       return;
     }
 
@@ -120,34 +122,33 @@ console.log("Datos a enviar:", dataToSend);
       { CANTIDAD_USAR: formData.CANTIDAD_USAR } // Asegúrate de que este campo esté en el cuerpo
     )
       .then(() => {
-        alert("Receta actualizada correctamente");
+        toast.success("Receta actualizada correctamente", { closeButton: false });
         fetchRecetas();
         fetchMateriasPrimas();
         closeModals();
       })
       .catch((err) => {
         console.error("Error al actualizar receta:", err);
-        alert("Error al actualizar receta");
+        toast.error("Error al actualizar receta", { closeButton: false });
       });
-
   };
+
   // Handle deleting a recipe
   const handleDelete = (receta) => {
     if (window.confirm("¿Estás seguro de eliminar esta receta?")) {
       axios
         .delete(`http://localhost:5001/api/recetas_crud/${id}/${receta.ID_MATERIA}`)
         .then(() => {
-          alert("Receta eliminada correctamente");
+          toast.success("Receta eliminada correctamente", { closeButton: false });
           fetchRecetas();
           fetchMateriasPrimas();
         })
         .catch((err) => {
           console.error("Error al eliminar receta", err);
-          alert("No se pudo eliminar la receta");
+          toast.error("No se pudo eliminar la receta", { closeButton: false });
         });
     }
   };
-
 
   // Handle going back to the previous page
   const handleGoBack = () => {
@@ -155,12 +156,12 @@ console.log("Datos a enviar:", dataToSend);
   };
 
   // Extract unique materia prima options for the select input
-  
   const tipoMateria = Array.from(
     new Map(
       materiasPrimas.map(p => [p.ID_MATERIA, { ID_MATERIA: p.ID_MATERIA, NOMBRE: p.NOMBRE_MATE }])
     ).values()
-  ); console.log(tipoMateria)
+  ); 
+  console.log(tipoMateria)
 
   // Render the form fields
   const renderFormFields = () => (
@@ -195,7 +196,7 @@ console.log("Datos a enviar:", dataToSend);
 
   return (
     <Container className="container mt-4">
-      <h2>Recetas del Producto </h2>
+      <h2>Recetas del Producto</h2>
       {/* Export Buttons */}
       <div className="mb-3">
         <Button
@@ -229,35 +230,34 @@ console.log("Datos a enviar:", dataToSend);
             <th>Acciones</th>
           </tr>
         </thead>
-   <tbody>
-  {recetas.map((receta) => {
-    const key = receta.ID_PRODUCT && receta.ID_MATERIAL ? `${receta.ID_PRODUCT}_${receta.ID_MATERIAL}` : receta.ID_MATERIA; // Cambia esto según tu lógica
-    return (
-      <tr key={key}>
-        <td>{receta.NOMBRE_PROD}</td>
-        <td>{receta.NOMBRE_MATE}</td>
-        <td>{receta.CANTIDAD_USAR}</td>
-        <td>
-          <Button
-            variant="warning"
-            className="btn-sm me-2"
-            onClick={() => openEditModal(receta)}
-          >
-            Editar
-          </Button>
-          <Button
-            variant="danger"
-            className="btn-sm"
-            onClick={() => handleDelete(receta)}
-          >
-            Eliminar
-          </Button>
-        </td>
-      </tr>
-    );
-  })}
-</tbody>
-
+        <tbody>
+          {recetas.map((receta) => {
+            const key = receta.ID_PRODUCT && receta.ID_MATERIAL ? `${receta.ID_PRODUCT}_${receta.ID_MATERIAL}` : receta.ID_MATERIA; // Cambia esto según tu lógica
+            return (
+              <tr key={key}>
+                <td>{receta.NOMBRE_PROD}</td>
+                <td>{receta.NOMBRE_MATE}</td>
+                <td>{receta.CANTIDAD_USAR}</td>
+                <td>
+                  <Button
+                    variant="warning"
+                    className="btn-sm me-2"
+                    onClick={() => openEditModal(receta)}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    variant="danger"
+                    className="btn-sm"
+                    onClick={() => handleDelete(receta)}
+                  >
+                    Eliminar
+                  </Button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
       </Table>
 
       {/* Modal Insertar */}
@@ -291,6 +291,9 @@ console.log("Datos a enviar:", dataToSend);
           </Form>
         </Modal.Body>
       </Modal>
+
+      {/* Toast Container */}
+      <ToastContainer />
     </Container>
   );
 }

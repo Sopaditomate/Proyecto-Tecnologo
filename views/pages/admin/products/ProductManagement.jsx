@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import './Products.css';
 import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const AdminProducts = () => {
   const [productos, setProductos] = useState([]);
@@ -26,6 +28,7 @@ export const AdminProducts = () => {
       ADVERTENCIA: ""
     };
   }
+  
   function initialCartFormState() {
     return {
       id_product: "",
@@ -33,14 +36,12 @@ export const AdminProducts = () => {
     };
   }
 
-
   const fetchProductos = () => {
     axios
       .get("http://localhost:5001/api/productos_crud")
       .then(res => setProductos(res.data))
       .catch(err => console.error(err));
   };
-
 
   useEffect(() => {
     fetchProductos();
@@ -64,33 +65,30 @@ export const AdminProducts = () => {
     });
     setShowEditModal(true);
   };
-const openCartModal = (producto) => {
-    console.log(producto);
+
+  const openCartModal = (producto) => {
     setFormCartProd({
-        id_product: producto.ID_PRODUCTO,
-        discount: ""
+      id_product: producto.ID_PRODUCTO,
+      discount: ""
     });
     setShowCartModal(true);
-};
-
-
-
+  };
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     if (!formCartProd.discount) {
-      alert("Por favor completa el descuento");
+      toast.error("Por favor completa el descuento", { closeButton: false });
       return;
     }
 
     axios.post("http://localhost:5001/api/productos_crud/cart", formCartProd)
       .then(() => {
-        alert("Producto agregado al carrito correctamente");
+        toast.success("Producto agregado al carrito correctamente", { closeButton: false });
         closeModals();
       })
       .catch(err => {
         console.error("Error al agregar producto al carrito", err);
-        alert("Error al agregar producto al carrito");
+        toast.error("Error al agregar producto al carrito", { closeButton: false });
       });
   };
 
@@ -101,8 +99,6 @@ const openCartModal = (producto) => {
     setEditProd(null);
   };
 
-
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormProd(prev => ({ ...prev, [name]: value }));
@@ -111,38 +107,38 @@ const openCartModal = (producto) => {
   const handleInsert = (e) => {
     e.preventDefault();
     if (!formProd.NOMBRE || !formProd.PRECIO) {
-      alert("Por favor completa al menos el nombre y precio");
+      toast.error("Por favor completa al menos el nombre y precio", { closeButton: false });
       return;
     }
 
     axios.post("http://localhost:5001/api/productos_crud", formProd)
       .then(() => {
-        alert("Producto insertado correctamente");
+        toast.success("Producto insertado correctamente", { closeButton: false });
         fetchProductos();
         closeModals();
       })
       .catch(err => {
         console.error("Error al insertar producto", err);
-        alert("Error al insertar producto");
+        toast.error("Error al insertar producto", { closeButton: false });
       });
   };
 
   const handleUpdate = (e) => {
     e.preventDefault();
     if (!formProd.NOMBRE || !formProd.PRECIO) {
-      alert("Por favor completa al menos el nombre y precio");
+      toast.error("Por favor completa al menos el nombre y precio", { closeButton: false });
       return;
     }
 
     axios.put(`http://localhost:5001/api/productos_crud/${editProd.ID_PRODUCTO}`, formProd)
       .then(() => {
-        alert("Producto actualizado correctamente");
+        toast.success("Producto actualizado correctamente", { closeButton: false });
         fetchProductos();
         closeModals();
       })
       .catch(err => {
         console.error("Error al actualizar producto", err);
-        alert("Error al actualizar producto");
+        toast.error("Error al actualizar producto", { closeButton: false });
       });
   };
 
@@ -151,12 +147,12 @@ const openCartModal = (producto) => {
       axios
         .delete(`http://localhost:5001/api/productos_crud/product/${id}`)
         .then(() => {
-          alert("Producto eliminado correctamente");
+          toast.success("Producto eliminado correctamente", { closeButton: false });
           fetchProductos();
         })
         .catch((err) => {
           console.error("Error al eliminar producto", err);
-          alert("No se pudo eliminar el producto");
+          toast.error("No se pudo eliminar el producto", { closeButton: false });
         });
     }
   };
@@ -246,10 +242,7 @@ const openCartModal = (producto) => {
         </thead>
         <tbody>
           {productos.map((prod) => (
-
-            <tr key={prod.ID_PRODUCTO}
-             
-            >
+            <tr key={prod.ID_PRODUCTO}>
               <td>{prod.NOMBRE_TIPO_PRO}</td>
               <td>{prod.NOMBRE_PROD}</td>
               <td>{prod.PRECIO}</td>
@@ -258,20 +251,20 @@ const openCartModal = (producto) => {
               <td>{prod.IMAGEN_URL}</td>
               <td>{prod.ADVERTENCIA}</td>
               <td className={`${prod.ID_STATE === 3 ? 'bg-danger' : prod.ID_STATE === 2 ? 'bg-warning' : ''}`}>
-                {prod.ID_STATE === 3 ? 'Inactivo' : prod.ID_STATE === 1 ? 'activo' : 'Activo'}
+                {prod.ID_STATE === 3 ? 'Inactivo' : prod.ID_STATE === 1 ? 'Activo' : 'Activo'}
               </td>
               <td className="container-buttons-product">
                 <Button variant="warning" size="sm" onClick={() => openEditModal(prod)} className="me-2">
                   Editar
                 </Button>
                 <Button variant="danger" size="sm" onClick={() => handleDelete(prod.ID_PRODUCTO)} className="me-2">
-                  inactivar
+                  Inactivar
                 </Button>
                 <Button variant="info" size="sm" onClick={() => navigate(`/crud_rece/${prod.ID_PRODUCTO}`)}>
                   Ver
                 </Button>
                 <Button variant="success" size="sm" onClick={() => openCartModal(prod)}>
-              insertar carrito
+                  Insertar Carrito
                 </Button>
               </td>
             </tr>
@@ -310,10 +303,11 @@ const openCartModal = (producto) => {
           </Form>
         </Modal.Body>
       </Modal>
-      {/* Modal catalogo */}
+
+      {/* Modal Agregar al Carrito */}
       <Modal show={showCartModal} onHide={closeModals}>
         <Modal.Header closeButton>
-          <Modal.Title>Agregar Producto al catalogo</Modal.Title>
+          <Modal.Title>Agregar Producto al Carrito</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleAddToCart}>
@@ -321,18 +315,21 @@ const openCartModal = (producto) => {
               <Form.Label>Descuento</Form.Label>
               <Form.Control
                 type="text"
-                name="DISCOUNT"
+                name="discount"
                 value={formCartProd.discount}
                 onChange={(e) => setFormCartProd(prev => ({ ...prev, discount: e.target.value }))}
               />
             </Form.Group>
-            <Button type="submit" variant="primary" >Agregar al catalogo</Button>
+            <Button type="submit" variant="primary">Agregar al Carrito</Button>
             <Button type="button" variant="secondary" className="ms-2" onClick={closeModals}>
               Cancelar
             </Button>
           </Form>
         </Modal.Body>
       </Modal>
+
+      {/* Toast Container */}
+      <ToastContainer />
     </Container>
   );
 };
