@@ -916,6 +916,13 @@ form {
   }
 }
 
+/* Evita scroll en el body cuando el dropdown de direcciones está abierto */
+body.address-dropdown-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100vw;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .profile-editor-container {

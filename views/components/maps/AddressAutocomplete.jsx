@@ -37,7 +37,9 @@ const AddressAutocomplete = ({
 
     loadGoogleMaps();
 
+    // Limpiar clase al desmontar
     return () => {
+      document.body.classList.remove("address-dropdown-open");
       if (autocompleteRef.current) {
         window.google?.maps?.event?.clearInstanceListeners(
           autocompleteRef.current
@@ -57,7 +59,16 @@ const AddressAutocomplete = ({
         fields: ["formatted_address", "geometry"],
       }
     );
-
+    // Mostrar clase en body cuando el input recibe foco
+    inputRef.current.addEventListener("focus", () => {
+      document.body.classList.add("address-dropdown-open");
+    });
+    // Quitar clase cuando pierde foco (con delay para permitir click en dropdown)
+    inputRef.current.addEventListener("blur", () => {
+      setTimeout(() => {
+        document.body.classList.remove("address-dropdown-open");
+      }, 300);
+    });
     autocompleteRef.current.addListener("place_changed", handlePlaceSelect);
   };
 
