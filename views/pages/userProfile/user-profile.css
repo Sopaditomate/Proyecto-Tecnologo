@@ -1042,3 +1042,14 @@ body.address-dropdown-open {
   margin-left: 6px;
   vertical-align: middle;
 }
+
+/* Tablets */
+@media (max-width: 768px) {
+  #change-password-section {
+    width: 100%;
+  }
+
+  .tab-content-2 {
+    justify-content: stretch;
+  }
+}
