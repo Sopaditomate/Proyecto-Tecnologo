@@ -1034,3 +1034,11 @@ body.address-dropdown-open {
     height: 18px;
   }
 }
+
+.field-required {
+  color: #e53935;
+  font-size: 0.95em;
+  font-weight: 600;
+  margin-left: 6px;
+  vertical-align: middle;
+}
