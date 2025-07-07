@@ -84,9 +84,6 @@ export function SlideCart() {
   const autocompleteRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Estado para descripciones expandibles
-  const [expandedDescriptions, setExpandedDescriptions] = useState({});
-
   // Cargar dirección del perfil del usuario
   useEffect(() => {
     if (isAuthenticated && isCartOpen && !deliveryAddress) {
@@ -364,24 +361,7 @@ export function SlideCart() {
                         {item.nameProduct}
                       </h3>
                       <p className="cart-item-description">
-                        {expandedDescriptions[item.id]
-                          ? item.description
-                          : shortDesc}
-                        {isLongDesc && (
-                          <button
-                            className="read-more-btn"
-                            onClick={() =>
-                              setExpandedDescriptions((prev) => ({
-                                ...prev,
-                                [item.id]: !prev[item.id],
-                              }))
-                            }
-                          >
-                            {expandedDescriptions[item.id]
-                              ? " Ver menos"
-                              : " Ver más"}
-                          </button>
-                        )}
+                        {item.description}
                       </p>
                       <div className="mini-price-row">
                         <span className="discounted-price mini">
