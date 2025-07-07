@@ -1,10 +1,14 @@
 "use client";
+
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 import { ProductRecommendation } from "./ProductRecommendation";
 import { CheckoutModal } from "./CheckoutModal";
-import { useAuth } from "../../context/AuthContext.jsx";
+import AddressAutocomplete from "../../components/maps/AddressAutocomplete";
 import "./slide-cart.css";
+import axios from "axios";
 
 // Componente para el botón de disminuir cantidad con hover
 function MinusButton({ disabled, onClick }) {
@@ -32,6 +36,8 @@ function MinusButton({ disabled, onClick }) {
 }
 
 export function SlideCart() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const {
     cart,
     isCartOpen,
@@ -43,7 +49,7 @@ export function SlideCart() {
     getProductTotal,
     getCartSubtotal,
     getShippingCost,
-    setShippingCostValue, // Importar la nueva función para establecer el costo de envío
+    setShippingCostValue,
     getTaxes,
     getCartTotal,
     getRecommendedProducts,
@@ -56,7 +62,6 @@ export function SlideCart() {
 
   // Estado para el modal de checkout
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
-    const { isAuthenticated, isAdmin, user, logout } = useAuth();
 
   // Confirmaciones
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -72,29 +77,93 @@ export function SlideCart() {
   const [addressCoordinates, setAddressCoordinates] = useState(null);
   const [deliveryDistance, setDeliveryDistance] = useState(null);
   const [deliveryDuration, setDeliveryDuration] = useState(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [profileAddress, setProfileAddress] = useState("");
 
   // Referencias para el autocompletado de Google Places
   const autocompleteRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Estado para descripciones expandibles
-  const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  // Cargar dirección del perfil del usuario
+  useEffect(() => {
+    if (isAuthenticated && isCartOpen && !deliveryAddress) {
+      loadUserProfile();
+    }
+  }, [isAuthenticated, isCartOpen]);
+
+  const loadUserProfile = async () => {
+    setIsLoadingProfile(true);
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const response = await axios.get(`${API_URL}/user/profile`, {
+        withCredentials: true,
+      });
+
+      if (response.data.success && response.data.data.DIRECCION) {
+        const userAddress = response.data.data.DIRECCION;
+        setProfileAddress(userAddress);
+        setDeliveryAddress(userAddress);
+        // Calcular distancia automáticamente si hay dirección
+        if (userAddress.trim()) {
+          calculateDistanceForAddress(userAddress);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading user profile:", error);
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  };
+
+  // Calcular distancia para una dirección específica
+  const calculateDistanceForAddress = (address) => {
+    if (!window.google || !window.google.maps) return;
+
+    const service = new window.google.maps.DistanceMatrixService();
+    service.getDistanceMatrix(
+      {
+        origins: ["Cra. 129 #131-50, Suba, Bogotá"],
+        destinations: [address],
+        travelMode: "DRIVING",
+        unitSystem: window.google.maps.UnitSystem.METRIC,
+      },
+      (response, status) => {
+        if (status === "OK" && response.rows[0].elements[0].status === "OK") {
+          const distanceResult = response.rows[0].elements[0].distance;
+          const durationResult = response.rows[0].elements[0].duration;
+
+          setDeliveryDistance(distanceResult.text);
+          setDeliveryDuration(durationResult.text);
+
+          const distanceInKm = distanceResult.value / 1000;
+          const calculatedShipping = Math.max(
+            5000,
+            Math.round(distanceInKm * 2000)
+          );
+
+          if (typeof setShippingCostValue === "function") {
+            setShippingCostValue(calculatedShipping);
+          }
+        }
+      }
+    );
+  };
 
   // Inicializar Google Places Autocomplete
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Cargar el script de Google Maps si aún no está cargado
     if (!window.google || !window.google.maps || !window.google.maps.places) {
       const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${
+        import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+      }&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = initAutocomplete;
       document.head.appendChild(script);
 
       return () => {
-        // Limpiar script cuando el componente se desmonte
         const scripts = document.querySelectorAll(
           `script[src*="maps.googleapis.com"]`
         );
@@ -115,16 +184,14 @@ export function SlideCart() {
     )
       return;
 
-    // Crear nueva instancia de Autocomplete
     autocompleteRef.current = new window.google.maps.places.Autocomplete(
       inputRef.current,
       {
         types: ["address"],
-        componentRestrictions: { country: "co" }, // Restringir a Colombia
+        componentRestrictions: { country: "co" },
       }
     );
 
-    // Escuchar eventos de selección de lugares
     autocompleteRef.current.addListener("place_changed", handlePlaceSelect);
   };
 
@@ -135,10 +202,8 @@ export function SlideCart() {
     const place = autocompleteRef.current.getPlace();
 
     if (place && place.formatted_address) {
-      // Actualizar dirección seleccionada
       setDeliveryAddress(place.formatted_address);
 
-      // Si la API devuelve directamente las coordenadas
       if (place.geometry && place.geometry.location) {
         const coords = {
           lat: place.geometry.location.lat(),
@@ -146,9 +211,8 @@ export function SlideCart() {
         };
 
         setAddressCoordinates(coords);
-        calculateDistance(place.formatted_address);
+        calculateDistanceForAddress(place.formatted_address);
       } else {
-        // Si no hay coordenadas, usar Geocoding API
         geocodeAddress(place.formatted_address);
       }
     }
@@ -168,53 +232,19 @@ export function SlideCart() {
         };
 
         setAddressCoordinates(coords);
-        calculateDistance(address);
+        calculateDistanceForAddress(address);
       }
     });
   };
 
-  // Calcular distancia usando Distance Matrix API
-  const calculateDistance = (destinationAddress) => {
-    if (!window.google || !window.google.maps) return;
-
-    const service = new window.google.maps.DistanceMatrixService();
-
-    service.getDistanceMatrix(
-      {
-        origins: ["Cra. 129 #131-50, Suba, Bogotá"], // Dirección del restaurante/bodega
-        destinations: [destinationAddress],
-        travelMode: "DRIVING",
-        unitSystem: window.google.maps.UnitSystem.METRIC,
-      },
-      (response, status) => {
-        if (status === "OK" && response.rows[0].elements[0].status === "OK") {
-          const distanceResult = response.rows[0].elements[0].distance;
-          const durationResult = response.rows[0].elements[0].duration;
-
-          // Guardar los valores para cálculos internos pero no para mostrar al usuario
-          setDeliveryDistance(distanceResult.text);
-          setDeliveryDuration(durationResult.text);
-
-          // Calcular costo de envío basado en la distancia
-          // Para este ejemplo: $2.000 por cada km, mínimo $5.000
-          const distanceInKm = distanceResult.value / 1000;
-          const calculatedShipping = Math.max(
-            5000,
-            Math.round(distanceInKm * 2000)
-          );
-          
-          // Actualizar el costo de envío en el contexto del carrito
-          // Usar la función setShippingCostValue del contexto del carrito
-          if (typeof setShippingCostValue === 'function') {
-            setShippingCostValue(calculatedShipping);
-          }
-        }
-      }
-    );
-  };
-
   // Manejar clic en el botón de checkout
   const handleCheckout = () => {
+    if (!isAuthenticated) {
+      closeCart();
+      navigate("/login");
+      return;
+    }
+
     if (!deliveryAddress.trim()) {
       setAddressError("Por favor ingresa una dirección de entrega");
       return;
@@ -331,24 +361,7 @@ export function SlideCart() {
                         {item.nameProduct}
                       </h3>
                       <p className="cart-item-description">
-                        {expandedDescriptions[item.id]
-                          ? item.description
-                          : shortDesc}
-                        {isLongDesc && (
-                          <button
-                            className="read-more-btn"
-                            onClick={() =>
-                              setExpandedDescriptions((prev) => ({
-                                ...prev,
-                                [item.id]: !prev[item.id],
-                              }))
-                            }
-                          >
-                            {expandedDescriptions[item.id]
-                              ? " Ver menos"
-                              : " Ver más"}
-                          </button>
-                        )}
+                        {item.description}
                       </p>
                       <div className="mini-price-row">
                         <span className="discounted-price mini">
@@ -435,7 +448,6 @@ export function SlideCart() {
                     product={product}
                     onAdd={() => {
                       addProductToCart(product);
-                      // showToast(`${product.nameProduct} añadido al carrito`); // Eliminado
                     }}
                   />
                 ))}
@@ -455,22 +467,52 @@ export function SlideCart() {
             </button>
 
             <div className={`details ${!showSummary ? "hidden" : ""}`}>
-              <div className="delivery-address">
-                <label htmlFor="address">Dirección de entrega:</label>
-                <input
-                  type="text"
-                  id="address"
-                  placeholder="Ingresa tu dirección"
-                  value={deliveryAddress}
-                  onChange={(e) => {
-                    setDeliveryAddress(e.target.value);
-                    if (addressError) setAddressError("");
-                  }}
-                />
-                {addressError && (
-                  <div className="address-error">{addressError}</div>
-                )}
-              </div>
+              {isAuthenticated ? (
+                <div className="delivery-address">
+                  <label htmlFor="address">Dirección de entrega:</label>
+                  {isLoadingProfile ? (
+                    <div className="loading-address">
+                      <span>Cargando dirección...</span>
+                    </div>
+                  ) : (
+                    <AddressAutocomplete
+                      value={deliveryAddress}
+                      onAddressSelect={({ address }) => {
+                        setDeliveryAddress(address);
+                        if (addressError) setAddressError("");
+                      }}
+                      onDistanceCalculated={({
+                        distanceValue,
+                        durationValue,
+                        isValid,
+                      }) => {
+                        if (isValid) {
+                          const distanceInKm = distanceValue / 1000;
+                          const calculatedShipping = Math.max(
+                            5000,
+                            Math.round(distanceInKm * 2000)
+                          );
+                          setShippingCostValue(calculatedShipping);
+                        }
+                      }}
+                      warehouseAddress="Cra. 129 #131-50, Suba, Bogotá"
+                      disabled={false}
+                      className=""
+                      error={addressError}
+                      touched={true}
+                    />
+                  )}
+                  {addressError && (
+                    <div className="address-error">{addressError}</div>
+                  )}
+                </div>
+              ) : (
+                <div className="login-prompt">
+                  <p className="warning-text-cart">
+                    Inicia sesión para poder hacer la compra
+                  </p>
+                </div>
+              )}
 
               <div className="cart-summary">
                 <div className="summary-row">

@@ -10,7 +10,7 @@ export function ProductCard({ product }) {
 
   // Función para truncar la descripción
   const maxDesc = 60;
-  const isLongDesc =
+  const isLongDesc = 
     product.description && product.description.length > maxDesc;
   const shortDesc = isLongDesc
     ? product.description.slice(0, maxDesc) + "..."
@@ -22,12 +22,8 @@ export function ProductCard({ product }) {
       <div id="center-product">
         <div className="img-container">
           <img
-          //Se agrega interpolacion a la ruta para referenciar las imagenes correctamente
-            src={
-              product.image
-                ? `/images/${product.image}`
-                : "/images/url_imagen_integral.jpg"
-            }
+            //Se agrega interpolacion a la ruta para referenciar las imagenes correctamente
+            src={product.image}
             alt={product.nameProduct}
             className="img-product"
           />
@@ -58,12 +54,7 @@ export function ProductCard({ product }) {
           </div>
 
           {/* Nombre del producto */}
-          <h2
-            className="name-product-2"
-            style={{ margin: "0.3rem 0 0.2rem 0" }}
-          >
-            {product.nameProduct}
-          </h2>
+          <h2 className="name-product-2">{product.nameProduct}</h2>
 
           {/* Descripción corta y leer más/menos */}
           <p className="description-product compact">

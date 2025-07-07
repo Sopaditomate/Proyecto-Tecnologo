@@ -19,7 +19,7 @@ class ProductModel {
       throw error;
     }
   }
-///////////////////////////////
+
   // Obtener un producto por ID
   async getProductById(id) {
     try {
@@ -45,7 +45,13 @@ class ProductModel {
   async getCategories() {
     try {
       const [[rows]] = await pool.query("CALL sp_get_categories()");
-      return ["Todos", ...rows.map((row) => row.NOMBRE)];
+      return [
+        { id: 0, nombre: "Todos" },
+        ...rows.map((row) => ({
+          id: row.ID,
+          nombre: row.NOMBRE,
+        })),
+      ];
     } catch (error) {
       console.error("Error al obtener categorías:", error);
       throw error;

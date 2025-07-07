@@ -1,196 +1,130 @@
-import { useState, useRef, useEffect } from "react";
-import PropTypes from "prop-types";
+"use client";
+
+import { useRef, useEffect, useState } from "react";
 import "./address-autocomplete.css";
 
-// Componente para autocompletar direcciones, geocodificar y calcular distancias
-const AddressAutocomplete = ({ 
-  onAddressSelect, 
-  onDistanceCalculated,
-  warehouseAddress = "Cra. 129 #131-50, Suba, Bogotá"
+const AddressAutocomplete = ({
+  value,
+  onAddressSelect,
+  disabled = false,
+  className = "",
+  placeholder = "Buscar dirección...",
+  error,
+  touched,
 }) => {
-  const [selectedAddress, setSelectedAddress] = useState("");
-  const [coordinates, setCoordinates] = useState(null);
-  // Eliminamos los estados de distance y duration ya que no los mostraremos
-  const [isLoading, setIsLoading] = useState(false);
-  const [isValidAddress, setIsValidAddress] = useState(false);
-  const autocompleteRef = useRef(null);
   const inputRef = useRef(null);
+  const autocompleteRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Inicializar Google Places Autocomplete cuando el componente se monta
   useEffect(() => {
-    // Verificar si el script de Google Maps ya está cargado
-    if (window.google && window.google.maps && window.google.maps.places) {
-      initAutocomplete();
-    } else {
-      // Cargar el script de Google Maps si no está cargado
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = initAutocomplete;
-      document.head.appendChild(script);
-    }
+    if (disabled) return;
 
-    return () => {
-      // Limpiar autocomplete al desmontar
-      if (autocompleteRef.current) {
-        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
+    const loadGoogleMaps = () => {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        initializeAutocomplete();
+      } else {
+        // Load Google Maps script
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${
+          import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+        }&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = initializeAutocomplete;
+        document.head.appendChild(script);
       }
     };
-  }, []);
 
-  // Inicializar el autocompletado de Google Places
-  const initAutocomplete = () => {
-    if (inputRef.current) {
-      autocompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
-        types: ["address"],
-        componentRestrictions: { country: "co" }, // Restringir a Colombia
-      });
+    loadGoogleMaps();
 
-      // Escuchar eventos de selección de lugares
-      autocompleteRef.current.addListener("place_changed", handlePlaceSelect);
-    }
-  };
-
-  // Manejar la selección de una dirección
-  const handlePlaceSelect = () => {
-    setIsLoading(true);
-    const place = autocompleteRef.current.getPlace();
-    
-    if (place && place.formatted_address) {
-      setSelectedAddress(place.formatted_address);
-      
-      // Si la API devuelve directamente las coordenadas
-      if (place.geometry && place.geometry.location) {
-        const coords = {
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng()
-        };
-        
-        setCoordinates(coords);
-        
-        // Calcular la distancia una vez que tenemos las coordenadas
-        calculateDistance(coords, place.formatted_address);
-        
-        // Notificar al componente padre
-        if (onAddressSelect) {
-          onAddressSelect({
-            address: place.formatted_address,
-            coordinates: coords
-          });
-        }
-      } else {
-        // Si no hay coordenadas, usar Geocoding API
-        geocodeAddress(place.formatted_address);
+    // Limpiar clase al desmontar
+    return () => {
+      document.body.classList.remove("address-dropdown-open");
+      if (autocompleteRef.current) {
+        window.google?.maps?.event?.clearInstanceListeners(
+          autocompleteRef.current
+        );
       }
-    }
-  };
+    };
+  }, [disabled]);
 
-  // Convertir dirección en coordenadas usando Geocoding API
-  const geocodeAddress = (address) => {
-    const geocoder = new window.google.maps.Geocoder();
-    
-    geocoder.geocode({ address }, (results, status) => {
-      if (status === "OK" && results[0]) {
-        const coords = {
-          lat: results[0].geometry.location.lat(),
-          lng: results[0].geometry.location.lng()
-        };
-        
-        setCoordinates(coords);
-        
-        // Calcular la distancia una vez que tenemos las coordenadas
-        calculateDistance(coords, address);
-        
-        // Notificar al componente padre
-        if (onAddressSelect) {
-          onAddressSelect({
-            address,
-            coordinates: coords
-          });
-        }
-      } else {
-        console.error("Geocoding error:", status);
-        setIsLoading(false);
-      }
-    });
-  };
+  const initializeAutocomplete = () => {
+    if (!inputRef.current || !window.google?.maps?.places) return;
 
-  // Calcular distancia usando Distance Matrix API
-  const calculateDistance = (destinationCoords, destinationAddress) => {
-    const service = new window.google.maps.DistanceMatrixService();
-    
-    service.getDistanceMatrix(
+    autocompleteRef.current = new window.google.maps.places.Autocomplete(
+      inputRef.current,
       {
-        origins: [warehouseAddress],
-        destinations: [destinationAddress],
-        travelMode: "DRIVING",
-        unitSystem: window.google.maps.UnitSystem.METRIC
-      },
-      (response, status) => {
-        setIsLoading(false);
-        
-        if (status === "OK" && response.rows[0].elements[0].status === "OK") {
-          // Marcar la dirección como válida
-          setIsValidAddress(true);
-          
-          const distanceResult = response.rows[0].elements[0].distance;
-          const durationResult = response.rows[0].elements[0].duration;
-          
-          // Notificar al componente padre sin mostrar datos de distancia/tiempo
-          if (onDistanceCalculated) {
-            onDistanceCalculated({
-              distanceValue: distanceResult.value, // en metros
-              durationValue: durationResult.value, // en segundos
-              isValid: true
-            });
-          }
-        } else {
-          // Marcar la dirección como inválida
-          setIsValidAddress(false);
-          console.error("Error calculating distance:", status);
-          
-          // Notificar al componente padre que la dirección es inválida
-          if (onDistanceCalculated) {
-            onDistanceCalculated({
-              isValid: false
-            });
-          }
-        }
+        types: ["address"],
+        componentRestrictions: { country: "co" },
+        fields: ["formatted_address", "geometry"],
       }
     );
+    // Mostrar clase en body cuando el input recibe foco
+    inputRef.current.addEventListener("focus", () => {
+      document.body.classList.add("address-dropdown-open");
+    });
+    // Quitar clase cuando pierde foco (con delay para permitir click en dropdown)
+    inputRef.current.addEventListener("blur", () => {
+      setTimeout(() => {
+        document.body.classList.remove("address-dropdown-open");
+      }, 300);
+    });
+    autocompleteRef.current.addListener("place_changed", handlePlaceSelect);
+  };
+
+  const handlePlaceSelect = () => {
+    if (!autocompleteRef.current) return;
+
+    const place = autocompleteRef.current.getPlace();
+
+    if (place && place.formatted_address) {
+      setIsLoading(true);
+
+      // Call the parent callback with the selected address
+      onAddressSelect({
+        address: place.formatted_address,
+        coordinates: place.geometry
+          ? {
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng(),
+            }
+          : null,
+      });
+
+      setIsLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    // Allow manual typing
+    onAddressSelect({ address: e.target.value });
+  };
+
+  const getInputClassName = () => {
+    let classes = "form-control";
+    if (className) classes += ` ${className}`;
+    if (touched && error) classes += " input-error";
+    if (touched && !error && value) classes += " input-success";
+    return classes;
   };
 
   return (
     <div className="address-autocomplete">
-      <div className="form-group">
-        <label htmlFor="address-input">Dirección de entrega</label>
-        <input
-          id="address-input"
-          ref={inputRef}
-          type="text"
-          className="form-control"
-          placeholder="Ingresa tu dirección"
-          value={selectedAddress}
-          onChange={(e) => setSelectedAddress(e.target.value)}
-        />
-      </div>
-      
+      <input
+        ref={inputRef}
+        type="text"
+        value={value}
+        onChange={handleInputChange}
+        disabled={disabled}
+        placeholder={placeholder}
+        className={getInputClassName()}
+        autoComplete="off"
+      />
       {isLoading && (
-        <div className="loading-indicator">
-          <span>Calculando...</span>
-        </div>
+        <div className="loading-indicator">Calculando ubicación...</div>
       )}
-      
-      {/* Se eliminó la visualización de distancia y tiempo estimado */}
     </div>
   );
-};
-
-AddressAutocomplete.propTypes = {
-  onAddressSelect: PropTypes.func,
-  onDistanceCalculated: PropTypes.func,
-  warehouseAddress: PropTypes.string
 };
 
 export default AddressAutocomplete;

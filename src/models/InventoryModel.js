@@ -4,7 +4,7 @@ class InventoryModel {
   async getInventory() {
     const conn = await pool.getConnection();
     try {
-      const [rows] = await conn.query(`CALL sp_get_inventory()`);
+      const [rows] = await conn.query(`SELECT * FROM vw_active_inventory`);
       return rows;
     } catch (error) {
       console.error('Error fetching inventory:', error);
@@ -15,22 +15,39 @@ class InventoryModel {
   }
 
 
+  async getInventoryByUnitType(unitType) {
+    const conn = await pool.getConnection();
+    try {
+      const [rows] = await conn.query(
+        `SELECT * FROM vw_active_inventory WHERE id_unit = ?`,
+        [unitType]
+      );
+      return rows;
+    } catch (error) {
+      console.error('Error fetching inventory:', error);
+      throw new Error('No se pudo obtener el inventario por unidad.');
+    } finally {
+      conn.release();
+    }
+  }
+
+
   async getRawMaterialTypes() {
     const conn = await pool.getConnection();
     try {
-      const [rows] = await conn.query(`CALL sp_get_material_types()`);
+      const [rows] = await conn.query(`SELECT * FROM vw_active_material_types`);
       return rows;
     } catch (error) {
       throw error;
     } finally {
       conn.release();
     }
-  }Ñ
+  }
 
   async getUnits() {
     const conn = await pool.getConnection();
     try {
-      const [rows] = await conn.query(`CALL sp_get_units()`);
+      const [rows] = await conn.query(`SELECT * FROM vw_active_units`);
       return rows;
     } catch (error) {
       throw error;
@@ -79,7 +96,7 @@ class InventoryModel {
   async getInventoryHistory() {
     const conn = await pool.getConnection();
     try {
-      const [rows] = await conn.query(`CALL sp_get_inventory_history()`);
+      const [rows] = await conn.query(`SELECT * FROM vw_active_inventory_history`);
       return rows;
     } catch (error) {
       throw error;
@@ -88,6 +105,7 @@ class InventoryModel {
     }
   }
 
+  
   async getInventorySummary() {
     const conn = await pool.getConnection();
     try {

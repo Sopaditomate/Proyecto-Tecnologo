@@ -353,13 +353,6 @@ INSERT INTO production_status (name) VALUES
 ('Finalizado');
 
 
-INSERT INTO inventory_movement_type (name, description) VALUES 
-('Entrada', 'Movimiento de entrada de inventario'),
-('Salida', 'Movimiento de salida de inventario'),
-('Actualizado', 'Movimiento de actualización de inventario'),
-('Eliminado', 'Movimiento de eliminación de inventario');
-
-
 INSERT INTO production_movement_type (name, description) VALUES 
 ('Ingreso', 'Movimiento de ingreso en producción'),
 ('Salida', 'Movimiento de salida de producción'),
@@ -389,6 +382,13 @@ INSERT INTO user_profile (id_user, first_name, last_name, address, phone) VALUES
 (700002, 'Guillermo', 'Medina', 'Avenida 456', '5555678'),
 (700003, 'María', 'López', 'Calle Las Rosas 789', '5556789'),
 (700004, 'Pedro', 'Martínez', 'Calle Los Almendros 456', '5557890');
+
+
+INSERT INTO inventory_movement_type (name, description, id_state) VALUES
+('Creación', 'Movimiento de creación de inventario', 1),
+('Ingreso', 'Movimiento de ingreso de material al inventario', 1),
+('Salida', 'Movimiento de salida de material del inventario', 1),
+('Eliminación', 'Movimiento de eliminación de registro de inventario', 1);
 
 
 INSERT INTO product (id_product_type, name, price, description, image_url, rating, warning) VALUES 
@@ -675,17 +675,19 @@ WHERE id_state = 1;
 
 CREATE OR REPLACE VIEW vw_active_inventory_history AS
 SELECT 
-    h.id_inventory_history, 
-    h.id_inventory, 
-    h.id_material, 
-    m.name AS nombre_materia,
-    h.quantity, 
-    h.id_inventory_movement_type, 
-    h.movement_datetime
+    h.id_inventory_history AS ID_HYS_INVENTARIO, 
+    h.id_inventory AS ID_INVENTARIO, 
+    h.id_material AS ID_MATERIA, 
+    m.name AS NOMBRE_MATERIA,
+    h.quantity AS CANTIDAD, 
+    hm.name AS TIPO_MOVIMIENTO, 
+    h.movement_datetime AS FECHA_MOVIMIENTO
 FROM 
     inventory_history h
 JOIN 
     raw_material m ON h.id_material = m.id_material
+JOIN 
+    inventory_movement_type hm ON hm.id_inventory_movement_type = h.id_inventory_movement_type
 WHERE 
     m.id_state = 1
 ORDER BY 
@@ -848,11 +850,57 @@ WHERE p.id_state = 1
 
 CREATE OR REPLACE VIEW vw_active_categories AS
 SELECT 
-    id_product_type AS id,
-    name AS categoryName
+    name AS NOMBRE
 FROM product_type
 WHERE id_state = 1;
 
+
+CREATE OR REPLACE VIEW vw_active_recipe AS
+SELECT 
+    r.id_product AS ID_RECETA,
+    p.name AS NOMBRE_PROD,
+    m.name AS NOMBRE_MATE,
+    m.id_material AS ID_MATERIA,
+    r.quantity_required AS CANTIDAD_USAR
+FROM recipe r
+JOIN product p ON p.id_product = r.id_product
+JOIN raw_material m ON m.id_material = r.id_material
+WHERE 
+    r.id_state = 1
+    AND p.id_state = 1
+    AND m.id_state = 1;
+
+
+CREATE OR REPLACE VIEW vw_active_recipe_pdf AS
+SELECT 
+    r.id_product AS ID_RECETA,
+    p.name AS NOMBRE_PROD,
+    m.name AS NOMBRE_MATE,
+    m.id_material AS ID_MATERIA,
+    r.quantity_required AS CANTIDAD_USAR
+FROM recipe r
+JOIN product p ON p.id_product = r.id_product
+JOIN raw_material m ON m.id_material = r.id_material
+WHERE 
+    r.id_state = 1
+    AND p.id_state = 1
+    AND m.id_state = 1;
+
+
+CREATE OR REPLACE VIEW vw_active_product_admin AS
+SELECT 
+  p.id_product AS ID_PRODUCTO,
+  p.id_product_type AS ID_TIPO_PRO,
+  t.name AS NOMBRE_TIPO_PRO,
+  p.name AS NOMBRE_PROD,
+  p.price AS PRECIO,
+  p.description AS DESCRIPCION,
+  p.image_url AS IMAGEN_URL,
+  p.rating AS NOTA_ACTUAL,
+  p.warning AS ADVERTENCIA,
+  p.id_state AS ID_STATE  -- Agregar esta línea
+FROM product p
+JOIN product_type t ON p.id_product_type = t.id_product_type
 
 -------------------------------------PROCEDURES----------------------------------
 
@@ -963,20 +1011,42 @@ DELIMITER ;
 
 DELIMITER $$
 
-CREATE PROCEDURE sp_delete_inventory(IN p_id_inventory INT)
+CREATE or REPLACE PROCEDURE sp_delete_inventory(IN p_id_inventory INT)
 BEGIN
+    DECLARE v_quantity INT;
+
+    -- Obtener la cantidad actual antes de actualizar
+    SELECT quantity INTO v_quantity FROM inventory WHERE id_inventory = p_id_inventory;
+
+    -- Actualizar el estado a eliminado
     UPDATE inventory 
     SET id_state = 3  -- Asumiendo que 3 es el estado de "eliminado"
     WHERE id_inventory = p_id_inventory;
 
     IF ROW_COUNT() = 0 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Inventario no encontrado';
+    ELSE
+        -- Registrar el movimiento en inventory_history
+        INSERT INTO inventory_history (
+            id_inventory,
+            id_material,
+            id_inventory_movement_type,
+            quantity,
+            id_state
+        ) VALUES (
+            p_id_inventory,
+            (SELECT id_material FROM inventory WHERE id_inventory = p_id_inventory),
+            8, -- ID de 'Eliminación'
+            v_quantity,
+            3 -- Estado de eliminado
+        );
     END IF;
 END $$
 
 DELIMITER ;
 
 
+///no se esta usando este
 DELIMITER //
 
 CREATE PROCEDURE sp_get_material_types()
@@ -1030,7 +1100,7 @@ END //
 DELIMITER ;
 
 
-
+//ya no se va a usar de momento(temporalmente)
 DELIMITER //
 
 CREATE PROCEDURE sp_get_inventory_history()
@@ -1217,6 +1287,131 @@ BEGIN
     WHERE ID_PEDIDO = p_order_id;
 END //
 
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_insert_recipe;
+DELIMITER $$
+
+CREATE PROCEDURE sp_insert_recipe(
+    IN p_id_product INT,
+    IN p_id_material INT,
+    IN p_quantity_required INT
+)
+BEGIN
+    INSERT INTO recipe (id_product, id_material, quantity_required)
+    VALUES (p_id_product, p_id_material, p_quantity_required);
+END $$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_update_recipe;
+DELIMITER $$
+
+CREATE PROCEDURE sp_update_recipe(
+    IN p_id_product INT,
+    IN p_id_material INT,
+    IN p_quantity_required INT
+)
+BEGIN
+    UPDATE recipe
+    SET quantity_required = p_quantity_required
+    WHERE id_product = p_id_product AND id_material = p_id_material;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Recipe entry not found';
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+
+DROP PROCEDURE IF EXISTS sp_delete_recipe;
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_recipe(
+    IN p_id_product INT,
+    IN p_id_material INT
+)
+BEGIN
+    UPDATE recipe
+    SET id_state = 3 -- assuming 3 means deleted
+    WHERE id_product = p_id_product AND id_material = p_id_material;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Recipe entry not found';
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_insert_product_admin;
+DELIMITER $$
+CREATE PROCEDURE sp_insert_product_admin(
+  IN p_id_product_type INT,
+  IN p_name VARCHAR(30),
+  IN p_price DECIMAL(10, 2),
+  IN p_description VARCHAR(200),
+  IN p_image_url VARCHAR(254),
+  IN p_rating DECIMAL(3,1),
+  IN p_warning VARCHAR(254)
+)
+BEGIN
+  INSERT INTO product (
+    id_product_type, name, price, description, image_url, rating, warning
+  ) VALUES (
+    p_id_product_type, p_name, p_price, p_description, p_image_url, p_rating, p_warning
+  );
+END $$
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_update_product_admin;
+DELIMITER $$
+CREATE PROCEDURE sp_update_product_admin(
+  IN p_id_product INT,
+  IN p_id_product_type INT,
+  IN p_name VARCHAR(30),
+  IN p_price DECIMAL(10, 2),
+  IN p_description VARCHAR(200),
+  IN p_image_url VARCHAR(254),
+  IN p_rating DECIMAL(3,1),
+  IN p_warning VARCHAR(254)
+)
+BEGIN
+  UPDATE product
+  SET
+    id_product_type = p_id_product_type,
+    name = p_name,
+    price = p_price,
+    description = p_description,
+    image_url = p_image_url,
+    rating = p_rating,
+    warning = p_warning
+  WHERE id_product = p_id_product AND id_state = 1;
+
+  IF ROW_COUNT() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'product not found or inactive';
+  END IF;
+END $$
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_delete_product_admin;
+DELIMITER $$
+CREATE PROCEDURE sp_delete_product_admin(IN p_id_product INT)
+BEGIN
+  UPDATE product
+  SET id_state = 3
+  WHERE id_product = p_id_product;
+
+  IF ROW_COUNT() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'product not found';
+  END IF;
+END $$
 DELIMITER ;
 
 
@@ -1445,7 +1640,7 @@ DELIMITER ;
 //este tenia dos versiones, me quede con la primera, si sale error, es culpa de Guillermo por no aclarar cual era la funcional
 DELIMITER $$
 
-CREATE PROCEDURE sp_filter_products(
+CREATE or REPLACE PROCEDURE sp_filter_products(
     IN p_searchTerm VARCHAR(255),
     IN p_category VARCHAR(255)
 )
@@ -1459,7 +1654,6 @@ BEGIN
 END $$
 
 DELIMITER ;
-
 
 DELIMITER $$
 
@@ -1480,16 +1674,61 @@ BEGIN
 END$$
 DELIMITER ;
 
+DELIMITER $$
+CREATE or REPLACE PROCEDURE sp_get_categories()
+BEGIN
+    SELECT * FROM vw_active_categories;
+END$$
+DELIMITER ;
+
+//lo de recetas de brandon
+
+DROP PROCEDURE IF EXISTS sp_insert_product_carrito_admin;
+DELIMITER $$
+CREATE PROCEDURE sp_insert_product_carrito_admin(
+    IN p_id_catalog INT,
+    IN p_id_product INT,
+    IN p_discount DECIMAL(5,2)
+)
+BEGIN
+    DECLARE v_id_state INT;
+
+    -- Obtener el estado actual del producto
+    SELECT id_state INTO v_id_state
+    FROM product
+    WHERE id_product = p_id_product;
+
+    -- Actualizar el estado si es 3 (Inactivo)
+    IF v_id_state = 3 THEN
+        UPDATE product
+        SET id_state = 1
+        WHERE id_product = p_id_product;
+    END IF;
+
+    -- Insertar el producto en la tabla catalog
+    INSERT INTO catalog (id_catalog, id_product, discount)
+    VALUES (p_id_catalog, p_id_product, p_discount);
+END $$
+DELIMITER ;
 
 DELIMITER $$
 
-CREATE PROCEDURE sp_get_categories()
+CREATE PROCEDURE sp_get_recipe_material(IN product_id INT)
 BEGIN
     SELECT 
-        id,
-        categoryName
-    FROM vw_active_categories;
-END$$
+        rm.id_material AS ID_MATERIA, 
+        rm.name AS NOMBRE_MATE
+    FROM 
+        raw_material rm
+    WHERE 
+        rm.id_state = 1
+        AND rm.id_material NOT IN (
+            SELECT r.id_material
+            FROM recipe r
+            WHERE r.id_product = product_id  -- Usamos el parámetro product_id
+        );
+END $$
+
 DELIMITER ;
 
 
@@ -1830,6 +2069,22 @@ END;
 
 DELIMITER ;
 
+
+DELIMITER //
+
+CREATE TRIGGER trg_prevent_delete_inventory_movement_type
+BEFORE DELETE ON inventory_movement_type
+FOR EACH ROW
+BEGIN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'Deleting records from inventory_movement_type is not allowed. Use id_state to deactivate.';
+END;
+
+//
+
+DELIMITER ;
+
+
 /////////////////////////////////////////////NO LOS MISMOS//////////////////////////////////////////////////
 
 
@@ -1860,6 +2115,79 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_inventory_insert
+AFTER INSERT ON inventory
+FOR EACH ROW
+BEGIN
+    INSERT INTO inventory_history (
+        id_inventory,
+        id_material,
+        id_inventory_movement_type,
+        quantity,
+        id_state
+    ) VALUES (
+        NEW.id_inventory,
+        NEW.id_material,
+        5, -- ID de 'Creación'
+        NEW.quantity,
+        NEW.id_state
+    );
+END;
+
+//
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER trg_inventory_update
+AFTER UPDATE ON inventory
+FOR EACH ROW
+BEGIN
+    DECLARE v_movement_type INT;
+
+    IF NEW.quantity > OLD.quantity THEN
+        SET v_movement_type = 6; -- ID de 'Ingreso'
+        INSERT INTO inventory_history (
+            id_inventory,
+            id_material,
+            id_inventory_movement_type,
+            quantity,
+            id_state
+        ) VALUES (
+            NEW.id_inventory,
+            NEW.id_material,
+            v_movement_type,
+            NEW.quantity - OLD.quantity, -- Cantidad ingresada
+            NEW.id_state
+        );
+    ELSEIF NEW.quantity < OLD.quantity THEN
+        SET v_movement_type = 7; -- ID de 'Salida'
+        INSERT INTO inventory_history (
+            id_inventory,
+            id_material,
+            id_inventory_movement_type,
+            quantity,
+            id_state
+        ) VALUES (
+            NEW.id_inventory,
+            NEW.id_material,
+            v_movement_type,
+            OLD.quantity - NEW.quantity, -- Cantidad salida
+            NEW.id_state
+        );
+    END IF;
+END;
+
+//
+
+DELIMITER ;
+
 
 
 
