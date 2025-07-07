@@ -7,7 +7,6 @@
 /* =========================
    HEADER GENERAL
    ========================= */
-
 /* =========================
    MODAL CONFIRMACIÓN LOGOUT
    ========================= */
@@ -17,19 +16,18 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
 }
 
-
 .logout-confirm-modal {
   background: #fff;
   color: #78350f;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
   padding: 2.2rem 2rem 1.5rem 2rem;
   min-width: 300px;
   max-width: 90vw;
@@ -64,7 +62,7 @@
 .btn-confirm-logout {
   background: #ef4444;
   color: #fff;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.10);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
 }
 .btn-confirm-logout:hover {
   background: #b91c1c;
@@ -81,8 +79,14 @@
 }
 
 @keyframes modalFadeIn {
-  from { transform: translateY(40px) scale(0.96); opacity: 0; }
-  to   { transform: translateY(0) scale(1); opacity: 1; }
+  from {
+    transform: translateY(40px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 #header {
@@ -93,6 +97,7 @@
     rgba(120, 53, 15, 0.98),
     rgba(78, 29, 5, 0.98)
   );
+
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   position: relative;
   transition: all 0.3s ease;
@@ -237,20 +242,6 @@ header {
 /* =========================
    BARRA MORADA (opcional)
    ========================= */
-#color-purple {
-  background: var(--purple-bg);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: auto;
-  min-height: 3rem;
-  padding: 0.5rem 1rem;
-  z-index: 5;
-  border-bottom: 1px solid #e8dacb;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  position: relative;
-}
 
 #color-purple::before {
   /* Fondo decorativo */
@@ -444,7 +435,7 @@ header {
   margin-top: 1rem;
   width: 120%;
   position: relative;
-  right:35px;
+  right: 35px;
 }
 
 .menu-item {
@@ -514,8 +505,6 @@ header {
   display: block;
   text-decoration: none;
 }
-
-
 
 /* =========================
    NAVEGACIÓN (DESKTOP)

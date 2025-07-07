@@ -14,6 +14,9 @@ export const AdminProducts = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [formCartProd, setFormCartProd] = useState(initialCartFormState());
   const [showCartModal, setShowCartModal] = useState(false);
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
   const navigate = useNavigate();
 
@@ -28,7 +31,7 @@ export const AdminProducts = () => {
       ADVERTENCIA: ""
     };
   }
-  
+
   function initialCartFormState() {
     return {
       id_product: "",
@@ -88,7 +91,7 @@ export const AdminProducts = () => {
       })
       .catch(err => {
         console.error("Error al agregar producto al carrito", err);
-        toast.error("Error al agregar producto al carrito", { closeButton: false });
+        toast.error("Error al agregar producto al carrito", { closeButton: false },{autoClose:5000});
       });
   };
 
@@ -147,12 +150,12 @@ export const AdminProducts = () => {
       axios
         .delete(`http://localhost:5001/api/productos_crud/product/${id}`)
         .then(() => {
-          toast.success("Producto eliminado correctamente", { closeButton: false });
+          toast.success("Producto modificado correctamente", { closeButton: false });
           fetchProductos();
         })
         .catch((err) => {
-          console.error("Error al eliminar producto", err);
-          toast.error("No se pudo eliminar el producto", { closeButton: false });
+          console.error("Error al inactivar producto", err);
+          toast.error("No se pudo inactivar el producto", { closeButton: false });
         });
     }
   };
@@ -202,11 +205,38 @@ export const AdminProducts = () => {
     </>
   );
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = productos.filter(producto =>
+    producto.NOMBRE_PROD.toLowerCase().includes(globalFilter.toLowerCase())
+  ).slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(productos.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(e.target.value);
+    setCurrentPage(1);
+  };
+
   return (
     <Container className="mt-4">
       <h2>Gestión de Productos</h2>
+      {/* Barra de búsqueda */}
+      <div className="flex items-center mb-4">
+        <input
+          type="text"
+          value={globalFilter || ''}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Buscar..."
+          className="w-48 px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
       {/* Export Buttons */}
-      <div className="mb-3">
+      <div className="btn-export">
         <Button
           variant="outline-primary"
           className="me-2"
@@ -241,27 +271,27 @@ export const AdminProducts = () => {
           </tr>
         </thead>
         <tbody>
-          {productos.map((prod) => (
+          {currentItems.map((prod) => (
             <tr key={prod.ID_PRODUCTO}>
-              <td>{prod.NOMBRE_TIPO_PRO}</td>
-              <td>{prod.NOMBRE_PROD}</td>
-              <td>{prod.PRECIO}</td>
-              <td>{prod.DESCRIPCION}</td>
-              <td>{prod.NOTA_ACTUAL}</td>
-              <td>{prod.IMAGEN_URL}</td>
-              <td>{prod.ADVERTENCIA}</td>
-              <td className={`${prod.ID_STATE === 3 ? 'bg-danger' : prod.ID_STATE === 2 ? 'bg-warning' : ''}`}>
-                {prod.ID_STATE === 3 ? 'Inactivo' : prod.ID_STATE === 1 ? 'Activo' : 'Activo'}
+              <td className="break-word">{prod.NOMBRE_TIPO_PRO}</td>
+              <td className="break-word">{prod.NOMBRE_PROD}</td>
+              <td className="break-word">{prod.PRECIO}</td>
+              <td className="break-word">{prod.DESCRIPCION}</td>
+              <td className="break-word">{prod.NOTA_ACTUAL}</td>
+              <td className="break-word">{prod.IMAGEN_URL}</td>
+              <td className="break-word">{prod.ADVERTENCIA}</td>
+              <td className={`${prod.ID_STATE === 2 ? 'bg-danger' : ''}`}>
+                {prod.ID_STATE === 2 ? 'Inactivo' : prod.ID_STATE === 1 ? 'Activo' : 'Activo'}
               </td>
               <td className="container-buttons-product">
                 <Button variant="warning" size="sm" onClick={() => openEditModal(prod)} className="me-2">
                   Editar
                 </Button>
-                <Button variant="danger" size="sm" onClick={() => handleDelete(prod.ID_PRODUCTO)} className="me-2">
-                  Inactivar
+                <Button variant="success" size="sm" onClick={() => handleDelete(prod.ID_PRODUCTO)} className={`${prod.ID_STATE === 2 ? 'bg-png' : '', prod.ID_STATE === 1 ? 'bg-danger' : ''}`}>
+                  {prod.ID_STATE === 2 ? 'activar' : prod.ID_STATE === 1 ? 'inactivar' : 'inactivar'}
                 </Button>
-                <Button variant="info" size="sm" onClick={() => navigate(`/crud_rece/${prod.ID_PRODUCTO}`)}>
-                  Ver
+                <Button variant="info" size="sm" onClick={() => navigate(`/crud_rece/${prod.ID_PRODUCTO }` ) }     >
+                  Ver 
                 </Button>
                 <Button variant="success" size="sm" onClick={() => openCartModal(prod)}>
                   Insertar Carrito
@@ -271,6 +301,36 @@ export const AdminProducts = () => {
           ))}
         </tbody>
       </Table>
+
+      {/* Paginación */}
+      <div className="pagination-container">
+        <button
+          disabled={currentPage === 1}
+          onClick={() => handlePageChange(currentPage - 1)}
+        >
+          Prev
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+          <button
+            key={pageNumber}
+            onClick={() => handlePageChange(pageNumber)}
+            className={currentPage === pageNumber ? 'active' : ''}
+          >
+            {pageNumber}
+          </button>
+        ))}
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => handlePageChange(currentPage + 1)}
+        >
+          Next
+        </button>
+        <select value={itemsPerPage} onChange={handleItemsPerPageChange}>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+        </select>
+      </div>
 
       {/* Modal Insertar */}
       <Modal show={showInsertModal} onHide={closeModals}>
