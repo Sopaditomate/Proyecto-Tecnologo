@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Fragment } from "react";
 import { Header } from "../components/common/header/Header.jsx";
@@ -289,6 +291,25 @@ export function AppRoutes() {
               }}
             >
               <AdminProductions />
+            </PageLayout>
+          </ProtectedRoute>
+        }
+      />
+      {/* ruta para el crud de recetas */}
+      <Route
+        path="/crud_rece/:id"
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageLayout
+              config={{
+                itemHeader: getHeaderItems("admin"),
+                itemMenu: getMenuItems("admin"),
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
+              <Recetasform />
             </PageLayout>
           </ProtectedRoute>
         }
