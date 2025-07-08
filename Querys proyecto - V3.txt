@@ -902,6 +902,30 @@ SELECT
 FROM product p
 JOIN product_type t ON p.id_product_type = t.id_product_type
 
+
+DROP VIEW IF EXISTS vw_active_categories;
+CREATE VIEW vw_active_categories AS
+SELECT 
+    product_type.id_product_type AS ID, 
+    product_type.name AS NOMBRE
+FROM product_type
+WHERE product_type.id_state = 1;
+
+
+DROP VIEW IF EXISTS vw_active_find_user_by_id;
+
+-- Crear la vista
+CREATE OR REPLACE VIEW vw_active_find_user_by_id AS
+SELECT
+  id_user AS ID_USUARIO,
+  email AS USUARIO,
+  password AS PASSWORD,
+  id_state AS ESTADO,
+  reset_token,
+  reset_token_expires
+FROM user_account
+WHERE id_state = 1;
+
 -------------------------------------PROCEDURES----------------------------------
 
 DELIMITER $$
@@ -1727,6 +1751,252 @@ BEGIN
             FROM recipe r
             WHERE r.id_product = product_id  -- Usamos el parámetro product_id
         );
+END $$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_get_categories;
+DELIMITER $$
+CREATE PROCEDURE sp_get_categories()
+BEGIN
+    SELECT ID, NOMBRE FROM vw_active_categories;
+END $$
+DELIMITER ;
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS `sp_filter_products`$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_filter_products` (
+    IN `p_searchTerm` VARCHAR(255),
+    IN `p_category` VARCHAR(255)
+)
+BEGIN
+    SELECT * FROM vw_active_products
+    WHERE
+        (
+            (p_searchTerm IS NULL OR p_searchTerm = '')
+            OR (nameProduct COLLATE utf8mb4_general_ci LIKE CONCAT('%', p_searchTerm COLLATE utf8mb4_general_ci, '%'))
+            OR (description COLLATE utf8mb4_general_ci LIKE CONCAT('%', p_searchTerm COLLATE utf8mb4_general_ci, '%'))
+        )
+        AND (
+            p_category IS NULL OR p_category = '' OR p_category = 'Todos'
+            OR category COLLATE utf8mb4_general_ci = p_category COLLATE utf8mb4_general_ci
+        );
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+-- Obtener perfil de usuario
+DROP PROCEDURE IF EXISTS sp_get_user_profile$$
+CREATE PROCEDURE sp_get_user_profile(IN p_user_id INT)
+BEGIN
+  SELECT 
+    a.verified, 
+    p.verified_phone,
+    a.email AS USUARIO,
+    p.first_name AS NOMBRES,
+    p.last_name AS APELLIDOS,
+    p.address AS DIRECCION,
+    p.phone AS TELEFONO  
+  FROM user_account a
+  JOIN user_profile p ON a.id_user = p.id_user
+  WHERE a.id_user = p_user_id;
+END$$
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_save_verify_token$$
+
+CREATE PROCEDURE sp_save_verify_token(
+    IN p_user_id INT,
+    IN p_token VARCHAR(512)
+)
+BEGIN
+    UPDATE user_account
+    SET verify_token = p_token
+    WHERE id_user = p_user_id;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_update_user_profile$$
+
+CREATE PROCEDURE sp_update_user_profile(
+  IN p_user_id INT,
+  IN p_nombres VARCHAR(255),
+  IN p_apellidos VARCHAR(255),
+  IN p_direccion VARCHAR(255),
+  IN p_telefono VARCHAR(20)
+)
+BEGIN
+  UPDATE user_profile
+  SET first_name = p_nombres,
+      last_name = p_apellidos,
+      address = p_direccion,
+      phone = p_telefono
+  WHERE id_user = p_user_id;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+-- Guardar código de verificación de teléfono
+DROP PROCEDURE IF EXISTS sp_save_phone_verification$$
+
+CREATE PROCEDURE sp_save_phone_verification(
+  IN p_user_id INT,
+  IN p_code VARCHAR(10)
+)
+BEGIN
+  UPDATE user_profile
+  SET phone_verification_code = p_code,
+      verified_phone = 0
+  WHERE id_user = p_user_id;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+-- Verificar código de teléfono
+DROP PROCEDURE IF EXISTS sp_verify_phone_code$$
+
+CREATE PROCEDURE sp_verify_phone_code(
+  IN p_user_id INT,
+  IN p_code VARCHAR(10)
+)
+BEGIN
+  DECLARE v_code VARCHAR(10);
+
+  SELECT phone_verification_code 
+  INTO v_code 
+  FROM user_profile 
+  WHERE id_user = p_user_id;
+
+  IF v_code = p_code THEN
+    UPDATE user_profile 
+    SET verified_phone = 1, 
+        phone_verification_code = NULL 
+    WHERE id_user = p_user_id;
+
+    SELECT 'success' AS result;
+  ELSE
+    SELECT 'invalid_code' AS result;
+  END IF;
+END$$
+
+DELIMITER ;
+
+
+-- Obtener pedidos del usuario
+DROP PROCEDURE IF EXISTS sp_get_user_orders;
+DELIMITER $$
+
+CREATE PROCEDURE sp_get_user_orders(IN p_user_id INT)
+BEGIN
+  SELECT 
+    oh.id_order AS ID_PEDIDO,
+    oh.created_at AS fecha,
+    os.name AS estado,
+    oh.total_amount AS total,
+    oh.total_discount AS descuento,
+    JSON_ARRAYAGG(
+      JSON_OBJECT(
+        'nombre', p.name,
+        'cantidad', od.quantity,
+        'precio', od.final_price,
+        'imagen', p.image_url
+      )
+    ) AS items
+  FROM order_header oh
+  JOIN order_status os ON oh.id_order_status = os.id_order_status
+  JOIN order_detail od ON oh.id_order = od.id_order
+  JOIN product p ON od.id_product = p.id_product
+  WHERE oh.id_user = p_user_id
+    AND oh.id_state = 1
+  GROUP BY oh.id_order, oh.created_at, os.name, oh.total_amount, oh.total_discount
+  ORDER BY oh.created_at DESC;
+END$$
+
+DELIMITER ;
+
+
+-- Confirmar verificación de correo
+DROP PROCEDURE IF EXISTS sp_confirm_email_verification;
+DELIMITER $$
+CREATE PROCEDURE sp_confirm_email_verification(
+  IN p_user_id INT,
+  IN p_token VARCHAR(512)
+)
+BEGIN
+  DECLARE v_token VARCHAR(512);
+  DECLARE v_verified TINYINT(1);
+  DECLARE v_count INT DEFAULT 0;
+
+  SELECT COUNT(*) INTO v_count FROM user_account WHERE id_user = p_user_id;
+
+  IF v_count = 0 THEN
+    SELECT 'invalid_token' AS result;
+  ELSE
+    SELECT verify_token, verified
+      INTO v_token, v_verified
+      FROM user_account
+     WHERE id_user = p_user_id;
+
+    IF v_verified = 1 THEN
+      -- Si ya está verificado, aunque el token sea NULL, retorna already_verified
+      SELECT 'already_verified' AS result;
+    ELSEIF v_token IS NULL OR v_token <> p_token THEN
+      SELECT 'invalid_token' AS result;
+    ELSE
+      UPDATE user_account SET verified = 1, verify_token = NULL WHERE id_user = p_user_id;
+      SELECT 'success' AS result;
+    END IF;
+  END IF;
+END$$
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_save_reset_token;
+DELIMITER $$
+
+CREATE PROCEDURE `sp_save_reset_token`(
+    IN `p_userId` INT, 
+    IN `p_token` VARCHAR(512)
+)
+BEGIN
+    UPDATE user_account
+    SET reset_token = p_token,
+        reset_token_expires = DATE_ADD(NOW(), INTERVAL 1 HOUR)
+    WHERE id_user = p_userId;
+END$$
+
+DELIMITER ;
+
+
+DROP PROCEDURE IF EXISTS sp_get_user_by_id;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_get_user_by_id(IN p_userId INT)
+BEGIN
+  SELECT * 
+  FROM vw_active_find_user_by_id 
+  WHERE ID_USUARIO = p_userId 
+  LIMIT 1;
 END $$
 
 DELIMITER ;
