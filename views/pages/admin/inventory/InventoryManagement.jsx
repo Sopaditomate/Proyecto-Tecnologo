@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Modal, Button, Form } from 'react-bootstrap';
 import { useTable, usePagination, useGlobalFilter } from 'react-table';
-// para probar el componente de torta
-import InventoryPieChartModal from './InventoryPieChartModal';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './inventory.css';
 
 const InventoryManagement = () => {
@@ -17,7 +16,11 @@ const InventoryManagement = () => {
   const [historial, setHistorial] = useState([]);
   const [showHistorialModal, setShowHistorialModal] = useState(false);
   const [historialFilter, setHistorialFilter] = useState('');
-  
+  const [noResults, setNoResults] = useState(false); // Estado para manejar resultados
+  const [showUploadModal, setShowUploadModal] = useState(false); // Estado para el modal de carga
+
+  const [csvFile, setCsvFile] = useState(null);
+
   useEffect(() => {
     fetchInventory();
     fetchUnidades();
@@ -30,6 +33,7 @@ const InventoryManagement = () => {
       setInventory(response.data);
     } catch (error) {
       console.error('Error al obtener el inventario:', error);
+      toast.error('No se pudo cargar el inventario. Intenta nuevamente.');
     }
   };
 
@@ -63,10 +67,10 @@ const InventoryManagement = () => {
 
 
   const columns = React.useMemo(() => [
-    {
-      Header: 'ID Inventario',
-      accessor: 'ID_INVENTARIO',
-    },
+    // {
+    //   Header: 'ID Inventario',
+    //   accessor: 'ID_INVENTARIO',
+    // },
     {
       Header: 'Materia Prima',
       accessor: 'MATERIA_PRIMA',
@@ -84,22 +88,27 @@ const InventoryManagement = () => {
       accessor: 'TIPO',
     },
     {
-    Header: 'Descripción', // Agregar columna para descripción
-    accessor: 'DESCRIPCION',
+      Header: 'Descripción', // Agregar columna para descripción
+      accessor: 'DESCRIPCION',
     },
     {
       Header: 'Acciones',
       Cell: ({ row }) => (
-        <div className="flex space-x-2">
-          <button className="text-blue-600 hover:underline text-sm" onClick={() => handleEdit(row.original)}>
-              Editar
-          </button>
-          <button 
-            className="text-red-600 hover:underline text-sm" 
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <Button
+            variant="warning"
+            style={{ flex: 1, marginBottom: '10px' }} // Espacio entre botones
+            onClick={() => handleEdit(row.original)}
+          >
+            Editar
+          </Button>
+          <Button
+            variant="danger"
+            style={{ flex: 1 }} // Asegura que ambos botones tengan el mismo tamaño
             onClick={() => handleDelete(row.original.ID_INVENTARIO)}
           >
             Eliminar
-          </button>
+          </Button>
         </div>
       ),
     },
@@ -108,27 +117,27 @@ const InventoryManagement = () => {
 
 
   const historialColumns = React.useMemo(() => [
-  {
-    Header: 'ID Historial',
-    accessor: 'ID_HYS_INVENTARIO',
-  },
-  {
-    Header: 'Materia',
-    accessor: 'NOMBRE_MATERIA',
-  },
-  {
-    Header: 'Cantidad',
-    accessor: 'CANTIDAD',
-  },
-  {
-    Header: 'Tipo de Movimiento',
-    accessor: 'TIPO_MOVIMIENTO',
-  },
-  {
-    Header: 'Fecha de Movimiento',
-    accessor: 'FECHA_MOVIMIENTO',
-    Cell: ({ value }) => new Date(value).toLocaleString(), // Formatear la fecha
-  },
+    // {
+    //   Header: 'ID Historial',
+    //   accessor: 'ID_HYS_INVENTARIO',
+    // },
+    {
+      Header: 'Materia',
+      accessor: 'NOMBRE_MATERIA',
+    },
+    {
+      Header: 'Cantidad',
+      accessor: 'CANTIDAD',
+    },
+    {
+      Header: 'Tipo de Movimiento',
+      accessor: 'TIPO_MOVIMIENTO',
+    },
+    {
+      Header: 'Fecha de Movimiento',
+      accessor: 'FECHA_MOVIMIENTO',
+      Cell: ({ value }) => new Date(value).toLocaleString(), // Formatear la fecha
+    },
   ], []);
 
   const {
@@ -152,35 +161,35 @@ const InventoryManagement = () => {
 
 
   const {
-  getTableProps: getHistorialTableProps,
-  getTableBodyProps: getHistorialTableBodyProps,
-  headerGroups: historialHeaderGroups,
-  prepareRow: prepareHistorialRow,
-  page: historialPage,
-  state: { pageIndex: historialPageIndex, pageSize: historialPageSize },
-  canPreviousPage: canHistorialPreviousPage,
-  canNextPage: canHistorialNextPage,
-  pageOptions: historialPageOptions,
-  gotoPage: gotoHistorialPage,
-  setPageSize: setHistorialPageSize,
-  setGlobalFilter: setHistorialGlobalFilter,
-} = useTable({
-  columns: historialColumns,
-  data: historial,
-  initialState: { pageIndex: 0, pageSize: 5 },
-  globalFilter: historialFilter,
-}, useGlobalFilter, usePagination);
+    getTableProps: getHistorialTableProps,
+    getTableBodyProps: getHistorialTableBodyProps,
+    headerGroups: historialHeaderGroups,
+    prepareRow: prepareHistorialRow,
+    page: historialPage,
+    state: { pageIndex: historialPageIndex, pageSize: historialPageSize },
+    canPreviousPage: canHistorialPreviousPage,
+    canNextPage: canHistorialNextPage,
+    pageOptions: historialPageOptions,
+    gotoPage: gotoHistorialPage,
+    setPageSize: setHistorialPageSize,
+    setGlobalFilter: setHistorialGlobalFilter,
+  } = useTable({
+    columns: historialColumns,
+    data: historial,
+    initialState: { pageIndex: 0, pageSize: 5 },
+    globalFilter: historialFilter,
+  }, useGlobalFilter, usePagination);
 
 
-// UseEffect para la tabla de inventario
-useEffect(() => {
-  setTableGlobalFilter(globalFilter);
-}, [globalFilter, setTableGlobalFilter]);
+  // UseEffect para la tabla de inventario
+  useEffect(() => {
+    setTableGlobalFilter(globalFilter);
+  }, [globalFilter, setTableGlobalFilter]);
 
-// UseEffect para la tabla de historial
-useEffect(() => {
-  setHistorialGlobalFilter(historialFilter); // Cambia esto
-}, [historialFilter, setHistorialGlobalFilter]);
+  // UseEffect para la tabla de historial
+  useEffect(() => {
+    setHistorialGlobalFilter(historialFilter); // Cambia esto
+  }, [historialFilter, setHistorialGlobalFilter]);
 
   const [showModal, setShowModal] = useState(false);
   const [nuevoInsumo, setNuevoInsumo] = useState({
@@ -216,12 +225,12 @@ useEffect(() => {
   const handleEdit = (insumo) => {
     setCurrentInsumo(insumo);
     setNuevoInsumo({
-        MATERIA_PRIMA: insumo.MATERIA_PRIMA,
-        CANTIDAD: insumo.CANTIDAD,
-        UNIDAD: insumo.ID_UNIDAD,
-        TIPO: insumo.ID_TIP_MATERIA,
-        DESCRIPCION: insumo.DESCRIPCION,
-        ID_ADMINISTRADOR: 700002,
+      MATERIA_PRIMA: insumo.MATERIA_PRIMA,
+      CANTIDAD: insumo.CANTIDAD,
+      UNIDAD: insumo.ID_UNIDAD,
+      TIPO: insumo.ID_TIP_MATERIA,
+      DESCRIPCION: insumo.DESCRIPCION,
+      ID_ADMINISTRADOR: 700002,
     });
     setIsEditing(true);
     setShowModal(true);
@@ -230,48 +239,52 @@ useEffect(() => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        const { MATERIA_PRIMA, CANTIDAD, UNIDAD, TIPO, DESCRIPCION, ID_ADMINISTRADOR } = nuevoInsumo;
+      const { MATERIA_PRIMA, CANTIDAD, UNIDAD, TIPO, DESCRIPCION, ID_ADMINISTRADOR } = nuevoInsumo;
 
-        if (isEditing) {
-          //si o si, al usar axios deben ser iguales a los parametros del controlador, esots estan bien:
-            // Lógica para actualizar el insumo
-            await axios.put(`http://localhost:5001/api/inventario/${currentInsumo.ID_INVENTARIO}`, {
-                nombre: MATERIA_PRIMA,
-                id_tipo_materia: TIPO,
-                id_unidad: UNIDAD,
-                cantidad: CANTIDAD,
-                descripcion: DESCRIPCION,
-            });
-        } else {
-          //los parametros estan bien, por favor no tocar
-            // Lógica para agregar un nuevo insumo
-            await axios.post('http://localhost:5001/api/inventario/nuevo', {
-                nombre: MATERIA_PRIMA,
-                tipoMateria: TIPO,
-                unidad: UNIDAD,
-                cantidad: CANTIDAD,
-                descripcion: DESCRIPCION,
-                idAdministrador: ID_ADMINISTRADOR,
-            });
-        }
+      if (isEditing) {
+        //si o si, al usar axios deben ser iguales a los parametros del controlador, esots estan bien:
+        // Lógica para actualizar el insumo
+        await axios.put(`http://localhost:5001/api/inventario/${currentInsumo.ID_INVENTARIO}`, {
+          nombre: MATERIA_PRIMA,
+          id_tipo_materia: TIPO,
+          id_unidad: UNIDAD,
+          cantidad: CANTIDAD,
+          descripcion: DESCRIPCION,
+        });
+        toast.success('Insumo actualizado con éxito!'); // Alerta de éxito
+      } else {
+        //los parametros estan bien, por favor no tocar
+        // Lógica para agregar un nuevo insumo
+        await axios.post('http://localhost:5001/api/inventario/nuevo', {
+          nombre: MATERIA_PRIMA,
+          tipoMateria: TIPO,
+          unidad: UNIDAD,
+          cantidad: CANTIDAD,
+          descripcion: DESCRIPCION,
+          idAdministrador: ID_ADMINISTRADOR,
+        });
+        toast.success('Insumo agregado con éxito!'); // Alerta de éxito
+      }
 
-        fetchInventory(); // Recarga la tabla
-        handleCloseModal(); // Cierra el modal
-        setIsEditing(false); // Resetea el estado de edición
+      fetchInventory(); // Recarga la tabla
+      handleCloseModal(); // Cierra el modal
+      setIsEditing(false); // Resetea el estado de edición
     } catch (error) {
-        console.error('Error al guardar el insumo:', error);
+      console.error('Error al guardar el insumo:', error);
+      toast.error('Error al guardar los cambios.'); // Alerta de error
     }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este insumo?')) {
-        try {
-            await axios.delete(`http://localhost:5001/api/inventario/${id}`);
-            fetchInventory(); // Recarga la tabla después de eliminar
-        } catch (error) {
-            console.error('Error al eliminar el insumo:', error);
-            alert('Error al eliminar el insumo. Intenta nuevamente.');
-        }
+      try {
+        await axios.delete(`http://localhost:5001/api/inventario/${id}`);
+        fetchInventory(); // Recarga la tabla después de eliminar
+        toast.success('Insumo eliminado con éxito!'); // Alerta de éxito
+      } catch (error) {
+        console.error('Error al eliminar el insumo:', error);
+        toast.error('Error al eliminar el insumo. Intenta nuevamente.'); // Alerta de error
+      }
     }
   };
 
@@ -282,25 +295,97 @@ useEffect(() => {
 
   const handleCloseHistorialModal = () => setShowHistorialModal(false);
 
+  //para la barra de busqueda:
+  const handleSearchChange = (e) => {
+    const value = e.target.value.toLowerCase();
+    setGlobalFilter(value);
+
+    // Verifica si hay coincidencias en todos los campos
+    const results = inventory.filter(item =>
+      item.MATERIA_PRIMA.toLowerCase().includes(value) ||
+      item.UNIDAD.toLowerCase().includes(value) ||
+      item.TIPO.toLowerCase().includes(value) ||
+      item.DESCRIPCION.toLowerCase().includes(value) ||
+      item.CANTIDAD.toString().includes(value)
+    );
+
+    // Solo muestra el mensaje de error si no hay resultados
+    setNoResults(results.length === 0 && value !== '');
+  };
+
+  const handleUploadChange = (e) => {
+    setCsvFile(e.target.files[0]);
+    if (file && file.type === "text/csv") {
+      setCsvFile(file);
+    } else {
+      toast.error("El archivo debe ser un CSV válido.");
+      setCsvFile(null);
+    }
+  };
+
+  const handleUploadSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!csvFile) {
+    toast.error('Por favor, selecciona un archivo CSV.');
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('file', csvFile); // Campo debe coincidir con el que espera el backend
+
+    const response = await axios.post('http://localhost:5001/api/inventario/cargar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    toast.success('Carga masiva completada con éxito!');
+    fetchInventory(); // Recargar inventario actualizado
+    handleCloseUploadModal(); // Cerrar modal de carga
+
+  } catch (error) {
+    console.error('Error al cargar el archivo:', error);
+
+    if (error.response?.data?.message) {
+      toast.error(`Error: ${error.response.data.message}`);
+    } else {
+      toast.error('Error al cargar el archivo. Intenta nuevamente.');
+    }
+  }
+};
+
+  const handleShowUploadModal = () => setShowUploadModal(true);
+  const handleCloseUploadModal = () => {
+    setShowUploadModal(false);
+    setCsvFile(null); // Limpiar el archivo seleccionado
+  };
+
   return (
     <Container>
+      <ToastContainer />
       <br /><br />
       <h1 className="text-3xl font-bold text-center text-brown-700 my-6">Gestión de Inventario</h1>
       <br />
       <div className="Cont-Butt">
-        <Button 
-            onClick={handleShowHistorialModal} 
-            className="custom-button"
+        <Button
+          onClick={handleShowHistorialModal}
+          className="custom-button"
         >
           Ver Historial
         </Button>
 
-        <Button 
-            onClick={handleShowModal} 
-            className="custom-button" // Clase personalizada para el botón
+        <Button
+          onClick={handleShowModal}
+          className="custom-button" // Clase personalizada para el botón
         >
-            Agregar Insumo
+          Agregar Insumo
         </Button>
+        <Button onClick={handleShowUploadModal} className="custom-button">
+          Cargar CSV
+        </Button>
+
       </div>
       <div className="Cont-Butt">
         <Button
@@ -320,35 +405,50 @@ useEffect(() => {
       </div>
 
 
-      
 
-      <div className="filtros-contenedor">
-        <div>
-          <select
-            value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            className="px-8 py-4 text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {[5, 10, 20].map((size) => (
-              <option key={size} value={size}>
-                Mostrar {size}
-              </option>
-            ))}
-          </select>
-        </div>
 
-        <div>
-          <input
-            type="text"
-            value={globalFilter || ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            placeholder="Buscar..."
-            className="w-48 px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
+
+      <div className="mb-2">
+        <label htmlFor="pageSize" className="form-label">Entradas por página:</label>
+        <br />
+        <select
+          id="pageSize"
+          value={pageSize}
+          onChange={(e) => setPageSize(Number(e.target.value))}
+          className="px-4 py-2 text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {[5, 10, 20].map((size) => (
+            <option key={size} value={size}>
+              Mostrar {size}
+            </option>
+          ))}
+        </select>
       </div>
 
-      <div className="overflow-x-auto tableTail">
+      <div className="mb-2">
+        <label htmlFor="search" className="form-label">Buscar: </label>
+        <div className="input-group">
+          <input
+            type="text"
+            id="search"
+            value={globalFilter || ''}
+            onChange={handleSearchChange}
+            className="form-control"
+          />
+          {globalFilter && (
+            <button
+              className="btn btn-outline-secondary"
+              onClick={() => setGlobalFilter('')}
+            >
+              &times;
+            </button>
+          )}
+        </div>
+        {noResults && <div className="text-danger mt-2">Sin coincidencias encontradas</div>}
+      </div>
+
+
+      <div className="table-responsive justify-content-center" style={{ maxWidth: '1300px', margin: '2rem auto', width: '100%' }}>
         <table {...getTableProps()} className="Custom">
           <thead>
             {headerGroups.map((headerGroup, index) => (
@@ -477,7 +577,7 @@ useEffect(() => {
               </Button>
               <Button variant="secondary" onClick={handleCloseModal} className="me-2">
                 Cancelar
-              </Button> 
+              </Button>
             </div>
           </Form>
         </Modal.Body>
@@ -495,7 +595,7 @@ useEffect(() => {
             onChange={(e) => setHistorialFilter(e.target.value)}
             className="w-48 px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-          
+
           {/* Select para controlar el tamaño de página */}
           <div className="my-2">
             <select
@@ -567,7 +667,23 @@ useEffect(() => {
         </Modal.Footer>
       </Modal>
 
-      <InventoryPieChartModal />
+      {/* Modal para carga masiva */}
+      <Modal show={showUploadModal} onHide={handleCloseUploadModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Carga Masiva de Inventario</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleUploadSubmit}>
+            <Form.Group controlId="formFile" className="mb-3">
+              <Form.Label>Selecciona el archivo CSV</Form.Label>
+              <Form.Control type="file" accept=".csv" onChange={handleUploadChange} required />
+            </Form.Group>
+            <Button variant="primary" type="submit">
+              Cargar
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
 
 
     </Container>

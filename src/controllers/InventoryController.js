@@ -1,5 +1,7 @@
 import InventoryModel from '../models/InventoryModel.js';
-
+import csv from 'csv-parser';
+//que es stream?
+import { Readable } from 'stream';
 class InventoryController {
   async getInventario(req, res) {
     try {
@@ -22,12 +24,12 @@ class InventoryController {
     }
 
     try {
-        await InventoryModel.updateRawMaterial(id, nombre, id_tipo_materia, id_unidad, descripcion); // Pasar descripcion
-        await InventoryModel.updateQuantity(id, cantidad);
-        res.json({ message: 'Insumo actualizado correctamente' });
+      await InventoryModel.updateRawMaterial(id, nombre, id_tipo_materia, id_unidad, descripcion); // Pasar descripcion
+      await InventoryModel.updateQuantity(id, cantidad);
+      res.json({ message: 'Insumo actualizado correctamente' });
     } catch (err) {
-        console.error('Error al actualizar insumo:', err);
-        res.status(500).json({ message: 'Error al actualizar insumo' });
+      console.error('Error al actualizar insumo:', err);
+      res.status(500).json({ message: 'Error al actualizar insumo' });
     }
   }
 
@@ -131,7 +133,7 @@ class InventoryController {
     const { id } = req.params;
     //para probar
     console.log(id);
-    
+
     if (!id || isNaN(id)) {
       return res.status(400).json({ message: 'El parámetro debe ser un número válido.' });
     }
@@ -142,6 +144,50 @@ class InventoryController {
     } catch (error) {
       console.error('Error al obtener el inventario por unidad:', error);
       res.status(500).json({ message: 'Error al obtener el inventario por unidad.' });
+    }
+  }
+
+  async cargarMasivaDesdeCSV(req, res) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No se recibió ningún archivo.' });
+      }
+
+      const buffer = req.file.buffer;
+      const registros = [];
+
+      // Convertimos el buffer a string con codificación UTF-8
+      const contenido = buffer.toString('utf8');
+
+      // Creamos un stream legible desde el contenido
+      const stream = Readable.from(contenido);
+
+      stream
+        .pipe(csv({ separator: ';' })) // Aquí se ajusta el separador a punto y coma
+        .on('data', (row) => {
+          console.log('Fila recibida:', row); // Debug opcional
+          registros.push(row);
+        })
+        .on('end', async () => {
+          try {
+            await InventoryModel.cargarDesdeCSV(registros);
+            res.status(200).json({
+              message: 'Carga masiva completada con éxito.',
+              registrosProcesados: registros.length
+            });
+          } catch (modelError) {
+            console.error('Error al guardar en BD:', modelError);
+            res.status(500).json({ message: 'Error al guardar los registros en la base de datos.' });
+          }
+        })
+        .on('error', (parseError) => {
+          console.error('Error al leer CSV:', parseError);
+          res.status(500).json({ message: 'Error al procesar el archivo CSV.' });
+        });
+
+    } catch (err) {
+      console.error('Error general en la carga masiva:', err);
+      res.status(500).json({ message: 'Error en la carga masiva del inventario.' });
     }
   }
 

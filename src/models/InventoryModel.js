@@ -117,6 +117,40 @@ class InventoryModel {
       conn.release();
     }
   }
+
+  async cargarDesdeCSV(registros) {
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+
+      for (const row of registros) {
+        const {
+          id_material_type,
+          name,
+          description,
+          id_unit,
+          id_user,
+          quantity
+        } = row;
+
+        // Asegúrate de que los datos sean válidos
+        if (!name || !id_material_type || !id_unit || !quantity || !id_user) continue;
+
+        await conn.query(
+          `CALL sp_add_new_raw_material(?, ?, ?, ?, ?, ?)`,
+          [name, id_material_type, id_unit, quantity, description || '', id_user]
+        );
+      }
+
+      await conn.commit();
+    } catch (error) {
+      await conn.rollback();
+      console.error('Error en cargaDesdeCSV:', error);
+      throw error;
+    } finally {
+      conn.release();
+    }
+  }
 }
 
 export default new InventoryModel();
