@@ -20,7 +20,7 @@ export default function ProfileForm({
   errors,
   setErrors,
 }) {
-  const { setDeliveryAddress, setShippingCost } = useCart(); 
+  const { setDeliveryAddress, setShippingCost } = useCart();
 
   // Validación en tiempo real con Yup
   const handleFieldChange = async (e) => {
@@ -82,7 +82,12 @@ export default function ProfileForm({
         <h2>Información Personal</h2>
         <div className="form-grid">
           <div className="form-group">
-            <label htmlFor="nombres">Nombres *</label>
+            <label htmlFor="nombres">
+              Nombres{" "}
+              {(!form.nombres || form.nombres.trim() === "") && (
+                <span className="field-required">(requerido)</span>
+              )}
+            </label>
             <input
               id="nombres"
               name="nombres"
@@ -99,7 +104,12 @@ export default function ProfileForm({
             )}
           </div>
           <div className="form-group">
-            <label htmlFor="apellidos">Apellidos *</label>
+            <label htmlFor="apellidos">
+              Apellidos{" "}
+              {(!form.apellidos || form.apellidos.trim() === "") && (
+                <span className="field-required">(requerido)</span>
+              )}
+            </label>
             <input
               id="apellidos"
               name="apellidos"
@@ -130,7 +140,12 @@ export default function ProfileForm({
             </small>
           </div>
           <div className="form-group">
-            <label htmlFor="telefono">Teléfono *</label>
+            <label htmlFor="telefono">
+              Teléfono{" "}
+              {(!form.telefono || form.telefono.trim() === "") && (
+                <span className="field-required">(requerido)</span>
+              )}
+            </label>
             <input
               id="telefono"
               name="telefono"
@@ -154,7 +169,12 @@ export default function ProfileForm({
       <div className="form-section">
         <h2>Información Adicional</h2>
         <div className="form-group">
-          <label htmlFor="direccion">Dirección Completa *</label>
+          <label htmlFor="direccion">
+            Dirección Completa{" "}
+            {(!form.direccion || form.direccion.trim() === "") && (
+              <span className="field-required">(requerido)</span>
+            )}
+          </label>
           {editing ? (
             <AddressAutocomplete
               value={form.direccion || ""}
@@ -198,7 +218,7 @@ export default function ProfileForm({
               className={`btn-primary-inline ${isLoading ? "loading" : ""} ${
                 !hasChanges() ? "disabled" : ""
               }`}
-              onClick={handleSave} // <--- usa handleSave en vez de handleSubmit
+              onClick={handleSave}
               disabled={isLoading || !hasChanges()}
             >
               <span>{isLoading ? "Guardando..." : "Guardar Cambios"}</span>

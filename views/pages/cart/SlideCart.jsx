@@ -35,6 +35,34 @@ function MinusButton({ disabled, onClick }) {
   );
 }
 
+// Componente de notificación
+function PaymentNotification({ show, onClose }) {
+  useEffect(() => {
+    if (show) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 4000); // Se oculta después de 4 segundos
+      return () => clearTimeout(timer);
+    }
+  }, [show, onClose]);
+
+  if (!show) return null;
+
+  return (
+    <div className="payment-notification">
+      <div className="content">
+        <span>⚠️</span>
+        <div className="message">
+          <strong>No se puede proceder al pago</strong>
+          <br />
+          <span>Completa tu perfil para realizar pedidos</span>
+        </div>
+        <button onClick={onClose}>×</button>
+      </div>
+    </div>
+  );
+}
+
 export function SlideCart() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -59,40 +87,53 @@ export function SlideCart() {
 
   //Estado para mostrar/ocultar resumen
   const [showSummary, setShowSummary] = useState(true);
-
   // Estado para el modal de checkout
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
-
   // Confirmaciones
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
-
   // Productos recomendados
   const recommendedProducts = getRecommendedProducts(3);
-
   // Estado para el error de dirección
   const [addressError, setAddressError] = useState("");
-
   // Estados para la dirección y el autocompletado
   const [addressCoordinates, setAddressCoordinates] = useState(null);
   const [deliveryDistance, setDeliveryDistance] = useState(null);
   const [deliveryDuration, setDeliveryDuration] = useState(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [profileAddress, setProfileAddress] = useState("");
-
+  const [userProfile, setUserProfile] = useState(null);
+  // Estado para la notificación de pago
+  const [showPaymentNotification, setShowPaymentNotification] = useState(false);
   // Referencias para el autocompletado de Google Places
   const autocompleteRef = useRef(null);
   const inputRef = useRef(null);
+  // Referencias para los mensajes de confirmación
+  const deleteConfirmationRef = useRef(null);
+  const clearConfirmationRef = useRef(null);
 
-  // Estado para descripciones expandibles
-  const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  // Función para verificar si el perfil está completo
+  const isProfileComplete = (profile) => {
+    if (!profile) return false;
+    // Verificar que todos los campos requeridos estén completos
+    const hasRequiredFields =
+      profile.NOMBRES &&
+      profile.NOMBRES.trim() !== "" &&
+      profile.APELLIDOS &&
+      profile.APELLIDOS.trim() !== "" &&
+      profile.DIRECCION &&
+      profile.DIRECCION.trim() !== "" &&
+      profile.TELEFONO &&
+      profile.TELEFONO.trim() !== "";
 
-  // Cargar dirección del perfil del usuario
-  useEffect(() => {
-    if (isAuthenticated && isCartOpen && !deliveryAddress) {
-      loadUserProfile();
-    }
-  }, [isAuthenticated, isCartOpen]);
+    // Verificar que el email esté verificado
+    const isEmailVerified = profile.verified === 1 || profile.VERIFIED === 1;
+
+    // Verificar que el teléfono esté verificado
+    const isPhoneVerified = profile.verified_phone === 1;
+
+    return hasRequiredFields && isEmailVerified && isPhoneVerified;
+  };
 
   const loadUserProfile = async () => {
     setIsLoadingProfile(true);
@@ -101,7 +142,6 @@ export function SlideCart() {
       const response = await axios.get(`${API_URL}/user/profile`, {
         withCredentials: true,
       });
-
       if (response.data.success && response.data.data.DIRECCION) {
         const userAddress = response.data.data.DIRECCION;
         setProfileAddress(userAddress);
@@ -117,6 +157,70 @@ export function SlideCart() {
       setIsLoadingProfile(false);
     }
   };
+
+  const loadCompleteUserProfile = async () => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+      const response = await axios.get(`${API_URL}/user/profile`, {
+        withCredentials: true,
+      });
+      if (response.data.success) {
+        setUserProfile(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error loading complete user profile:", error);
+    }
+  };
+
+  // Cargar dirección del perfil del usuario
+  useEffect(() => {
+    if (isAuthenticated && isCartOpen) {
+      if (!deliveryAddress) {
+        loadUserProfile();
+      }
+      loadCompleteUserProfile();
+    }
+  }, [isAuthenticated, isCartOpen]);
+
+  // Effect para manejar clics fuera del mensaje de confirmación de eliminar
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        confirmDelete &&
+        deleteConfirmationRef.current &&
+        !deleteConfirmationRef.current.contains(event.target)
+      ) {
+        setConfirmDelete(null);
+      }
+    };
+
+    if (confirmDelete) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [confirmDelete]);
+
+  // Effect para manejar clics fuera del mensaje de confirmación de vaciar carrito
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        confirmClear &&
+        clearConfirmationRef.current &&
+        !clearConfirmationRef.current.contains(event.target)
+      ) {
+        setConfirmClear(false);
+      }
+    };
+
+    if (confirmClear) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [confirmClear]);
 
   // Calcular distancia para una dirección específica
   const calculateDistanceForAddress = (address) => {
@@ -134,16 +238,13 @@ export function SlideCart() {
         if (status === "OK" && response.rows[0].elements[0].status === "OK") {
           const distanceResult = response.rows[0].elements[0].distance;
           const durationResult = response.rows[0].elements[0].duration;
-
           setDeliveryDistance(distanceResult.text);
           setDeliveryDuration(durationResult.text);
-
           const distanceInKm = distanceResult.value / 1000;
           const calculatedShipping = Math.max(
             5000,
             Math.round(distanceInKm * 2000)
           );
-
           if (typeof setShippingCostValue === "function") {
             setShippingCostValue(calculatedShipping);
           }
@@ -155,7 +256,6 @@ export function SlideCart() {
   // Inicializar Google Places Autocomplete
   useEffect(() => {
     if (!isAuthenticated) return;
-
     if (!window.google || !window.google.maps || !window.google.maps.places) {
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${
@@ -165,7 +265,6 @@ export function SlideCart() {
       script.defer = true;
       script.onload = initAutocomplete;
       document.head.appendChild(script);
-
       return () => {
         const scripts = document.querySelectorAll(
           `script[src*="maps.googleapis.com"]`
@@ -203,16 +302,13 @@ export function SlideCart() {
     if (!autocompleteRef.current) return;
 
     const place = autocompleteRef.current.getPlace();
-
     if (place && place.formatted_address) {
       setDeliveryAddress(place.formatted_address);
-
       if (place.geometry && place.geometry.location) {
         const coords = {
           lat: place.geometry.location.lat(),
           lng: place.geometry.location.lng(),
         };
-
         setAddressCoordinates(coords);
         calculateDistanceForAddress(place.formatted_address);
       } else {
@@ -226,14 +322,12 @@ export function SlideCart() {
     if (!window.google || !window.google.maps) return;
 
     const geocoder = new window.google.maps.Geocoder();
-
     geocoder.geocode({ address }, (results, status) => {
       if (status === "OK" && results[0]) {
         const coords = {
           lat: results[0].geometry.location.lat(),
           lng: results[0].geometry.location.lng(),
         };
-
         setAddressCoordinates(coords);
         calculateDistanceForAddress(address);
       }
@@ -248,10 +342,17 @@ export function SlideCart() {
       return;
     }
 
+    // Verificar si el perfil está completo
+    if (userProfile && !isProfileComplete(userProfile)) {
+      setShowPaymentNotification(true);
+      return;
+    }
+
     if (!deliveryAddress.trim()) {
       setAddressError("Por favor ingresa una dirección de entrega");
       return;
     }
+
     setAddressError("");
     setShowCheckoutModal(true);
   };
@@ -285,16 +386,32 @@ export function SlideCart() {
       : text;
   };
 
+  // Variable para determinar si hay alguna confirmación activa
+  const hasActiveConfirmation = confirmDelete !== null || confirmClear;
+
   return (
     <>
+      {/* Notificación de pago */}
+      <PaymentNotification
+        show={showPaymentNotification}
+        onClose={() => setShowPaymentNotification(false)}
+      />
+
       {/* Overlay para cerrar el carrito al hacer clic fuera */}
       <div
         className={`slide-cart-overlay ${isCartOpen ? "active" : ""}`}
         onClick={closeCart}
       ></div>
 
+      {/* Overlay para las confirmaciones */}
+      {hasActiveConfirmation && <div className="confirmation-overlay"></div>}
+
       {/* Carrito deslizable */}
-      <div className={`slide-cart ${isCartOpen ? "open" : ""}`}>
+      <div
+        className={`slide-cart ${isCartOpen ? "open" : ""} ${
+          hasActiveConfirmation ? "dimmed" : ""
+        }`}
+      >
         {/* Encabezado del carrito */}
         <div className="slide-cart-header">
           <h2>Tu Carrito</h2>
@@ -329,6 +446,7 @@ export function SlideCart() {
                   Vaciar carrito
                 </button>
               </div>
+
               {cart.map((item) => {
                 const maxDesc = 40;
                 const isLongDesc =
@@ -336,10 +454,8 @@ export function SlideCart() {
                 const shortDesc = isLongDesc
                   ? item.description.slice(0, maxDesc) + "..."
                   : item.description;
-
                 const price = Number(item.price) || 0;
                 const discount = Number(item.discount) || 0;
-
                 const minusDisabled =
                   item.cantidad <= 1 || confirmDelete === item.id;
 
@@ -356,6 +472,7 @@ export function SlideCart() {
                         </span>
                       )}
                     </div>
+
                     <div className="cart-item-details">
                       <h3
                         className="name-product-mini"
@@ -364,24 +481,7 @@ export function SlideCart() {
                         {item.nameProduct}
                       </h3>
                       <p className="cart-item-description">
-                        {expandedDescriptions[item.id]
-                          ? item.description
-                          : shortDesc}
-                        {isLongDesc && (
-                          <button
-                            className="read-more-btn"
-                            onClick={() =>
-                              setExpandedDescriptions((prev) => ({
-                                ...prev,
-                                [item.id]: !prev[item.id],
-                              }))
-                            }
-                          >
-                            {expandedDescriptions[item.id]
-                              ? " Ver menos"
-                              : " Ver más"}
-                          </button>
-                        )}
+                        {item.description}
                       </p>
                       <div className="mini-price-row">
                         <span className="discounted-price mini">
@@ -398,6 +498,7 @@ export function SlideCart() {
                         )}
                       </div>
                     </div>
+
                     <div className="cart-item-actions">
                       <div className="quantity-controls">
                         <MinusButton
@@ -421,9 +522,13 @@ export function SlideCart() {
                           +
                         </button>
                       </div>
+
                       {/* Confirmación para eliminar producto */}
                       {confirmDelete === item.id ? (
-                        <div className="delete-confirmation">
+                        <div
+                          className="delete-confirmation"
+                          ref={deleteConfirmationRef}
+                        >
                           <p>¿Eliminar producto?</p>
                           <div style={{ display: "flex", gap: "0.5rem" }}>
                             <button
@@ -570,7 +675,7 @@ export function SlideCart() {
 
         {/* Confirmación para vaciar carrito */}
         {confirmClear && (
-          <div className="clear-cart-confirmation">
+          <div className="clear-cart-confirmation" ref={clearConfirmationRef}>
             <p>¿Vaciar todo el carrito?</p>
             <div
               style={{ display: "flex", gap: "1rem", justifyContent: "center" }}

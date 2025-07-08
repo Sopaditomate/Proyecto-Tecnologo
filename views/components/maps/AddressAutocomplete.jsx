@@ -30,15 +30,19 @@ const AddressAutocomplete = ({
         }&libraries=places`;
         script.async = true;
         script.defer = true;
-        script.onload = initializeAutocomplete;
+        script.onload = () => initializeAutocomplete(); // Ensure it initializes only after loading
+        script.onerror = (error) =>
+          console.error("Error loading Google Maps script:", error);
         document.head.appendChild(script);
       }
     };
 
     loadGoogleMaps();
 
+    // Limpiar clase al desmontar
     return () => {
-      if (autocompleteRef.current) {
+      document.body.classList.remove("address-dropdown-open");
+      if (autocompleteRef.current && window.google?.maps) {
         window.google?.maps?.event?.clearInstanceListeners(
           autocompleteRef.current
         );
@@ -49,6 +53,7 @@ const AddressAutocomplete = ({
   const initializeAutocomplete = () => {
     if (!inputRef.current || !window.google?.maps?.places) return;
 
+    // Ensure the Autocomplete is initialized after Google Maps is ready
     autocompleteRef.current = new window.google.maps.places.Autocomplete(
       inputRef.current,
       {
@@ -57,6 +62,18 @@ const AddressAutocomplete = ({
         fields: ["formatted_address", "geometry"],
       }
     );
+
+    // Show the dropdown when the input gets focus
+    inputRef.current.addEventListener("focus", () => {
+      document.body.classList.add("address-dropdown-open");
+    });
+
+    // Hide the dropdown when the input loses focus
+    inputRef.current.addEventListener("blur", () => {
+      setTimeout(() => {
+        document.body.classList.remove("address-dropdown-open");
+      }, 300);
+    });
 
     autocompleteRef.current.addListener("place_changed", handlePlaceSelect);
   };

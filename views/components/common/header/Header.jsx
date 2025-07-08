@@ -132,7 +132,7 @@ export function Header({
                 </div>
                 <div
                   className="header-profile-dropdown-item"
-                  onClick={() => navigate("/orders")}
+                  onClick={() => navigate("/profile")}
                 >
                   Mis Pedidos
                 </div>
