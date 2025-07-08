@@ -132,7 +132,7 @@ export function CartProvider({ children }) {
     toast.success(
       `Producto eliminado: ${product?.nameProduct || "(sin nombre)"}`,
       {
-        position: "bottom-center",
+        position: "top-right",
         autoClose: 100,
         hideProgressBar: false,
         closeOnClick: true,
@@ -217,7 +217,7 @@ export function CartProvider({ children }) {
     // Usar el estado de costo de envío si está disponible
     return shippingCost;
   };
-  
+
   // Función para establecer el costo de envío
   const setShippingCostValue = (cost) => {
     setShippingCost(cost);

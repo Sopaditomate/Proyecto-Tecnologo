@@ -916,6 +916,13 @@ form {
   }
 }
 
+/* Evita scroll en el body cuando el dropdown de direcciones está abierto */
+body.address-dropdown-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100vw;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .profile-editor-container {
@@ -1025,5 +1032,24 @@ form {
   .password-toggle-btn svg {
     width: 18px;
     height: 18px;
+  }
+}
+
+.field-required {
+  color: #e53935;
+  font-size: 0.95em;
+  font-weight: 600;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Tablets */
+@media (max-width: 768px) {
+  #change-password-section {
+    width: 100%;
+  }
+
+  .tab-content-2 {
+    justify-content: stretch;
   }
 }
