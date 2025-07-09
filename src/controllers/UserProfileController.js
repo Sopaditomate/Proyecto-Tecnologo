@@ -4,7 +4,7 @@ import { sendEmail } from "../services/sendEmail.js";
 import jwt from "jsonwebtoken";
 import db from "../config/db.js";
 import bcrypt from "bcrypt";
-import userModel from "../models/userModel.js";
+import UserModel from '../models/userModel.js';
 
 export const getProfile = async (req, res) => {
   try {
@@ -32,6 +32,18 @@ export const getProfile = async (req, res) => {
       success: false,
       message: "Error interno del servidor",
     });
+  }
+};
+
+
+//para el modulo de usuario del administrador
+export const getUsersInfo = async (req, res) => {
+  try {
+    const users = await UserModel.getAllUsersInfo();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users info:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 

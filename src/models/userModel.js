@@ -29,6 +29,13 @@ class UserModel {
     return rows[0] || null;
   }
 
+  //para el modulo de usuarios del admin
+
+  async getAllUsersInfo() {
+    const [rows] = await pool.query("CALL sp_get_users_info()");
+    return rows[0] || [];
+  }
+
   async getClientId(userId) {
     const [[rows]] = await pool.query("CALL sp_get_client_id(?)", [userId]);
     return rows.length ? rows[0].ID_CLIENTE : null;
