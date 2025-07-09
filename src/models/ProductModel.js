@@ -100,6 +100,11 @@ class ProductModel {
       throw error;
     }
   }
+
+  static async ActivateProduct(id) {
+    // Cambia el estado del producto a activo (1)
+    await pool.query("UPDATE product SET id_state = 1 WHERE id = ?", [id]);
+  }
 }
 
 export default new ProductModel();
