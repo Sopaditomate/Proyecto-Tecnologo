@@ -36,6 +36,21 @@ class UserModel {
     return rows[0] || [];
   }
 
+  async updateStateUser(id_user) {
+    try {
+      // Llamar al stored procedure pasándole el parámetro
+      const [result] = await pool.query('CALL sp_toggle_user_state(?)', [id_user]);
+
+      return result[0];  // Retornamos el primer conjunto de resultados que devuelve el SP
+      console.log('Cambio exitoso');
+    } catch (error) {
+      console.error('Error al cambiar el estado del usuario:', error);
+      throw error;  // Lanza el error para manejarlo a un nivel superior si es necesario
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////
+
   async getClientId(userId) {
     const [[rows]] = await pool.query("CALL sp_get_client_id(?)", [userId]);
     return rows.length ? rows[0].ID_CLIENTE : null;

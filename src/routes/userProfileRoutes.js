@@ -14,6 +14,8 @@ router.post(
 //de momento dejare mi ruta aqui, aunque despues habra que ver como utilizar la autenticacion:
 router.get("/info", UserProfileController.getUsersInfo);
 
+router.put("/state/:id(\\d+)", UserProfileController.updateUserState);
+
 // Rutas protegidas (requieren autenticación)
 router.use(verifyToken);
 
