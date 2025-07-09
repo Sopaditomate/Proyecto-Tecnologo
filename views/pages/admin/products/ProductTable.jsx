@@ -62,7 +62,7 @@ const ProductTable = ({
             filteredProductos.map((prod) => (
               <tr
                 key={prod.ID_PRODUCTO}
-                className={prod.ID_STATE === 3 ? "inactive-row" : ""}
+                className={prod.ID_STATE === 2 ? "inactive-row" : ""}
               >
                 <td>
                   <span className="badge bg-primary">
@@ -71,7 +71,7 @@ const ProductTable = ({
                 </td>
                 <td>
                   <strong title={prod.NOMBRE_PROD}>
-                    {prod.ID_STATE === 3 && "⚠️ "}
+                    {prod.ID_STATE === 2 && "⚠️ "}
                     {truncateText(prod.NOMBRE_PROD, 15)}
                   </strong>
                 </td>
@@ -161,7 +161,7 @@ const ProductTable = ({
                         : "bg-success"
                     }`}
                   >
-                    {prod.ID_STATE === 3 ? "Inactivo" : "Activo"}
+                    {prod.ID_STATE === 2 ? "Inactivo" : "Activo"}
                   </span>
                 </td>
                 <td>
@@ -172,7 +172,7 @@ const ProductTable = ({
                         size="sm"
                         onClick={() => openEditModal(prod)}
                         title={
-                          prod.ID_STATE === 3
+                          prod.ID_STATE === 2
                             ? "Producto inactivo - Editar"
                             : "Editar producto"
                         }
@@ -180,7 +180,7 @@ const ProductTable = ({
                       >
                         Editar
                       </Button>
-                      {prod.ID_STATE === 3 ? (
+                      {prod.ID_STATE === 2 ? (
                         <Button
                           variant="success"
                           size="sm"
@@ -212,12 +212,12 @@ const ProductTable = ({
                         size="sm"
                         onClick={() => handleViewRecipes(prod)}
                         title={
-                          prod.ID_STATE === 3
+                          prod.ID_STATE === 2
                             ? "Producto inactivo - No se pueden ver recetas"
                             : "Ver recetas del producto"
                         }
                         className="action-btn"
-                        disabled={prod.ID_STATE === 3}
+                        disabled={prod.ID_STATE === 2}
                       >
                         Ver
                       </Button>
@@ -226,12 +226,12 @@ const ProductTable = ({
                         size="sm"
                         onClick={() => openCartModal(prod)}
                         title={
-                          prod.ID_STATE === 3
+                          prod.ID_STATE === 2
                             ? "Producto inactivo - No se puede agregar al carrito"
                             : "Agregar al carrito"
                         }
                         className="action-btn"
-                        disabled={prod.ID_STATE === 3}
+                        disabled={prod.ID_STATE === 2}
                       >
                         Cart
                       </Button>
