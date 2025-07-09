@@ -13,6 +13,7 @@ import {
   Row,
   Col,
   InputGroup,
+  Pagination,
 } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -40,6 +41,9 @@ export const AdminProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
+  // Estados de paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const navigate = useNavigate();
 
   function initialFormState() {
@@ -352,30 +356,6 @@ export const AdminProducts = () => {
       ])
     ).values()
   );
-  // carga masiva de porductos
-  const handleCSVUpload = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const formData = new FormData();
-  formData.append('file', file);
-
-  try {
-    const response = await axios.post(
-      'http://localhost:5001/api/productos_crud/cargar/product',
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }
-    );
-    toast.success(response.data.message);
-  } catch (error) {
-    console.error('Error al subir CSV:', error);
-    toast.error('Error al subir el archivo CSV');
-  }
-};
 
   // Función para truncar texto según el tamaño de pantalla
   const truncateText = (text, maxLength) => {
@@ -506,6 +486,12 @@ export const AdminProducts = () => {
     );
   };
 
+  const paginatedProductos = filteredProductos.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const totalPages = Math.ceil(filteredProductos.length / itemsPerPage);
+
   return (
     <Container fluid className="mt-4">
       <h2>Gestión de Productos</h2>
@@ -519,10 +505,9 @@ export const AdminProducts = () => {
         openInsertModal={openInsertModal}
         productos={productos}
         filteredProductos={filteredProductos}
-        exportcsv={handleCSVUpload}
       />
       <ProductTable
-        filteredProductos={filteredProductos}
+        filteredProductos={paginatedProductos}
         productos={productos}
         searchTerm={searchTerm}
         selectedCategory={selectedCategory}
@@ -539,9 +524,27 @@ export const AdminProducts = () => {
         loading={loading}
         cartProductIds={cartProductIds}
       />
-      <div className="scroll-indicator">
-        Desliza horizontalmente para ver más columnas
-      </div>
+      <Pagination className="justify-content-center mt-3">
+        <Pagination.Prev
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        />
+        {[...Array(totalPages)].map((_, idx) => (
+          <Pagination.Item
+            key={idx + 1}
+            active={currentPage === idx + 1}
+            onClick={() => setCurrentPage(idx + 1)}
+          >
+            {idx + 1}
+          </Pagination.Item>
+        ))}
+        <Pagination.Next
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}
+        />
+      </Pagination>
       <ProductModals
         showInsertModal={showInsertModal}
         showEditModal={showEditModal}
