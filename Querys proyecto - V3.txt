@@ -902,30 +902,6 @@ SELECT
 FROM product p
 JOIN product_type t ON p.id_product_type = t.id_product_type
 
-
-DROP VIEW IF EXISTS vw_active_categories;
-CREATE VIEW vw_active_categories AS
-SELECT 
-    product_type.id_product_type AS ID, 
-    product_type.name AS NOMBRE
-FROM product_type
-WHERE product_type.id_state = 1;
-
-
-DROP VIEW IF EXISTS vw_active_find_user_by_id;
-
--- Crear la vista
-CREATE OR REPLACE VIEW vw_active_find_user_by_id AS
-SELECT
-  id_user AS ID_USUARIO,
-  email AS USUARIO,
-  password AS PASSWORD,
-  id_state AS ESTADO,
-  reset_token,
-  reset_token_expires
-FROM user_account
-WHERE id_state = 1;
-
 -------------------------------------PROCEDURES----------------------------------
 
 DELIMITER $$

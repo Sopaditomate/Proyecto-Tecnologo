@@ -74,7 +74,6 @@ const AddressAutocomplete = ({
         document.body.classList.remove("address-dropdown-open");
       }, 300);
     });
-
     autocompleteRef.current.addListener("place_changed", handlePlaceSelect);
   };
 

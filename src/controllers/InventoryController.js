@@ -133,7 +133,6 @@ class InventoryController {
     const { id } = req.params;
     //para probar
     console.log(id);
-
     if (!id || isNaN(id)) {
       return res.status(400).json({ message: 'El parámetro debe ser un número válido.' });
     }
