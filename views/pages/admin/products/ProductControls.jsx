@@ -1,6 +1,7 @@
 import { Row, Col, Form, Button, InputGroup } from "react-bootstrap";
 
 const ProductControls = ({
+  exportcsv,
   searchTerm,
   setSearchTerm,
   selectedCategory,
@@ -11,6 +12,7 @@ const ProductControls = ({
   productos,
   filteredProductos,
 }) => (
+  
   <div className="controls-section">
     <Row className="mb-3">
       <Col lg={4} md={6} sm={12} className="mb-2">
@@ -118,6 +120,16 @@ const ProductControls = ({
             >
               Excel
             </Button>
+            <input
+          type="file"
+          id="csvInput"
+          accept=".csv"
+          style={{ display: 'none' }}
+          onChange={exportcsv}
+        />
+        <Button variant="outline-dark" onClick={() => document.getElementById('csvInput').click()}>
+          Cargar CSV
+        </Button>
           </div>
         </div>
       </Col>

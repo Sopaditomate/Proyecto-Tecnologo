@@ -352,6 +352,30 @@ export const AdminProducts = () => {
       ])
     ).values()
   );
+  // carga masiva de porductos
+  const handleCSVUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await axios.post(
+      'http://localhost:5001/api/productos_crud/cargar/product',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    toast.success(response.data.message);
+  } catch (error) {
+    console.error('Error al subir CSV:', error);
+    toast.error('Error al subir el archivo CSV');
+  }
+};
 
   // Función para truncar texto según el tamaño de pantalla
   const truncateText = (text, maxLength) => {
@@ -495,6 +519,7 @@ export const AdminProducts = () => {
         openInsertModal={openInsertModal}
         productos={productos}
         filteredProductos={filteredProductos}
+        exportcsv={handleCSVUpload}
       />
       <ProductTable
         filteredProductos={filteredProductos}
