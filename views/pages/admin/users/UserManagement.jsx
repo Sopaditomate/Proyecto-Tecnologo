@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from 'react';
+
+import Swal from 'sweetalert2';
+import { toast, ToastContainer } from 'react-toastify';
+//import 'react-toastify/dist/ReactToastify.css';
+
 import axios from 'axios';
-import { useTable, usePagination } from 'react-table';
+import { useTable, usePagination, useGlobalFilter } from 'react-table';
 import { Container, Table, Button } from 'react-bootstrap';
 import './UsersAdmin.css';
 
 export const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [userStatus, setUserStatus] = useState({}); // Guarda los estados locales
+  const [loadingIds, setLoadingIds] = useState([]);
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [noResults, setNoResults] = useState(false);
 
   // Obtener los usuarios al montar
   useEffect(() => {
@@ -33,11 +41,44 @@ export const AdminUsers = () => {
     }
   }, [users]);
 
-  const toggleStatus = (id_user) => {
-    setUserStatus((prev) => ({
-      ...prev,
-      [id_user]: !prev[id_user],
-    }));
+  
+
+  const toggleStatus = async (id_user) => {
+    const isActive = userStatus[id_user];
+
+    const confirmResult = await Swal.fire({
+      title: `¿Estás seguro de ${isActive ? 'desactivar' : 'activar'} este usuario?`,
+      text: `Este cambio se aplicará inmediatamente.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, continuar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (!confirmResult.isConfirmed) return;
+
+    if (loadingIds.includes(id_user)) return;
+
+    setLoadingIds((prev) => [...prev, id_user]);
+
+    try {
+      await axios.put(`http://localhost:5001/api/user/state/${id_user}`);
+
+      const newStatus = !userStatus[id_user]; // obtener nuevo estado basado en estado actual
+
+      setUserStatus((prev) => ({
+        ...prev,
+        [id_user]: newStatus,
+      }));
+
+      // Mostrar toast **fuera** de setUserStatus para evitar doble ejecución
+      toast.success(`Usuario ${id_user} ha sido ${newStatus ? 'activado' : 'desactivado'}.`);
+    } catch (error) {
+      console.error('Error al cambiar estado del usuario:', error);
+      Swal.fire('Error', 'No se pudo cambiar el estado del usuario. Intenta nuevamente.', 'error');
+    } finally {
+      setLoadingIds((prev) => prev.filter((id) => id !== id_user));
+    }
   };
 
   const columns = React.useMemo(
@@ -93,6 +134,7 @@ export const AdminUsers = () => {
               variant={isActive ? 'danger' : 'success'}
               onClick={() => toggleStatus(row.original.id_user)}
               size="sm"
+              disabled={loadingIds.includes(row.original.id_user)}
             >
               {isActive ? 'Inactivar' : 'Activar'}
             </Button>
@@ -108,7 +150,7 @@ export const AdminUsers = () => {
     getTableBodyProps,
     headerGroups,
     prepareRow,
-    page, // solo una página a la vez
+    page,
     canPreviousPage,
     canNextPage,
     pageOptions,
@@ -117,14 +159,36 @@ export const AdminUsers = () => {
     previousPage,
     state: { pageIndex },
     setPageSize,
+    setGlobalFilter: setTableGlobalFilter,
   } = useTable(
     {
       columns,
       data: users,
       initialState: { pageIndex: 0, pageSize: 5 },
     },
+    useGlobalFilter,
     usePagination
   );
+
+  useEffect(() => {
+    setTableGlobalFilter(globalFilter);
+  }, [globalFilter, setTableGlobalFilter]);
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value.toLowerCase();
+    setGlobalFilter(value);
+
+    const results = users.filter(user =>
+      user.first_name.toLowerCase().includes(value) ||
+      user.last_name.toLowerCase().includes(value) ||
+      user.email.toLowerCase().includes(value) ||
+      user.address.toLowerCase().includes(value) ||
+      user.phone.toLowerCase().includes(value) ||
+      user.role_name.toLowerCase().includes(value)
+    );
+
+    setNoResults(results.length === 0 && value !== '');
+  };
 
   return (
     <Container>
@@ -142,6 +206,31 @@ export const AdminUsers = () => {
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="mb-3">
+        <label htmlFor="search" className="form-label">Buscar usuario:</label>
+        <div className="input-group">
+          <input
+            type="text"
+            id="search"
+            value={globalFilter || ''}
+            onChange={handleSearchChange}
+            className="form-control"
+            placeholder="Escribe para buscar..."
+          />
+          {globalFilter && (
+            <button
+              className="btn btn-outline-secondary"
+              onClick={() => setGlobalFilter('')}
+            >
+              &times;
+            </button>
+          )}
+        </div>
+        {noResults && (
+          <div className="text-danger mt-2">Sin coincidencias encontradas</div>
+        )}
       </div>
 
       <div className="table-responsive">
@@ -192,6 +281,7 @@ export const AdminUsers = () => {
           {'>>'}
         </Button>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </Container>
   );
 };
