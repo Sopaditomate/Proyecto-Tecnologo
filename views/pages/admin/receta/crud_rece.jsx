@@ -1,10 +1,12 @@
+"use client";
+
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import './receta.css';
-import { Container, Table, Button, Modal, Form } from 'react-bootstrap';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import "./receta.css";
+import { Container, Table, Button, Modal, Form } from "react-bootstrap";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export function Recetasform() {
   const [recetas, setRecetas] = useState([]);
@@ -19,7 +21,7 @@ export function Recetasform() {
   function initialFormState() {
     return {
       ID_MATERIA: "",
-      CANTIDAD_USAR: ""
+      CANTIDAD_USAR: "",
     };
   }
 
@@ -41,7 +43,7 @@ export function Recetasform() {
   const fetchMateriasPrimas = () => {
     axios
       .get(`http://localhost:5001/api/recetas_crud/materia/${id}`) // Ajusta la URL según tu API
-      .then((res) => { 
+      .then((res) => {
         console.log("Datos de materias primas recibidos:", res.data[0]);
         setMateriasPrimas(res.data[0]);
       })
@@ -56,11 +58,11 @@ export function Recetasform() {
   const openEditModal = (receta) => {
     setEditReceta({
       ID_PRODUCT: receta.ID_PRODUCTO || id, // el ID del producto puede venir de la URL
-      ID_MATERIAL: receta.ID_MATERIA
+      ID_MATERIAL: receta.ID_MATERIA,
     });
     setFormData({
       ID_MATERIA: receta.ID_MATERIA || "",
-      CANTIDAD_USAR: receta.CANTIDAD_USAR || ""
+      CANTIDAD_USAR: receta.CANTIDAD_USAR || "",
     });
     setShowEditModal(true);
   };
@@ -81,27 +83,39 @@ export function Recetasform() {
   const handleInsert = (e) => {
     e.preventDefault();
     if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
-      toast.error("Por favor complete todos los campos", { closeButton: false });
+      toast.error("Por favor complete todos los campos", {
+        closeButton: false,
+        className: "receta-toast error",
+      });
       return;
     }
 
     const dataToSend = {
-      ID_PRODUCTO: id, 
+      ID_PRODUCTO: id,
       ID_MATERIA: formData.ID_MATERIA,
-      CANTIDAD_USAR: formData.CANTIDAD_USAR
+      CANTIDAD_USAR: formData.CANTIDAD_USAR,
     };
     console.log("Datos a enviar:", dataToSend);
     axios
-      .post(`http://localhost:5001/api/recetas_crud/${id}/${formData.ID_MATERIA}`, dataToSend)
+      .post(
+        `http://localhost:5001/api/recetas_crud/${id}/${formData.ID_MATERIA}`,
+        dataToSend
+      )
       .then(() => {
-        toast.success("Receta agregada correctamente", { closeButton: false });
+        toast.success("✅ Receta agregada correctamente", {
+          closeButton: false,
+          className: "receta-toast success",
+        });
         fetchRecetas();
         fetchMateriasPrimas();
         closeModals();
       })
       .catch((err) => {
         console.error("Error al agregar receta:", err);
-        toast.error("Error al insertar receta", { closeButton: false });
+        toast.error("❌ Error al insertar receta", {
+          closeButton: false,
+          className: "receta-toast error",
+        });
       });
   };
 
@@ -109,7 +123,10 @@ export function Recetasform() {
   const handleUpdate = (e) => {
     e.preventDefault();
     if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
-      toast.error("Por favor complete todos los campos", { closeButton: false });
+      toast.error("Por favor complete todos los campos", {
+        closeButton: false,
+        className: "receta-toast error",
+      });
       return;
     }
 
@@ -117,19 +134,26 @@ export function Recetasform() {
     console.log("Datos a actualizar:", editReceta, formData);
 
     // Realiza el PUT con los dos parámetros necesarios en la URL
-    axios.put(
-      `http://localhost:5001/api/recetas_crud/${editReceta.ID_PRODUCT}/${editReceta.ID_MATERIAL}`,
-      { CANTIDAD_USAR: formData.CANTIDAD_USAR } // Asegúrate de que este campo esté en el cuerpo
-    )
+    axios
+      .put(
+        `http://localhost:5001/api/recetas_crud/${editReceta.ID_PRODUCT}/${editReceta.ID_MATERIAL}`,
+        { CANTIDAD_USAR: formData.CANTIDAD_USAR } // Asegúrate de que este campo esté en el cuerpo
+      )
       .then(() => {
-        toast.success("Receta actualizada correctamente", { closeButton: false });
+        toast.success("✅ Receta actualizada correctamente", {
+          closeButton: false,
+          className: "receta-toast success",
+        });
         fetchRecetas();
         fetchMateriasPrimas();
         closeModals();
       })
       .catch((err) => {
         console.error("Error al actualizar receta:", err);
-        toast.error("Error al actualizar receta", { closeButton: false });
+        toast.error("❌ Error al actualizar receta", {
+          closeButton: false,
+          className: "receta-toast error",
+        });
       });
   };
 
@@ -137,15 +161,23 @@ export function Recetasform() {
   const handleDelete = (receta) => {
     if (window.confirm("¿Estás seguro de eliminar esta receta?")) {
       axios
-        .delete(`http://localhost:5001/api/recetas_crud/${id}/${receta.ID_MATERIA}`)
+        .delete(
+          `http://localhost:5001/api/recetas_crud/${id}/${receta.ID_MATERIA}`
+        )
         .then(() => {
-          toast.success("Receta eliminada correctamente", { closeButton: false });
+          toast.success("✅ Receta eliminada correctamente", {
+            closeButton: false,
+            className: "receta-toast success",
+          });
           fetchRecetas();
           fetchMateriasPrimas();
         })
         .catch((err) => {
           console.error("Error al eliminar receta", err);
-          toast.error("No se pudo eliminar la receta", { closeButton: false });
+          toast.error("❌ No se pudo eliminar la receta", {
+            closeButton: false,
+            className: "receta-toast error",
+          });
         });
     }
   };
@@ -158,10 +190,13 @@ export function Recetasform() {
   // Extract unique materia prima options for the select input
   const tipoMateria = Array.from(
     new Map(
-      materiasPrimas.map(p => [p.ID_MATERIA, { ID_MATERIA: p.ID_MATERIA, NOMBRE: p.NOMBRE_MATE }])
+      materiasPrimas.map((p) => [
+        p.ID_MATERIA,
+        { ID_MATERIA: p.ID_MATERIA, NOMBRE: p.NOMBRE_MATE },
+      ])
     ).values()
-  ); 
-  console.log(tipoMateria)
+  );
+  console.log(tipoMateria);
 
   // Render the form fields
   const renderFormFields = () => (
@@ -174,7 +209,7 @@ export function Recetasform() {
           onChange={handleChange}
         >
           <option value="">Seleccione materia prima</option>
-          {tipoMateria.map(tipo => (
+          {tipoMateria.map((tipo) => (
             <option key={tipo.ID_MATERIA} value={tipo.ID_MATERIA}>
               {tipo.NOMBRE}
             </option>
@@ -189,111 +224,208 @@ export function Recetasform() {
           name="CANTIDAD_USAR"
           value={formData.CANTIDAD_USAR}
           onChange={handleChange}
+          placeholder="Ej: 500g, 2 tazas, 1 litro..."
         />
       </Form.Group>
     </>
   );
 
   return (
-    <Container className="container mt-4">
-      <h2>Recetas del Producto</h2>
-      {/* Export Buttons */}
-      <div className="mb-3">
-        <Button
-          variant="outline-primary"
-          className="me-2"
-          onClick={() => window.open(`http://localhost:5001/api/export/pdfreceta/${id}`, '_blank')}
-        >
-          Exportar PDF
-        </Button>
+    <Container fluid className="product-management-container">
+      <h2 className="product-management-title">Recetas del Producto</h2>
 
-        <Button
-          variant="outline-success"
-          onClick={() => window.open(`http://localhost:5001/api/export/excelreceta/${id}`, '_blank')}
-        >
-          Exportar Excel
-        </Button>
+      {/* Sección de controles */}
+
+      <div className="controls-section" id="controls-section">
+        <div>
+          <div className="export-section" id="export-section">
+            <div className="quick-actions" id="quick-actions">
+              <Button
+                className="w-100 clear-btn"
+                id="back-btn"
+                variant="outline-secondary"
+                onClick={handleGoBack}
+              >
+                Volver
+              </Button>
+              <Button
+                variant="success"
+                className="add-product-btn-main"
+                onClick={openInsertModal}
+              >
+                Agregar Nueva Receta
+              </Button>
+            </div>
+            <span className="export-label" id="export-label">
+              Exportar Recetas:
+            </span>
+            <div className="export-buttons-group" id="export-buttons-group">
+              <Button
+                variant="outline-danger"
+                className="export-btn"
+                onClick={() =>
+                  window.open(
+                    `http://localhost:5001/api/export/pdfreceta/${id}`,
+                    "_blank"
+                  )
+                }
+              >
+                PDF
+              </Button>
+              <Button
+                variant="outline-success"
+                className="export-btn"
+                onClick={() =>
+                  window.open(
+                    `http://localhost:5001/api/export/excelreceta/${id}`,
+                    "_blank"
+                  )
+                }
+              >
+                Excel
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
-      <Button className="btn btn-secondary mb-3" onClick={handleGoBack}>
-        Volver
-      </Button>
-      <Button variant="success" className="mb-3" onClick={openInsertModal}>
-        Agregar Nueva Receta
-      </Button>
 
-      <Table className="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Materia Prima</th>
-            <th>Cantidad Usar</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {recetas.map((receta) => {
-            const key = receta.ID_PRODUCT && receta.ID_MATERIAL ? `${receta.ID_PRODUCT}_${receta.ID_MATERIAL}` : receta.ID_MATERIA; // Cambia esto según tu lógica
-            return (
-              <tr key={key}>
-                <td>{receta.NOMBRE_PROD}</td>
-                <td>{receta.NOMBRE_MATE}</td>
-                <td>{receta.CANTIDAD_USAR}</td>
-                <td>
-                  <Button
-                    variant="warning"
-                    className="btn-sm me-2"
-                    onClick={() => openEditModal(receta)}
-                  >
-                    Editar
-                  </Button>
-                  <Button
-                    variant="danger"
-                    className="btn-sm"
-                    onClick={() => handleDelete(receta)}
-                  >
-                    Eliminar
-                  </Button>
-                </td>
+      {/* Contenedor de tabla */}
+      <div className="table-container">
+        <div className="table-responsive">
+          <Table className="table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Materia Prima</th>
+                <th>Cantidad Usar</th>
+                <th style={{ width: "16%" }}>Acciones</th>
               </tr>
-            );
-          })}
-        </tbody>
-      </Table>
+            </thead>
+            <tbody>
+              {recetas.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="text-center py-4">
+                    <div className="empty-state">
+                      <p className="text-muted mb-0">
+                        No hay recetas disponibles para este producto
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                recetas.map((receta) => {
+                  const key =
+                    receta.ID_PRODUCT && receta.ID_MATERIAL
+                      ? `${receta.ID_PRODUCT}_${receta.ID_MATERIAL}`
+                      : receta.ID_MATERIA;
+                  return (
+                    <tr key={key}>
+                      <td>
+                        <strong>{receta.NOMBRE_PROD}</strong>
+                      </td>
+                      <td>{receta.NOMBRE_MATE}</td>
+                      <td>
+                        <span className="fw-bold ">{receta.CANTIDAD_USAR}</span>
+                      </td>
+                      <td
+                        className="container-buttons-product-v1"
+                        id="container-buttons-product-v2"
+                      >
+                        <Button
+                          className="action-btn btn-warning"
+                          onClick={() => openEditModal(receta)}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          className="action-btn btn-danger"
+                          onClick={() => handleDelete(receta)}
+                        >
+                          Eliminar
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </Table>
+        </div>
+      </div>
 
       {/* Modal Insertar */}
-      <Modal show={showInsertModal} onHide={closeModals}>
-        <Modal.Header closeButton>
-          <Modal.Title>Agregar Receta</Modal.Title>
+      <Modal
+        show={showInsertModal}
+        onHide={closeModals}
+        data-modal="insert"
+        centered
+      >
+        <Modal.Header closeButton className="modal-header">
+          <Modal.Title className="modal-title">
+            Agregar Nueva Receta
+          </Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="modal-body">
           <Form onSubmit={handleInsert}>
             {renderFormFields()}
-            <Button type="submit" variant="primary">Insertar</Button>
-            <Button type="button" variant="secondary" className="ms-2" onClick={closeModals}>
-              Cancelar
-            </Button>
+            <div className="modal-footer d-flex gap-2 justify-content-center mt-4">
+              <Button type="submit" className="btn btn-primary">
+                Insertar Receta
+              </Button>
+              <Button
+                type="button"
+                className="btn btn-secondary"
+                onClick={closeModals}
+              >
+                Cancelar
+              </Button>
+            </div>
           </Form>
         </Modal.Body>
       </Modal>
 
       {/* Modal Editar */}
-      <Modal show={showEditModal} onHide={closeModals}>
-        <Modal.Header closeButton>
-          <Modal.Title>Editar Receta</Modal.Title>
+      <Modal
+        show={showEditModal}
+        onHide={closeModals}
+        data-modal="edit"
+        centered
+      >
+        <Modal.Header closeButton className="modal-header">
+          <Modal.Title className="modal-title">Editar Receta</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body className="modal-body">
           <Form onSubmit={handleUpdate}>
             {renderFormFields()}
-            <Button type="submit" variant="primary">Actualizar</Button>
-            <Button type="button" variant="secondary" className="ms-2" onClick={closeModals}>
-              Cancelar
-            </Button>
+            <div className="modal-footer d-flex gap-2 justify-content-center mt-4">
+              <Button type="submit" className="btn btn-primary">
+                Actualizar Receta
+              </Button>
+              <Button
+                type="button"
+                className="btn btn-secondary"
+                onClick={closeModals}
+              >
+                Cancelar
+              </Button>
+            </div>
           </Form>
         </Modal.Body>
       </Modal>
 
       {/* Toast Container */}
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </Container>
   );
 }
