@@ -357,7 +357,6 @@ export function Recetasform() {
       <Modal
         show={showInsertModal}
         onHide={closeModals}
-        className="modal-content"
         data-modal="insert"
         centered
       >
