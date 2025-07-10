@@ -1,5 +1,5 @@
 import db from "../config/db.js";
-
+class userProfileModal {}
 // Obtener perfil de usuario
 export const getUserProfileById = async (userId) => {
   const [resultSets] = await db.execute("CALL sp_get_user_profile(?)", [
@@ -39,15 +39,25 @@ export const verifyPhoneCode = async (userId, code) => {
 
 // Obtener pedidos del usuario
 export const getUserOrders = async (userId) => {
+  if (!userId || isNaN(userId)) throw new Error("Invalid user ID");
+
   const [resultSets] = await db.execute("CALL sp_get_user_orders(?)", [userId]);
-  return (
-    resultSets[0]?.map((order) => ({
-      ...order,
-      items:
-        typeof order.items === "string" ? JSON.parse(order.items) : order.items,
-    })) || []
-  );
+
+  const rows = resultSets[0] || [];
+
+  return rows.map((order) => ({
+    ...order,
+    items: (() => {
+      try {
+        return typeof order.items === "string" ? JSON.parse(order.items) : order.items;
+      } catch (e) {
+        console.error("JSON parse error:", order.items);
+        return [];
+      }
+    })(),
+  }));
 };
+
 
 // Guardar token de verificación de email
 export const saveEmailVerificationToken = async (userId, token) => {
