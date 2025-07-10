@@ -2,6 +2,9 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./admin-dashboard.css";
+import { TopProductsChart } from "../admin/graficas.jsx";
+import { TopRatingChart } from "../admin/graficas.jsx";
+import { States } from "../admin/graficas.jsx";
 
 export function AdminDashboard() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -52,6 +55,8 @@ export function AdminDashboard() {
             <button className="admin-card-button">Ver Productos</button>
           </div>
 
+
+
           <div className="admin-card">
             <h3>Pedidos</h3>
             <p>Administra los pedidos de los clientes</p>
@@ -71,6 +76,24 @@ export function AdminDashboard() {
           </div>
         </div>
       </div>
-    </div>
+
+
+      <div className="admin-chart-section">
+        <h3>Top Productos por Precio</h3>
+        <TopProductsChart />
+      </div>
+      <div className="admin-chart-section">
+        <h3>Top Productos por rating</h3>
+        <TopRatingChart />
+      </div>
+
+   <div className="admin-chart-section">
+        <h3>Top Productos por state</h3>
+        <States />
+      </div>
+    </div >
+
+
+
   );
 }
