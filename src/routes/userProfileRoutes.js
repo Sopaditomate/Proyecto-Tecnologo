@@ -35,6 +35,7 @@ router.post(
 // Rutas de verificación de email
 router.post("/verify-email/send", UserProfileController.sendEmailVerification);
 
+
 // Ruta para obtener pedidos
 router.get("/orders", UserProfileController.getUserOrders);
 
