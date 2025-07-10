@@ -94,10 +94,6 @@ export const getMenuItems = (UserType) => {
           path: "/admin/inventory",
         },
         {
-          name: "Producción",
-          path: "/admin/productions",
-        },
-        {
           name: "Cerrar Sesion",
           icon: "/assets/log-out.svg",
         },

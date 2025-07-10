@@ -61,7 +61,7 @@ export function Recetasform() {
       ID_MATERIAL: receta.ID_MATERIA,
     });
     setFormData({
-      ID_MATERIA: receta.ID_MATERIA || "",
+      ID_MATERIAL: receta.ID_MATERIA || "",
       CANTIDAD_USAR: receta.CANTIDAD_USAR || "",
     });
     setShowEditModal(true);
@@ -92,7 +92,7 @@ export function Recetasform() {
 
     const dataToSend = {
       ID_PRODUCTO: id,
-      ID_MATERIA: formData.ID_MATERIA,
+      ID_MATERIAL: formData.ID_MATERIA,
       CANTIDAD_USAR: formData.CANTIDAD_USAR,
     };
     console.log("Datos a enviar:", dataToSend);
@@ -122,7 +122,7 @@ export function Recetasform() {
   // Handle updating a selected recipe
   const handleUpdate = (e) => {
     e.preventDefault();
-    if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
+    if ( !formData.CANTIDAD_USAR) {
       toast.error("Por favor complete todos los campos", {
         closeButton: false,
         className: "receta-toast error",
@@ -137,7 +137,7 @@ export function Recetasform() {
     axios
       .put(
         `http://localhost:5001/api/recetas_crud/${editReceta.ID_PRODUCT}/${editReceta.ID_MATERIAL}`,
-        { CANTIDAD_USAR: formData.CANTIDAD_USAR } // Asegúrate de que este campo esté en el cuerpo
+        {CANTIDAD_USAR: formData.CANTIDAD_USAR } // Asegúrate de que este campo esté en el cuerpo
       )
       .then(() => {
         toast.success("✅ Receta actualizada correctamente", {
@@ -201,21 +201,7 @@ export function Recetasform() {
   // Render the form fields
   const renderFormFields = () => (
     <>
-      <Form.Group className="mb-3">
-        <Form.Label>Materia Prima</Form.Label>
-        <Form.Select
-          name="ID_MATERIA"
-          value={formData.ID_MATERIA}
-          onChange={handleChange}
-        >
-          <option value="">Seleccione materia prima</option>
-          {tipoMateria.map((tipo) => (
-            <option key={tipo.ID_MATERIA} value={tipo.ID_MATERIA}>
-              {tipo.NOMBRE}
-            </option>
-          ))}
-        </Form.Select>
-      </Form.Group>
+    
 
       <Form.Group className="mb-3">
         <Form.Label>Cantidad a Usar</Form.Label>
