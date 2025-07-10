@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./admin-dashboard.css";
+import { InventoryChart } from "./InventoryChart";
 
 export function AdminDashboard() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -70,6 +71,12 @@ export function AdminDashboard() {
             <button className="admin-card-button">Ver Usuarios</button>
           </div>
         </div>
+
+        <div className="admin-chart-section">
+          <InventoryChart order="desc" title="Stock Actual por Materia Prima" />
+          <InventoryChart order="asc" title="Materiales Más Escasos" />
+        </div>
+
       </div>
     </div>
   );
