@@ -74,6 +74,11 @@ import receta_pdf from "../views/pages/admin/receta/receta_pdf.js";
 import inventario_pdf from "../views/pages/admin/inventory/inventario_pdf.js";
 import userProfileRoutes from "./routes/userProfileRoutes.js";
 
+import GraficRoutes from "./routes/GraficRoutes.js";
+
+
+
+app.use("/api/grafic",GraficRoutes);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
