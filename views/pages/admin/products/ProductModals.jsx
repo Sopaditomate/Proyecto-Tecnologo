@@ -1,5 +1,4 @@
-"use client";
-import { Modal, Button, Form, Row, Col } from "react-bootstrap";
+import { Modal, Form, Alert, Button } from "react-bootstrap";
 
 const ProductModals = ({
   showInsertModal,
@@ -9,197 +8,118 @@ const ProductModals = ({
   handleInsert,
   handleUpdate,
   handleAddToCart,
-  formProd,
-  handleChange,
+  renderFormFields,
   formCartProd,
   setFormCartProd,
   editProd,
-  tiposProducto,
-}) => {
-  const renderFormFields = () => (
-    <>
-      <Row>
-        <Col md={6}>
+}) => (
+  <>
+    {/* Modal Insertar */}
+    <Modal
+      show={showInsertModal}
+      onHide={closeModals}
+      size="lg"
+      centered
+      data-modal="insert"
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>Agregar Nuevo Producto</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Alert variant="info" className="mb-3">
+          Complete la información del nuevo producto. Los campos nombre y precio
+          son obligatorios.
+        </Alert>
+        <Form onSubmit={handleInsert}>
+          {renderFormFields()}
+          <div className="d-flex gap-2 justify-content-end mt-4">
+            <Button type="submit" variant="primary">
+              Crear Producto
+            </Button>
+            <Button type="button" variant="secondary" onClick={closeModals}>
+              Cancelar
+            </Button>
+          </div>
+        </Form>
+      </Modal.Body>
+    </Modal>
+
+    {/* Modal Editar */}
+    <Modal
+      show={showEditModal}
+      onHide={closeModals}
+      size="lg"
+      centered
+      data-modal="edit"
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>Editar Producto: {editProd?.NOMBRE_PROD}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Alert variant="warning" className="mb-3">
+          Está editando el producto "<strong>{editProd?.NOMBRE_PROD}</strong>
+          ". Los cambios se aplicarán inmediatamente.
+        </Alert>
+        <Form onSubmit={handleUpdate}>
+          {renderFormFields()}
+          <div
+            className="d-flex gap-2 justify-content-end mt-4"
+            id="modal-buttons"
+          >
+            <Button type="submit" variant="primary">
+              Guardar Cambios
+            </Button>
+            <Button type="button" variant="secondary" onClick={closeModals}>
+              Cancelar
+            </Button>
+          </div>
+        </Form>
+      </Modal.Body>
+    </Modal>
+
+    {/* Modal Agregar al Carrito */}
+    <Modal show={showCartModal} onHide={closeModals} centered data-modal="cart">
+      <Modal.Header closeButton>
+        <Modal.Title>Agregar al Carrito</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Alert variant="success" className="mb-3">
+          Agregando producto al carrito con descuento especial.
+        </Alert>
+        <Form onSubmit={handleAddToCart}>
           <Form.Group className="mb-3">
-            <Form.Label>Tipo de Producto</Form.Label>
-            <Form.Select
-              name="ID_TIPO_PRO"
-              value={formProd.ID_TIPO_PRO}
-              onChange={handleChange}
-            >
-              <option value="">Seleccionar tipo de producto</option>
-              {tiposProducto.map((tipo) => (
-                <option key={tipo.ID_TIPO_PRO} value={tipo.ID_TIPO_PRO}>
-                  {tipo.NOMBRE}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label>Nombre del Producto</Form.Label>
-            <Form.Control
-              type="text"
-              name="NOMBRE"
-              value={formProd.NOMBRE ?? ""}
-              onChange={handleChange}
-              placeholder="Ej: Pan Integral Artesanal"
-            />
-          </Form.Group>
-        </Col>
-      </Row>
-      <Row>
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label>Precio ($)</Form.Label>
+            <Form.Label>Descuento (%)</Form.Label>
             <Form.Control
               type="number"
-              name="PRECIO"
-              value={formProd.PRECIO ?? ""}
-              onChange={handleChange}
-              placeholder="Ej: 15000"
+              name="discount"
+              value={formCartProd.discount}
+              onChange={(e) =>
+                setFormCartProd((prev) => ({
+                  ...prev,
+                  discount: e.target.value,
+                }))
+              }
+              placeholder="Ingrese el porcentaje de descuento"
               min="0"
+              max="100"
               step="0.01"
             />
+            <Form.Text className="text-muted">
+              Ingrese un valor entre 0 y 100 para el descuento
+            </Form.Text>
           </Form.Group>
-        </Col>
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label>Descripción</Form.Label>
-            <Form.Control
-              type="text"
-              name="DESCRIPCION"
-              value={formProd.DESCRIPCION ?? ""}
-              onChange={handleChange}
-              placeholder="Describe las características del producto"
-              className="description-input"
-            />
-          </Form.Group>
-        </Col>
-      </Row>
-      <Row>
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label>URL de la Imagen</Form.Label>
-            <Form.Control
-              type="text"
-              name="IMAGEN_URL"
-              value={formProd.IMAGEN_URL ?? ""}
-              onChange={handleChange}
-              placeholder="https://ejemplo.com/imagen.jpg"
-            />
-          </Form.Group>
-        </Col>
-        <Col md={6}>
-          <Form.Group className="mb-3">
-            <Form.Label>Nota Actual</Form.Label>
-            <Form.Control
-              type="text"
-              name="NOTA_ACTUAL"
-              value={formProd.NOTA_ACTUAL ?? ""}
-              onChange={handleChange}
-              placeholder="Notas adicionales sobre el producto"
-            />
-          </Form.Group>
-        </Col>
-      </Row>
-      <Row>
-        <Col md={12}>
-          <Form.Group className="mb-3">
-            <Form.Label>Advertencia</Form.Label>
-            <Form.Control
-              type="text"
-              name="ADVERTENCIA"
-              value={formProd.ADVERTENCIA ?? ""}
-              onChange={handleChange}
-              placeholder="Advertencias o alergenos"
-            />
-          </Form.Group>
-        </Col>
-      </Row>
-    </>
-  );
-
-  return (
-    <>
-      {/* Modal para insertar producto */}
-      <Modal show={showInsertModal} onHide={closeModals} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Agregar Nuevo Producto</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleInsert}>
-            {renderFormFields()}
-            <div className="d-flex justify-content-end gap-2">
-              <Button variant="secondary" onClick={closeModals}>
-                Cancelar
-              </Button>
-              <Button variant="primary" type="submit">
-                Crear Producto
-              </Button>
-            </div>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* Modal para editar producto */}
-      <Modal show={showEditModal} onHide={closeModals} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Editar Producto</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleUpdate}>
-            {renderFormFields()}
-            <div className="d-flex justify-content-end gap-2">
-              <Button variant="secondary" onClick={closeModals}>
-                Cancelar
-              </Button>
-              <Button variant="warning" type="submit">
-                Actualizar Producto
-              </Button>
-            </div>
-          </Form>
-        </Modal.Body>
-      </Modal>
-
-      {/* Modal para agregar al carrito */}
-      <Modal show={showCartModal} onHide={closeModals}>
-        <Modal.Header closeButton>
-          <Modal.Title>Agregar al Carrito</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleAddToCart}>
-            <Form.Group className="mb-3">
-              <Form.Label>Descuento (%)</Form.Label>
-              <Form.Control
-                type="number"
-                placeholder="Ingresa el descuento"
-                value={formCartProd.discount}
-                onChange={(e) =>
-                  setFormCartProd({ ...formCartProd, discount: e.target.value })
-                }
-                min="0"
-                max="100"
-                required
-              />
-              <Form.Text className="text-muted">
-                Ingresa un porcentaje de descuento para este producto
-              </Form.Text>
-            </Form.Group>
-            <div className="d-flex justify-content-end gap-2">
-              <Button variant="secondary" onClick={closeModals}>
-                Cancelar
-              </Button>
-              <Button variant="success" type="submit">
-                Agregar al Carrito
-              </Button>
-            </div>
-          </Form>
-        </Modal.Body>
-      </Modal>
-    </>
-  );
-};
+          <div className="d-flex gap-2 justify-content-end">
+            <Button type="submit" variant="primary">
+              Agregar al Carrito
+            </Button>
+            <Button type="button" variant="secondary" onClick={closeModals}>
+              Cancelar
+            </Button>
+          </div>
+        </Form>
+      </Modal.Body>
+    </Modal>
+  </>
+);
 
 export default ProductModals;

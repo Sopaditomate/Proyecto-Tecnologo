@@ -64,7 +64,7 @@ export const getMenuItems = (UserType) => {
           name: "Perfil",
           path: "/profile",
           icon: "/assets/profileiconwhite.svg",
-        }, 
+        }, // <-- CAMBIA "Cuenta" por "Perfil" y agrega path
         { name: "Contacto", icon: "/assets/contact.svg" },
         {
           name: "Cerrar Sesion",
