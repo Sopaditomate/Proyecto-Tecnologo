@@ -1,4 +1,4 @@
-GET http://localhost:5001/api/recetas_crud/materia/1200000
+GET http://localhost:5001/api/inventario/
 
 
 
