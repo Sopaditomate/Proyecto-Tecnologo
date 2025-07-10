@@ -5,6 +5,7 @@ import "./admin-dashboard.css";
 import { TopProductsChart } from "../admin/graficas.jsx";
 import { TopRatingChart } from "../admin/graficas.jsx";
 import { States } from "../admin/graficas.jsx";
+import { InventoryChart } from "./InventoryChart";
 
 export function AdminDashboard() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
@@ -75,6 +76,12 @@ export function AdminDashboard() {
             <button className="admin-card-button">Ver Usuarios</button>
           </div>
         </div>
+
+        <div className="admin-chart-section">
+          <InventoryChart order="desc" title="Stock Actual por Materia Prima" />
+          <InventoryChart order="asc" title="Materiales Más Escasos" />
+        </div>
+
       </div>
 
 
