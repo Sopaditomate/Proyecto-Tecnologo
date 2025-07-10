@@ -1,5 +1,6 @@
-GET http://localhost:5001/api/inventario/
+GET http://localhost:5001/api/user/orders/700000
 
 
+// no funciona sin token: GET http://localhost:5001/api/user/orders/700000
 
 //pa hacer pruebas, pero todavia no he visto si se maneja bien el back
