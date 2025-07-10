@@ -822,27 +822,30 @@ WHERE
     AND d.id_state = 1;
 
 
-DROP VIEW IF EXISTS vw_get_users_info;
-CREATE VIEW vw_get_users_info AS
-SELECT 
+CREATE OR REPLACE VIEW vw_get_users_info AS
+SELECT  
     u.id_user,
     u.email,
     u.password,
-    u.id_state as ID_STATE,  -- Mapear id_state a ID_STATE
-    r.name as role_name,
+    r.name AS role_name,
     r.id_role,
     d.first_name,
     d.last_name,
     d.address,
     d.phone
-FROM user_account u
-JOIN user_role ur ON u.id_user = ur.id_user
-JOIN role r ON ur.id_role = r.id_role AND r.id_role = 100000
-JOIN user_profile d ON u.id_user = d.id_user
-WHERE (u.id_state = 1 OR u.id_state = 2)
-  AND ur.id_state = 1
-  AND r.id_state = 1
-  AND d.id_state = 1;
+FROM 
+    user_account u
+JOIN 
+    user_role ur ON u.id_user = ur.id_user
+JOIN 
+    role r ON ur.id_role = r.id_role AND r.id_role = 100000
+JOIN 
+    user_profile d ON u.id_user = d.id_user
+WHERE 
+    u.id_state = 1 OR u.id_state = 2
+    AND ur.id_state = 1 OR ur.id_state = 2
+    AND r.id_state = 1 OR r.id_state = 2
+    AND d.id_state = 1 OR d.id_state = 2;
 
 
 CREATE OR REPLACE VIEW vw_active_get_client_id AS
@@ -1554,47 +1557,23 @@ END $$
 
 DELIMITER ;
 
-// en teoria estaba mal, y tuvo que ser reemplazada
 
-DROP PROCEDURE IF EXISTS sp_get_users_info;
 DELIMITER $$
-CREATE PROCEDURE sp_get_users_info()
+CREATE OR REPLACE PROCEDURE sp_get_users_info()
 BEGIN 
     SELECT 
         id_user,
         email,
-        ID_STATE,
         first_name,
         last_name,
         address,
         phone,
         role_name
-    FROM vw_get_users_info
-    ORDER BY id_user;
-END$$
-DELIMITER ;
-
-
-//el reemplazo:
-
-DROP PROCEDURE IF EXISTS sp_get_users_info;
-DELIMITER $$
-
-CREATE PROCEDURE sp_get_users_info()
-BEGIN
-    SELECT 
-        id_user,
-        email,
-        first_name,
-        last_name,
-        address,
-        phone,
-        role_name
-    FROM
+    FROM 
         vw_get_users_info;
-END$$
-
+END $$
 DELIMITER ;
+
 
 
 DELIMITER $$
@@ -1966,7 +1945,7 @@ END$$
 DELIMITER ;
 
 
--- Obtener pedidos del usuario (solo funciona con mysql mas no mariadb, osea workbench)
+-- Obtener pedidos del usuario
 DROP PROCEDURE IF EXISTS sp_get_user_orders;
 DELIMITER $$
 
@@ -1997,40 +1976,6 @@ BEGIN
 END$$
 
 DELIMITER ;
-
-
--- Obtener pedidos del usuario (MariaDB compatible, de momento)
-DROP PROCEDURE IF EXISTS sp_get_user_orders;
-DELIMITER $$
-
-CREATE PROCEDURE sp_get_user_orders(IN p_user_id INT)
-BEGIN
-  SELECT 
-    oh.id_order AS ID_PEDIDO,
-    oh.created_at AS fecha,
-    os.name AS estado,
-    oh.total_amount AS total,
-    oh.total_discount AS descuento,
-    CONCAT('[', GROUP_CONCAT(
-      CONCAT(
-        '{"nombre":"', REPLACE(p.name, '"', '\\"'), '",',
-        '"cantidad":', od.quantity, ',',
-        '"precio":', od.final_price, ',',
-        '"imagen":"', REPLACE(p.image_url, '"', '\\"'), '"}'
-      )
-    ), ']') AS items
-  FROM order_header oh
-  JOIN order_status os ON oh.id_order_status = os.id_order_status
-  JOIN order_detail od ON oh.id_order = od.id_order
-  JOIN product p ON od.id_product = p.id_product
-  WHERE oh.id_user = p_user_id
-    AND oh.id_state = 1
-  GROUP BY oh.id_order, oh.created_at, os.name, oh.total_amount, oh.total_discount
-  ORDER BY oh.created_at DESC;
-END$$
-
-DELIMITER ;
-
 
 
 -- Confirmar verificación de correo
