@@ -317,7 +317,7 @@ export function AppRoutes() {
       <Route
         path="/profile"
         element={
-          <ProtectedRoute>
+           <ProtectedRoute>
             <PageLayout
               config={{
                 itemHeader: getHeaderItems("catalog"),
@@ -330,7 +330,7 @@ export function AppRoutes() {
             >
               <Profile />
             </PageLayout>
-          </ProtectedRoute>
+           </ProtectedRoute>
         }
       />
       <Route
