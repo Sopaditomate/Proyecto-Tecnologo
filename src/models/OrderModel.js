@@ -2,6 +2,7 @@ import pool from "../config/db.js";
 
 class OrderModel {
   // Crear un nuevo pedido
+  // ya estan incluidos los sp en la BD
   async createOrder(clientId, items) {
     const connection = await pool.getConnection();
 
