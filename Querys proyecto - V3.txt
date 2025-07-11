@@ -729,6 +729,88 @@ WHERE
     p.id_state = 1;
 
 
+CREATE VIEW vw_active_orders_admin AS
+SELECT 
+    oh.id_order,
+    oh.id_user,
+    oh.id_order_status,
+    oh.created_at,
+    oh.total_discount,
+    oh.total_amount,
+    os.name AS order_status_name
+FROM 
+    order_header oh
+JOIN 
+    order_status os ON oh.id_order_status = os.id_order_status
+WHERE 
+    oh.id_state = 1 AND
+    os.id_state = 1;
+
+
+CREATE or REPLACE VIEW vw_get_all_orders_and_details_by_user AS
+SELECT 
+    oh.id_order,
+    oh.id_user,
+    oh.id_order_status,
+    oh.created_at,
+    oh.total_discount,
+    oh.total_amount,
+    od.id_order_detail,
+    od.id_product,
+    od.quantity,
+    od.final_price,
+    p.name AS product_name,
+    p.price AS product_price
+FROM 
+    order_header oh
+JOIN 
+    order_detail od ON oh.id_order = od.id_order
+JOIN 
+    product p ON od.id_product = p.id_product
+WHERE 
+    oh.id_state = 1 AND
+    od.id_state = 1 AND
+    p.id_state = 1;
+
+
+CREATE VIEW vw_get_order_details_by_order_id AS
+SELECT 
+    oh.id_order,
+    oh.id_user,
+    oh.id_order_status,
+    oh.created_at,
+    oh.total_discount,
+    oh.total_amount,
+    od.id_order_detail,
+    od.id_product,
+    od.quantity,
+    od.final_price,
+    p.name AS product_name,
+    p.price AS product_price
+FROM 
+    order_header oh
+JOIN 
+    order_detail od ON oh.id_order = od.id_order
+JOIN 
+    product p ON od.id_product = p.id_product
+WHERE 
+    oh.id_state = 1 AND
+    od.id_state = 1 AND
+    p.id_state = 1;
+
+
+CREATE VIEW vw_order_status AS
+SELECT 
+    os.id_order_status,
+    os.name AS status_name,
+    os.description,
+    os.id_state
+FROM 
+    order_status os
+WHERE 
+    os.id_state = 1;  -- Solo se incluyen estados activos
+
+
 CREATE VIEW vw_active_order_details AS
 SELECT 
     p.id_order AS ID_PEDIDO, 
@@ -1767,7 +1849,7 @@ END$$
 DELIMITER ;
 
 //lo de recetas de brandon
-//cambiado recientemente
+//cambiado recientemente - ahora funciona
 
 DROP PROCEDURE IF EXISTS sp_insert_product_carrito_admin;
 DELIMITER $$
@@ -1778,20 +1860,23 @@ CREATE PROCEDURE sp_insert_product_carrito_admin(
     IN p_discount DECIMAL(5,2)
 )
 BEGIN
-    -- Verifica que el producto exista
+    -- Verifica que el producto exista en la tabla 'product'
     IF EXISTS (
         SELECT 1 FROM product WHERE id_product = p_id_product
     ) THEN
     
-        -- Verifica que el producto no esté ya en el catálogo
-        IF NOT EXISTS (
+        -- Verifica si el producto ya está en el catálogo
+        IF EXISTS (
             SELECT 1 FROM catalog WHERE id_product = p_id_product
         ) THEN
-        
-            -- Inserta el producto en el catálogo
+            -- Si ya existe, actualiza el descuento
+            UPDATE catalog 
+            SET discount = p_discount
+            WHERE id_product = p_id_product;
+        ELSE
+            -- Si no existe, lo inserta en el catálogo
             INSERT INTO catalog (id_catalog, id_product, discount)
             VALUES (p_id_catalog, p_id_product, p_discount);
-            
         END IF;
         
     END IF;
@@ -2216,6 +2301,23 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+//procedimientos para ordenes
+
+DELIMITER //
+
+CREATE PROCEDURE UpdateOrderStatus(
+    IN p_order_id INT,
+    IN p_status_id INT
+)
+BEGIN
+    UPDATE order_header
+    SET id_order_status = p_status_id
+    WHERE id_order = p_order_id AND id_state = 1;
+END //
+
+DELIMITER ;
+
 
 
 -------------------------------------TRIGGERS------------------------------------

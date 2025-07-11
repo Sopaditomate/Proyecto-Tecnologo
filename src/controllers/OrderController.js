@@ -47,7 +47,9 @@ class OrderController {
   // Obtener pedidos del cliente autenticado
   async getClientOrders(req, res) {
     try {
+      console.log("req.user:", req.user);
       const clientId = req.user.clientId;
+      console.log(clienteId);
 
       if (!clientId) {
         return res
