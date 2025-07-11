@@ -1,4 +1,5 @@
-GET http://localhost:5001/api/pedidos/update-status
+GET http://localhost:5001/api/pedidos/orders/1100000
+
 
 
 

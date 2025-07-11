@@ -7,7 +7,7 @@ import axios from "axios";
 import TableContainer from "../../../components/table-components/TableContainer";
 import "../../../components/table-components/table-components.css";
 import { Modal, Form, Button } from "react-bootstrap";
-
+import { useNavigate } from "react-router-dom";
 
 export const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -21,7 +21,7 @@ export const AdminOrders = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [selectedStatusId, setSelectedStatusId] = useState("");
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchOrders();
@@ -154,6 +154,10 @@ export const AdminOrders = () => {
       text: "Aquí puedes mostrar los detalles del pedido.",
       icon: "info",
     });
+    navigate(`/orders/${orderId}`);
+
+
+
   };
 
   // Configuración de columnas
@@ -238,6 +242,7 @@ export const AdminOrders = () => {
             onClick={() => viewDetails(row.original.id_order)}
             size="sm"
             style={{ marginLeft: '5px' }}
+
           >
             Detalles
           </Button>

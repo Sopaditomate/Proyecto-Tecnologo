@@ -21,7 +21,7 @@ class OrderModelAdmin {
         const conn = await pool.getConnection();
         try {
             const [rows] = await conn.query(
-                'SELECT * FROM vw_order_details_by_user WHERE id_user = ?',
+                'SELECT * FROM vw_get_all_orders_and_details_by_user WHERE id_user = ?',
                 [userId]
             );
             return rows;
