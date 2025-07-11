@@ -26,6 +26,7 @@ import { AdminOrders } from "../pages/admin/orders/OrderManagement.jsx";
 import { AdminProductions } from "../pages/admin/production/ProductionManagement.jsx";
 import { AdminProducts } from "../pages/admin/products/ProductManagement.jsx";
 import { AdminUsers } from "../pages/admin/users/UserManagement.jsx";
+import {AdminOrderDetails} from "../pages/admin/orders/detalleOrder.jsx"
 
 //importaciones de los crud de recetas y productos
 import { Recetasform } from "../pages/admin/receta/crud_rece.jsx";
@@ -257,6 +258,27 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+       <Route
+        path="/orders/:orderId"
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageLayout
+              config={{
+                itemHeader: getHeaderItems("admin"),
+                itemMenu: getMenuItems("admin"),
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
+              <AdminOrderDetails/>
+            </PageLayout>
+          </ProtectedRoute>
+        }
+      />
+
+
       {/* ruta para la gestion del inventario o existencias*/}
       <Route
         path="/admin/inventory"
