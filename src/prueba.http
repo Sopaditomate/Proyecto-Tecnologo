@@ -1,4 +1,4 @@
-GET http://localhost:5001/api/user/orders/700000
+GET http://localhost:5001/api/pedidos/update-status
 
 
 // no funciona sin token: GET http://localhost:5001/api/user/orders/700000

@@ -75,6 +75,7 @@ import inventario_pdf from "../views/pages/admin/inventory/inventario_pdf.js";
 import userProfileRoutes from "./routes/userProfileRoutes.js";
 
 import GraficRoutes from "./routes/GraficRoutes.js";
+import orderAdminRoutes from "./routes/orderAdminRoutes.js";
 
 
 
@@ -99,6 +100,7 @@ app.use("/api/export/", receta_pdf);
 app.use("/api/user", userProfileRoutes);
 app.use("/api/recetas_crud", recetaRoutes);
 app.use("/api/inventario", inventoryRoutes);
+app.use("/api/pedidos", orderAdminRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running!");
