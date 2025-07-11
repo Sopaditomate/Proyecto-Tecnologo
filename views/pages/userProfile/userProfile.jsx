@@ -115,7 +115,7 @@ export default function Profile() {
     setLoading(true);
     try {
       console.log("Loading orders...");
-      const response = await axios.get("http://localhost:5001/api/user/orders", {
+      const response = await axios.get("/user/orders", {
         withCredentials: true,
       });
       console.log("Orders response:", response.data);

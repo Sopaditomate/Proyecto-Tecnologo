@@ -201,22 +201,8 @@ export function Recetasform() {
   // Render the form fields
   const renderFormFields = () => (
     <>
-          <Form.Group className="mb-3">
-        <Form.Label>Materia Prima</Form.Label>
-        <Form.Select
-          name="ID_MATERIA"
-          value={formData.ID_MATERIA}
-          onChange={handleChange}
-        >
-          <option value="">Seleccione materia prima</option>
-          {tipoMateria.map((tipo) => (
-            <option key={tipo.ID_MATERIA} value={tipo.ID_MATERIA}>
-              {tipo.NOMBRE}
-            </option>
-          ))}
-        </Form.Select>
-      </Form.Group>
     
+
       <Form.Group className="mb-3">
         <Form.Label>Cantidad a Usar</Form.Label>
         <Form.Control
@@ -229,22 +215,7 @@ export function Recetasform() {
       </Form.Group>
     </>
   );
-const renderFormFieldsEdit = () => (
-    <>
-    
-    
-      <Form.Group className="mb-3">
-        <Form.Label>Cantidad a Usar</Form.Label>
-        <Form.Control
-          type="text"
-          name="CANTIDAD_USAR"
-          value={formData.CANTIDAD_USAR}
-          onChange={handleChange}
-          placeholder="Ej: 500g, 2 tazas, 1 litro..."
-        />
-      </Form.Group>
-    </>
-  );
+
   return (
     <Container fluid className="product-management-container">
       <h2 className="product-management-title">Recetas del Producto</h2>
@@ -411,7 +382,7 @@ const renderFormFieldsEdit = () => (
         </Modal.Header>
         <Modal.Body className="modal-body">
           <Form onSubmit={handleUpdate}>
-            {renderFormFieldsEdit()}
+            {renderFormFields()}
             <div className="modal-footer d-flex gap-2 justify-content-center mt-4">
               <Button type="submit" className="btn btn-primary">
                 Actualizar Receta
