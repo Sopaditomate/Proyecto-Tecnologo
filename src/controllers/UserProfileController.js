@@ -333,13 +333,7 @@ export const confirmEmailVerification = async (req, res) => {
 
 export const getUserOrders = async (req, res) => {
   try {
-    console.log("req.user:", req.user);
-
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      return res.status(400).json({ success: false, message: "User ID missing" });
-    }
+    const userId = req.user.userId;
 
     const orders = await UserProfileModel.getUserOrders(userId);
 
@@ -355,7 +349,6 @@ export const getUserOrders = async (req, res) => {
     });
   }
 };
-
 
 export const changePassword = async (req, res) => {
   try {
