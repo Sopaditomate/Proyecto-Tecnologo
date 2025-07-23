@@ -76,6 +76,7 @@ import userProfileRoutes from "./routes/userProfileRoutes.js";
 
 import GraficRoutes from "./routes/GraficRoutes.js";
 import orderAdminRoutes from "./routes/orderAdminRoutes.js";
+import productionRoutes from "./routes/productionRoutes.js";
 
 
 
@@ -101,6 +102,8 @@ app.use("/api/user", userProfileRoutes);
 app.use("/api/recetas_crud", recetaRoutes);
 app.use("/api/inventario", inventoryRoutes);
 app.use("/api/pedidos", orderAdminRoutes);
+// a probar esta
+app.use("/api/produccion", productionRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running!");

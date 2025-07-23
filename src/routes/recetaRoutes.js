@@ -1,3 +1,4 @@
+//recetaRoutes.js
 import express from 'express';
 import RecetaController from '../controllers/RecetaController.js';
 //import { verifyToken, isAdmin } from "../middleware/authMiddleware.js";
