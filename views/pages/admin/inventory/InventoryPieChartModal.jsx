@@ -20,7 +20,7 @@ const InventoryPieChartModal = () => {
 
   const fetchUnits = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/unidades'); // Asegúrate de que este endpoint exista
+      const response = await axios.get('http://localhost:44070/api/unidades'); // Asegúrate de que este endpoint exista
       setUnits(response.data);
       //para probar
       console.log(response)
@@ -37,7 +37,7 @@ const InventoryPieChartModal = () => {
 
   const fetchData = async (unitId) => {
     try {
-      const response = await axios.get(`http://localhost:5001/api/grafica/${unitId}`);
+      const response = await axios.get(`http://localhost:44070/api/grafica/${unitId}`);
       const data = response.data;
       console.log(data);
 
