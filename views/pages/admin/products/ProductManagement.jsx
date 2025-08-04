@@ -62,7 +62,7 @@ export const AdminProducts = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        "http://localhost:44070/api/productos_crud"
+        `${VITE_API_URL}/productos_crud`
       );
       setProductos(response.data);
       setFilteredProductos(response.data);
@@ -356,7 +356,7 @@ export const AdminProducts = () => {
     }
     try {
       await axios.post(
-        "http://localhost:44070/api/productos_crud/cart",
+        `${VITE_API_URL}/productos_crud/cart`,
         formCartProd
       );
       toast.success("Producto agregado al carrito exitosamente", {
@@ -398,7 +398,7 @@ export const AdminProducts = () => {
       return;
     }
     try {
-      await axios.post("http://localhost:44070/api/productos_crud", formProd);
+      await axios.post(`${VITE_API_URL}/productos_crud`, formProd);
       toast.success("Producto creado exitosamente", {
         position: "top-right",
         autoClose: 3000,
@@ -428,7 +428,7 @@ export const AdminProducts = () => {
     }
     try {
       await axios.put(
-        `http://localhost:44070/api/productos_crud/${editProd.ID_PRODUCTO}`,
+        `${VITE_API_URL}/productos_crud/${editProd.ID_PRODUCTO}`,
         formProd
       );
       toast.success(
@@ -473,7 +473,7 @@ export const AdminProducts = () => {
     if (result.isConfirmed) {
       try {
         await axios.delete(
-          `http://localhost:44070/api/productos_crud/product/${id}`
+          `${VITE_API_URL}/productos_crud/product/${id}`
         );
         toast.success(`Producto "${nombreProducto}" inactivado correctamente`, {
           position: "top-right",
@@ -493,7 +493,7 @@ export const AdminProducts = () => {
   const handleActivate = async (id, nombreProducto) => {
     try {
       await axios.put(
-        `http://localhost:44070/api/productos_crud/activate/${id}`
+        `${VITE_API_URL}/productos_crud/activate/${id}`
       );
       toast.success(`Producto "${nombreProducto}" activado correctamente`, {
         position: "top-right",
@@ -551,7 +551,7 @@ export const AdminProducts = () => {
       const formData = new FormData();
       formData.append("file", csvFile);
       const response = await axios.post(
-        "http://localhost:44070/api/productos_crud/cargar/product",
+        `${VITE_API_URL}/productos_crud/cargar/product`,
         formData,
         {
           headers: {
@@ -617,14 +617,14 @@ export const AdminProducts = () => {
         exportOptions={[
           {
             label: "PDF",
-            onClick: () => window.open(`http://localhost:44070/api/export/pdf`),
+            onClick: () => window.open(`${VITE_API_URL}/export/pdf`),
             variant: "outline-danger",
             icon: "/assets/pdf.svg",
           },
           {
             label: "Excel",
             onClick: () =>
-              window.open(`http://localhost:44070/api/export/excel`),
+              window.open(`${VITE_API_URL}/export/excel`),
             variant: "outline-success",
           },
         ]}

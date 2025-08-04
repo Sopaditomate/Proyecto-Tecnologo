@@ -72,7 +72,7 @@ export const AdminUsers = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:44070/api/user/info");
+      const response = await axios.get(`${VITE_API_URL}/user/info`);
       console.log("🌐 RESPUESTA COMPLETA DE LA API:");
       console.log("Status:", response.status);
       console.log("Headers:", response.headers);
@@ -151,7 +151,7 @@ export const AdminUsers = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:44070/api/user/state/${id_user}`
+        `${VITE_API_URL}/user/state/${id_user}`
       );
       console.log("✅ Respuesta del servidor:", response.data);
 

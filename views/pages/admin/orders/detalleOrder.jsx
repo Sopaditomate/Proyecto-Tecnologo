@@ -21,7 +21,7 @@ export function AdminOrderDetails() {
  const fetchOrderDetails = async () => {
   setLoading(true);
   try {
-    const { data } = await axios.get(`http://localhost:44070/api/pedidos/orders/${orderId}`);
+    const { data } = await axios.get(`${VITE_API_URL}/pedidos/orders/${orderId}`);
     console.log("✅ API GET response:", data);
     if (Array.isArray(data)) {
       setDetails(data);

@@ -199,7 +199,7 @@ class AuthController {
 
       // 5. Crear enlace de recuperación
       const resetUrl = `${
-        process.env.CLIENT_URL || "http://localhost:5173"
+        process.env.CLIENT_URL || `${VITE_API_URL}:5173`
       }/reset-password?token=${resetToken}`;
 
       // 6. Enviar correo

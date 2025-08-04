@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:44070/api"
+const API_URL = import.meta.env.VITE_API_URL || `${VITE_API_URL}`
 
 /**
  * Servicio para gestionar pagos
