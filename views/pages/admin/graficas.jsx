@@ -13,16 +13,19 @@ import {
     Legend,
 } from "chart.js";
 
+
+const VITE_API_URL = import.meta.env.VITE_API_URL;
+
 ChartJS.register(  ArcElement,CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 export function TopProductsChart() {
     const [productos, setProductos] = useState([]);
 
-    useEffect(() => {
-        fetch("http://localhost:44070/api/grafic") // Asegúrate de que esta sea la URL correcta
-            .then((res) => res.json())
-            .then((data) => setProductos(data))
-            .catch((err) => console.error("Error al cargar los productos:", err));
-    }, []);
+     useEffect(() => {
+    fetch(`${VITE_API_URL}/grafic`)
+      .then((res) => res.json())
+      .then((data) => setProductos(data))
+      .catch((err) => console.error("Error al cargar los productos:", err));
+  }, []);
 
     const data = {
         labels: productos.map((p) => p.name),
@@ -66,7 +69,7 @@ export function TopRatingChart() {
     const [productos, setProductos] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:44070/api/grafic/Rating") // Asegúrate de que esta sea la URL correcta
+        fetch(`${VITE_API_URL}/grafic/Rating`) // Asegúrate de que esta sea la URL correcta
             .then((res) => res.json())
             .then((data) => setProductos(data))
             .catch((err) => console.error("Error al cargar los productos:", err));
@@ -114,7 +117,7 @@ export function States() {
   const [stateCounts, setStateCounts] = useState({ activo: 0, inactivo: 0 });
 
   useEffect(() => {
-    fetch("http://localhost:44070/api/grafic/state")
+    fetch(`${VITE_API_URL}/grafic/state`)
       .then((res) => res.json())
       .then((data) => {
         // Contar estados

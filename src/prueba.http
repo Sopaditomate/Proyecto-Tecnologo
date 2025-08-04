@@ -1,4 +1,4 @@
-GET http://localhost:44070/api/pedidos/orders/1100000
+GET `${VITE_API_URL}/pedidos/orders/1100000
 
 
 

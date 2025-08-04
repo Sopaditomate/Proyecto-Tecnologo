@@ -75,7 +75,7 @@ export const AdminOrders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:44070/api/pedidos/active-orders");
+      const response = await axios.get(`${VITE_API_URL}/pedidos/active-orders`);
 
       if (Array.isArray(response.data)) {
         const ordersWithConvertedValues = response.data.map((order) => ({
@@ -105,7 +105,7 @@ export const AdminOrders = () => {
 
   const fetchOrderStatuses = async () => {
     try {
-      const response = await axios.get("http://localhost:44070/api/pedidos/order-status");
+      const response = await axios.get(`${VITE_API_URL}/pedidos/order-status`);
       if (Array.isArray(response.data)) {
         setOrderStatuses(response.data);
       } else {
@@ -129,7 +129,7 @@ export const AdminOrders = () => {
     }
 
     try {
-      const response = await axios.put("http://localhost:44070/api/pedidos/orders/update-status", {
+      const response = await axios.put(`${VITE_API_URL}/pedidos/orders/update-status`, {
         orderId: selectedOrderId,
         statusId: selectedStatusId,
       });

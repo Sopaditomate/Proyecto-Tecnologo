@@ -79,7 +79,7 @@ export function ForgotPasswordPage() {
     try {
       // Cambia la URL por la de tu backend real
       const response = await axios.post(
-        "http://localhost:3001/api/auth/forgot-password",
+        `${VITE_API_URL}:3001/api/auth/forgot-password`,
         {
           email,
         }

@@ -46,7 +46,7 @@ const InventoryManagement = () => {
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:44070/api/inventario/");
+      const response = await axios.get(`${VITE_API_URL}/inventario/`);
       setInventory(response.data);
       setFilteredInventory(response.data);
     } catch (error) {
@@ -60,7 +60,7 @@ const InventoryManagement = () => {
   const fetchUnidades = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:44070/api/inventario/unidades"
+        `${VITE_API_URL}/inventario/unidades`
       );
       setUnidades(response.data);
     } catch (error) {
@@ -71,7 +71,7 @@ const InventoryManagement = () => {
   const fetchTipos = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:44070/api/inventario/tipos"
+        `${VITE_API_URL}/inventario/tipos`
       );
       setTipos(response.data);
     } catch (error) {
@@ -82,7 +82,7 @@ const InventoryManagement = () => {
   const fetchHistorial = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:44070/api/inventario/historial"
+        `${VITE_API_URL}/inventario/historial`
       );
       setHistorial(response.data);
     } catch (error) {
@@ -267,7 +267,7 @@ const InventoryManagement = () => {
 
       if (isEditing) {
         await axios.put(
-          `http://localhost:44070/api/inventario/${currentInsumo.ID_INVENTARIO}`,
+          `${VITE_API_URL}/${currentInsumo.ID_INVENTARIO}`,
           {
             nombre: MATERIA_PRIMA,
             id_tipo_materia: TIPO,
@@ -278,7 +278,7 @@ const InventoryManagement = () => {
         );
         toast.success("Insumo actualizado con éxito!");
       } else {
-        await axios.post("http://localhost:44070/api/inventario/nuevo", {
+        await axios.post(`${VITE_API_URL}/inventario/nuevo`, {
           nombre: MATERIA_PRIMA,
           tipoMateria: TIPO,
           unidad: UNIDAD,
@@ -301,7 +301,7 @@ const InventoryManagement = () => {
   const handleDelete = async (id) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este insumo?")) {
       try {
-        await axios.delete(`http://localhost:44070/api/inventario/${id}`);
+        await axios.delete(`${VITE_API_URL}/inventario/${id}`);
         fetchInventory();
         toast.success("Insumo eliminado con éxito!");
       } catch (error) {
@@ -349,7 +349,7 @@ const InventoryManagement = () => {
       formData.append("file", csvFile);
 
       const response = await axios.post(
-        "http://localhost:44070/api/inventario/cargar",
+        `${VITE_API_URL}/inventario/cargar`,
         formData,
         {
           headers: {
@@ -442,7 +442,7 @@ const InventoryManagement = () => {
             label: "PDF",
             onClick: () =>
               window.open(
-                "http://localhost:44070/api/export/pdfinventario",
+                `${VITE_API_URL}/export/pdfinventario`,
                 "_blank"
               ),
             variant: "outline-danger",
@@ -451,7 +451,7 @@ const InventoryManagement = () => {
             label: "Excel",
             onClick: () =>
               window.open(
-                "http://localhost:44070/api/export/excelinventario",
+                `${VITE_API_URL}/export/excelinventario`,
                 "_blank"
               ),
             variant: "outline-success",
