@@ -28,7 +28,7 @@ export function Recetasform() {
   // Fetch all recipes for the specific product
   const fetchRecetas = () => {
     axios
-      .get(`http://localhost:5001/api/recetas_crud/${id}`)
+      .get(`http://localhost:44070/api/recetas_crud/${id}`)
       .then((res) => setRecetas(res.data))
       .catch((err) => console.error("Error al cargar las recetas:", err));
   };
@@ -42,7 +42,7 @@ export function Recetasform() {
 
   const fetchMateriasPrimas = () => {
     axios
-      .get(`http://localhost:5001/api/recetas_crud/materia/${id}`) // Ajusta la URL según tu API
+      .get(`http://localhost:44070/api/recetas_crud/materia/${id}`) // Ajusta la URL según tu API
       .then((res) => {
         console.log("Datos de materias primas recibidos:", res.data[0]);
         setMateriasPrimas(res.data[0]);
@@ -98,7 +98,7 @@ export function Recetasform() {
     console.log("Datos a enviar:", dataToSend);
     axios
       .post(
-        `http://localhost:5001/api/recetas_crud/${id}/${formData.ID_MATERIA}`,
+        `http://localhost:44070/api/recetas_crud/${id}/${formData.ID_MATERIA}`,
         dataToSend
       )
       .then(() => {
@@ -136,7 +136,7 @@ export function Recetasform() {
     // Realiza el PUT con los dos parámetros necesarios en la URL
     axios
       .put(
-        `http://localhost:5001/api/recetas_crud/${editReceta.ID_PRODUCT}/${editReceta.ID_MATERIAL}`,
+        `http://localhost:44070/api/recetas_crud/${editReceta.ID_PRODUCT}/${editReceta.ID_MATERIAL}`,
         {CANTIDAD_USAR: formData.CANTIDAD_USAR } // Asegúrate de que este campo esté en el cuerpo
       )
       .then(() => {
@@ -162,7 +162,7 @@ export function Recetasform() {
     if (window.confirm("¿Estás seguro de eliminar esta receta?")) {
       axios
         .delete(
-          `http://localhost:5001/api/recetas_crud/${id}/${receta.ID_MATERIA}`
+          `http://localhost:44070/api/recetas_crud/${id}/${receta.ID_MATERIA}`
         )
         .then(() => {
           toast.success("✅ Receta eliminada correctamente", {
@@ -251,7 +251,7 @@ export function Recetasform() {
                 className="export-btn"
                 onClick={() =>
                   window.open(
-                    `http://localhost:5001/api/export/pdfreceta/${id}`,
+                    `http://localhost:44070/api/export/pdfreceta/${id}`,
                     "_blank"
                   )
                 }
@@ -263,7 +263,7 @@ export function Recetasform() {
                 className="export-btn"
                 onClick={() =>
                   window.open(
-                    `http://localhost:5001/api/export/excelreceta/${id}`,
+                    `http://localhost:44070/api/export/excelreceta/${id}`,
                     "_blank"
                   )
                 }

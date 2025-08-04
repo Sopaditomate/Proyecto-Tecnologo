@@ -8,7 +8,7 @@ dotenv.config(); //para unar .env
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
+const allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173","https://proyecto-tecnologo-lovebites.up.railway.app"];
 
 // Configuración de CORS
 const corsOptions = {
@@ -113,7 +113,7 @@ app.use((err, req, res, next) => {
 });
 
 //inicializador del servidor
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 44070;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
   console.log(`🌐 CORS enabled for: ${corsOptions.origin}`);

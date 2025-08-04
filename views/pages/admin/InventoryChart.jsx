@@ -8,7 +8,7 @@ export function InventoryChart({ order = "desc", title = "Stock Actual por Mater
     const [data, setData] = useState(null);
 
     useEffect(() => {
-        fetch("http://localhost:5001/api/inventario/")
+        fetch("http://localhost:44070/api/inventario/")
             .then((res) => res.json())
             .then((info) => {
                 // Ordenar de mayor a menor por cantidad

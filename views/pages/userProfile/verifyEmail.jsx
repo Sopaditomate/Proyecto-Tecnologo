@@ -14,7 +14,7 @@ export default function VerifyEmail() {
     axios
       .post(
         `${
-          import.meta.env.VITE_API_URL || "http://localhost:5001/api"
+          import.meta.env.VITE_API_URL || "http://localhost:44070/api"
         }/user/verify-email/confirm`,
         { token }
       )

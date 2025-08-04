@@ -18,7 +18,7 @@ export function TopProductsChart() {
     const [productos, setProductos] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:5001/api/grafic") // Asegúrate de que esta sea la URL correcta
+        fetch("http://localhost:44070/api/grafic") // Asegúrate de que esta sea la URL correcta
             .then((res) => res.json())
             .then((data) => setProductos(data))
             .catch((err) => console.error("Error al cargar los productos:", err));
@@ -66,7 +66,7 @@ export function TopRatingChart() {
     const [productos, setProductos] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:5001/api/grafic/Rating") // Asegúrate de que esta sea la URL correcta
+        fetch("http://localhost:44070/api/grafic/Rating") // Asegúrate de que esta sea la URL correcta
             .then((res) => res.json())
             .then((data) => setProductos(data))
             .catch((err) => console.error("Error al cargar los productos:", err));
@@ -114,7 +114,7 @@ export function States() {
   const [stateCounts, setStateCounts] = useState({ activo: 0, inactivo: 0 });
 
   useEffect(() => {
-    fetch("http://localhost:5001/api/grafic/state")
+    fetch("http://localhost:44070/api/grafic/state")
       .then((res) => res.json())
       .then((data) => {
         // Contar estados
