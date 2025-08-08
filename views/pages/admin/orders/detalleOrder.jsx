@@ -13,6 +13,7 @@ export function AdminOrderDetails() {
   const navigate = useNavigate();
   const [details, setDetails] = useState([]);
   const [loading, setLoading] = useState(false);
+  const VITE_API_URL = import.meta.env.VITE_API_URL 
 
   useEffect(() => {
     if (orderId) fetchOrderDetails();
@@ -21,6 +22,7 @@ export function AdminOrderDetails() {
  const fetchOrderDetails = async () => {
   setLoading(true);
   try {
+    const VITE_API_URL = import.meta.env.VITE_API_URL 
     const { data } = await axios.get(`${VITE_API_URL}/pedidos/orders/${orderId}`);
     console.log("✅ API GET response:", data);
     if (Array.isArray(data)) {

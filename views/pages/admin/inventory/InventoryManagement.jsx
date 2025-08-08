@@ -10,6 +10,7 @@ import DataTable from "../../../components/table-components/DataTable";
 import ExpandableText from "../../../components/table-components/ExpandableText";
 import "../../../components/table-components/table-components.css";
 
+
 const InventoryManagement = () => {
   const [inventory, setInventory] = useState([]);
   const [filteredInventory, setFilteredInventory] = useState([]);
@@ -31,6 +32,7 @@ const InventoryManagement = () => {
   const itemsPerPage = 10;
   const [historialCurrentPage, setHistorialCurrentPage] = useState(1);
   const historialItemsPerPage = 5;
+  const VITE_API_URL = import.meta.env.VITE_API_URL 
 
   useEffect(() => {
     fetchInventory();

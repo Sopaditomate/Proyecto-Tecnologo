@@ -17,6 +17,7 @@ export function Recetasform() {
   const [showEditModal, setShowEditModal] = useState(false);
   const { id } = useParams(); // Get the product ID from the URL
   const navigate = useNavigate();
+  const VITE_API_URL = import.meta.env.VITE_API_URL 
 
   function initialFormState() {
     return {

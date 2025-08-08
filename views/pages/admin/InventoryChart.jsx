@@ -3,6 +3,7 @@ import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Lege
 import { useEffect, useState } from "react";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+const VITE_API_URL = import.meta.env.VITE_API_URL 
 
 export function InventoryChart({ order = "desc", title = "Stock Actual por Materia Prima" }) {
     const [data, setData] = useState(null);

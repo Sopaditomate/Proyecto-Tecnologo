@@ -75,6 +75,7 @@ export const AdminOrders = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
+      const VITE_API_URL = import.meta.env.VITE_API_URL 
       const response = await axios.get(`${VITE_API_URL}/pedidos/active-orders`);
 
       if (Array.isArray(response.data)) {
