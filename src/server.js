@@ -7,6 +7,16 @@ import { testConnection } from "./config/db.js";
 dotenv.config(); //para unar .env
 
 const app = express();
+// Redirigir HTTP a HTTPS en producción
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] === 'http') {
+      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
+
 
 const allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173","https://proyecto-tecnologo-lovebites.up.railway.app"];
 
