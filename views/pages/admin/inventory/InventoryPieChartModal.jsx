@@ -11,6 +11,7 @@ import {
 } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
+const VITE_API_URL = import.meta.env.VITE_API_URL 
 
 const InventoryPieChartModal = () => {
   const [show, setShow] = useState(false);
@@ -20,7 +21,7 @@ const InventoryPieChartModal = () => {
 
   const fetchUnits = async () => {
     try {
-      const response = await axios.get('`${VITE_API_URL}/unidades'); // Asegúrate de que este endpoint exista
+      const response = await axios.get(`${VITE_API_URL}/unidades`); // Asegúrate de que este endpoint exista
       setUnits(response.data);
       //para probar
       console.log(response)

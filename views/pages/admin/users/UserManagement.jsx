@@ -16,6 +16,7 @@ export const AdminUsers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [loading, setLoading] = useState(false);
+  const VITE_API_URL = import.meta.env.VITE_API_URL 
 
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);

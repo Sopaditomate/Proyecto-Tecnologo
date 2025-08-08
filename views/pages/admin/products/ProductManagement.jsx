@@ -32,6 +32,7 @@ export const AdminProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categories, setCategories] = useState([]);
+  const VITE_API_URL = import.meta.env.VITE_API_URL 
 
   // Estados de paginación
   const [currentPage, setCurrentPage] = useState(1);
