@@ -1,14 +1,14 @@
-import express from "express"
-import orderController from "../controllers/OrderController.js" //se corrigio la ruta
-import { verifyToken, isClient } from "../middleware/authMiddleware.js"
+import express from "express";
+import OrderController from "../controllers/OrderController.js";
+import { verifyToken, isClient } from "../middleware/authMiddleware.js";
 
-const router = express.Router()
+const router = express.Router();
 
 // Todas las rutas requieren autenticación y rol de cliente
-router.use(verifyToken, isClient)
+router.use(verifyToken, isClient);
 
-router.post("/", orderController.createOrder)
-router.get("/", orderController.getClientOrders)
-router.get("/:id", orderController.getOrderDetails)
+router.post("/", OrderController.createOrder);
+router.get("/", OrderController.getClientOrders);
+router.get("/:id", OrderController.getOrderDetails);
 
-export default router
+export default router;

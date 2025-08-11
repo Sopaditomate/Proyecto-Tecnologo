@@ -8,4 +8,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["bcrypt"],
   },
+  build: {
+    sourcemap: true,
+  },
 });

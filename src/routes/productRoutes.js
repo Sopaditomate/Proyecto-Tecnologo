@@ -1,12 +1,12 @@
 import express from "express"
-import productController from "../controllers/productController.js"
+import ProductController from "../controllers/ProductController.js"
 
 const router = express.Router()
 
-router.get("/", productController.getAllProducts)
-router.get("/featured", productController.getFeaturedProducts)
-router.get("/categories", productController.getCategories)
-router.get("/filter", productController.filterProducts)
-router.get("/:id", productController.getProductById)
+router.get("/", ProductController.getAllProducts)
+router.get("/featured", ProductController.getFeaturedProducts)
+router.get("/categories", ProductController.getCategories)
+router.get("/filter", ProductController.filterProducts)
+router.get("/:id", ProductController.getProductById)
 
 export default router

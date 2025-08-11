@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import UserModel from "../models/userModel.js";
+import UserModel from "../models/UserModel.js";
 
 class AuthController {
   // Registro de usuario

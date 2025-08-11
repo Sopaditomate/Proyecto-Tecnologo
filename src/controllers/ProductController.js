@@ -1,4 +1,4 @@
-import ProductModel from "../models/productModel.js";
+import ProductModel from "../models/ProductModel.js";
 
 class ProductController {
   // Obtener todos los productos

@@ -3,22 +3,28 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { testConnection } from "./config/db.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config(); //para unar .env
 
 const app = express();
 // Redirigir HTTP a HTTPS en producción
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
   app.use((req, res, next) => {
-    if (req.headers['x-forwarded-proto'] === 'http') {
+    if (req.headers["x-forwarded-proto"] === "http") {
       return res.redirect(301, `https://${req.headers.host}${req.url}`);
     }
     next();
   });
 }
 
-
-const allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173","https://proyecto-tecnologo-lovebites.up.railway.app"];
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://proyecto-tecnologo-lovebites.up.railway.app",
+  "https://proyecto-mej7.onrender.com",
+];
 
 // Configuración de CORS
 const corsOptions = {
@@ -63,8 +69,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
 app.use(express.json()); // permite interpretar el cuerpo de las peticiones como JSON.
 app.use(cookieParser()); // permite leer cookies que se envían con las peticiones.
 
@@ -87,9 +91,7 @@ import userProfileRoutes from "./routes/userProfileRoutes.js";
 import GraficRoutes from "./routes/GraficRoutes.js";
 import orderAdminRoutes from "./routes/orderAdminRoutes.js";
 
-
-
-app.use("/api/grafic",GraficRoutes);
+app.use("/api/grafic", GraficRoutes);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
@@ -112,8 +114,14 @@ app.use("/api/recetas_crud", recetaRoutes);
 app.use("/api/inventario", inventoryRoutes);
 app.use("/api/pedidos", orderAdminRoutes);
 
-app.get("/", (req, res) => {
-  res.send("API is running!");
+// Configurar Express para servir archivos estáticos del frontend
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(express.static(path.join(__dirname, "../dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../dist/index.html"));
 });
 
 // Manejo de errores

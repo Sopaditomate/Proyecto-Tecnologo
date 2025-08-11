@@ -1,5 +1,5 @@
 import NequiService from "../services/nequiService.js";
-import OrderModel from "../models/orderModel.js";
+import OrderModel from "../models/OrderModel.js";
 import pool from "../config/db.js";
 
 class PaymentController {
