@@ -39,13 +39,15 @@ class UserModel {
   async updateStateUser(id_user) {
     try {
       // Llamar al stored procedure pasándole el parámetro
-      const [result] = await pool.query('CALL sp_toggle_user_state(?)', [id_user]);
+      const [result] = await pool.query("CALL sp_toggle_user_state(?)", [
+        id_user,
+      ]);
 
-      return result[0];  // Retornamos el primer conjunto de resultados que devuelve el SP
-      console.log('Cambio exitoso');
+      return result[0]; // Retornamos el primer conjunto de resultados que devuelve el SP
+      console.log("Cambio exitoso");
     } catch (error) {
-      console.error('Error al cambiar el estado del usuario:', error);
-      throw error;  // Lanza el error para manejarlo a un nivel superior si es necesario
+      console.error("Error al cambiar el estado del usuario:", error);
+      throw error; // Lanza el error para manejarlo a un nivel superior si es necesario
     }
   }
 
@@ -58,7 +60,7 @@ class UserModel {
 
   async findById(userId) {
     const [[rows]] = await pool.query("CALL sp_get_user_by_id(?)", [userId]);
-    return rows[0]; 
+    return rows[0];
   }
 
   async saveResetToken(userId, token) {

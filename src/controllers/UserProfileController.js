@@ -1,10 +1,10 @@
-import * as UserProfileModel from "../models/userProfileModel.js";
+import * as UserProfileModel from "../models/UserProfileModel.js";
 import { sendSMS } from "../services/sendSMS.js";
 import { sendEmail } from "../services/sendEmail.js";
 import jwt from "jsonwebtoken";
 import db from "../config/db.js";
 import bcrypt from "bcrypt";
-import UserModel from "../models/UserModel.js";
+import UserModel from "../models/userModel.js";
 
 export const getProfile = async (req, res) => {
   try {
@@ -35,7 +35,6 @@ export const getProfile = async (req, res) => {
   }
 };
 
-
 //para el modulo de usuario del administrador
 export const getUsersInfo = async (req, res) => {
   try {
@@ -47,23 +46,27 @@ export const getUsersInfo = async (req, res) => {
   }
 };
 
-
 export const updateUserState = async (req, res) => {
-  const id_user = parseInt(req.params.id, 10);  // Tomamos el id desde la URL y lo convertimos a número
+  const id_user = parseInt(req.params.id, 10); // Tomamos el id desde la URL y lo convertimos a número
 
   if (isNaN(id_user)) {
-    return res.status(400).json({ message: 'ID de usuario inválido' });
+    return res.status(400).json({ message: "ID de usuario inválido" });
   }
 
   try {
     const result = await UserModel.updateStateUser(id_user);
-    res.status(200).json({ message: 'Estado del usuario actualizado correctamente', data: result });
+    res.status(200).json({
+      message: "Estado del usuario actualizado correctamente",
+      data: result,
+    });
   } catch (error) {
     console.error("Error al actualizar el estado del usuario:", error);
-    res.status(500).json({ message: 'Error al cambiar el estado del usuario', error: error.message });
+    res.status(500).json({
+      message: "Error al cambiar el estado del usuario",
+      error: error.message,
+    });
   }
 };
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
