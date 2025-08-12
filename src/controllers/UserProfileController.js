@@ -4,7 +4,7 @@ import { sendEmail } from "../services/sendEmail.js";
 import jwt from "jsonwebtoken";
 import db from "../config/db.js";
 import bcrypt from "bcrypt";
-import UserModel from "../models/userModel.js";
+import UserModel from "../models/UserModel.js";
 
 export const getProfile = async (req, res) => {
   try {
