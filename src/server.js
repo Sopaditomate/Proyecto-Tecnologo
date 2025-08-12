@@ -22,8 +22,8 @@ if (process.env.NODE_ENV === "production") {
 const allowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
+  "https://proyecto-tecnologo-lovebites.up.railway",
   "https://proyecto-tecnologo-lovebites.up.railway.app",
-  "https://proyecto-mej7.onrender.com",
 ];
 
 // Configuración de CORS
