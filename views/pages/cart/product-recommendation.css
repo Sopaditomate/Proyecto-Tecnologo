@@ -1,0 +1,79 @@
+.recommendation-item {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+  border: 1px solid #eee;
+}
+
+.recommendation-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recommendation-image {
+  height: 100px;
+  width: 100%;
+  overflow: hidden;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recommendation-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.recommendation-item:hover .recommendation-image img {
+  transform: scale(1.05);
+}
+
+.recommendation-details {
+  padding: 0.8rem;
+}
+
+.recommendation-details h4 {
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem;
+  color: var(--color-amber-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recommendation-price-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recommendation-price {
+  font-weight: 600;
+  color: var(--color-amber-800);
+  font-size: 0.9rem;
+}
+
+.add-recommendation-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--color-amber-600);
+  color: white;
+  border: none;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.add-recommendation-btn:hover {
+  background-color: var(--color-amber-700);
+  transform: scale(1.1);
+}

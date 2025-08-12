@@ -1,0 +1,64 @@
+.header-profile-container {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  position: relative;
+  cursor: pointer;
+}
+
+.header-profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-amber-300, #fbbf24);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: border-color 0.2s;
+}
+
+.header-profile-container:hover .header-profile-avatar {
+  border-color: var(--color-amber-400, #f59e42);
+}
+
+.header-profile-name {
+  font-weight: 600;
+  color: var(--color-amber-100, #fef3c7);
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  width: auto; /* con esto los nombres se veran independientemente de su longitud */
+  max-width: 600px; /* se aumento el tamaño para que el nombre se adaptara */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-profile-dropdown {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  background: #fff;
+  color: #222;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 160px;
+  z-index: 100;
+  padding: 0.5rem 0;
+  display: none;
+  flex-direction: column;
+}
+
+.header-profile-container.open .header-profile-dropdown {
+  display: flex;
+}
+
+.header-profile-dropdown-item {
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 1rem;
+}
+
+.header-profile-dropdown-item:hover {
+  background: var(--color-amber-100, #fef3c7);
+  color: var(--color-amber-900, #78350f);
+}
