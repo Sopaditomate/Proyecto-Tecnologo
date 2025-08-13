@@ -366,7 +366,7 @@ export const changePassword = async (req, res) => {
     }
 
     // Busca el usuario
-    const user = await userModel.findById(userId);
+    const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -394,7 +394,7 @@ export const changePassword = async (req, res) => {
 
     // Hashea y actualiza la contraseña
     const hashed = await bcrypt.hash(newPassword, 10);
-    await userModel.updatePasswordAndClearToken(userId, hashed);
+    await UserModel.updatePasswordAndClearToken(userId, hashed);
 
     res.json({
       success: true,
