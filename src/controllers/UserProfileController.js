@@ -83,6 +83,16 @@ export const updateProfile = async (req, res) => {
       });
     }
 
+    // Expresión regular para evitar emojis y caracteres no alfanuméricos en los nombres
+    const emojiRegex = /[\p{Emoji}\p{So}\p{C}]|\u200b/g; // Para capturar emojis y caracteres invisibles
+    if (emojiRegex.test(nombres) || emojiRegex.test(apellidos)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Los nombres y apellidos no pueden contener emojis o caracteres especiales.",
+      });
+    }
+
     // Validar formato de teléfono colombiano
     const phoneRegex = /^3[0-9]{9}$/;
     if (!phoneRegex.test(telefono)) {
