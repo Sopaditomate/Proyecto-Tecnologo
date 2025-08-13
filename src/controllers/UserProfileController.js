@@ -84,7 +84,7 @@ export const updateProfile = async (req, res) => {
     }
 
     // Expresión regular para evitar emojis y caracteres no alfanuméricos en los nombres
-    const emojiRegex = /[\p{Emoji}\p{So}\p{C}]|\u200b/g; // Para capturar emojis y caracteres invisibles
+    const emojiRegex = /[\p{Emoji}\p{So}\p{C}\u200B\uFEFF]/gu; // Para capturar emojis y caracteres invisibles
     if (emojiRegex.test(nombres) || emojiRegex.test(apellidos)) {
       return res.status(400).json({
         success: false,
