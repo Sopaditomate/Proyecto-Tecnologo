@@ -8,6 +8,7 @@ import axios from "axios";
 import { Mail, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import "./forgot-password.css";
 
+const VITE_API_URL = import.meta.env.VITE_API_URL;
 // Esquema de validación con Yup
 const emailSchema = Yup.string()
   .email("Correo electrónico inválido")
@@ -88,7 +89,9 @@ export function ForgotPasswordPage() {
     }
   };
 
-  const isErrorMessage = serverMessage?.toLowerCase().includes("error");
+  const isErrorMessage =
+    serverMessage?.toLowerCase().includes("error") ||
+    serverMessage?.toLowerCase().includes("usuario");
 
   return (
     <section className="forgot-password-section">
@@ -116,8 +119,8 @@ export function ForgotPasswordPage() {
                 ) : (
                   <CheckCircle
                     className="success-icon"
-                    color="green"
                     size={40}
+                    style={{ marginTop: "20px" }}
                   />
                 )}
               </div>
