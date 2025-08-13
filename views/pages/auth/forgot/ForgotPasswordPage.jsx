@@ -5,7 +5,7 @@ import { useState } from "react";
 import { HeadProfile } from "../../../components/common/header/HeadProfile";
 import * as Yup from "yup";
 import axios from "axios";
-import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import { Mail, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
 import "./forgot-password.css";
 
 // Esquema de validación con Yup
@@ -69,12 +69,9 @@ export function ForgotPasswordPage() {
     setServerMessage("");
 
     try {
-      // Cambia la URL por la de tu backend real
       const response = await axios.post(
         `${VITE_API_URL}/auth/forgot-password`,
-        {
-          email,
-        }
+        { email }
       );
 
       setServerMessage(
@@ -91,16 +88,11 @@ export function ForgotPasswordPage() {
     }
   };
 
+  const isErrorMessage = serverMessage?.toLowerCase().includes("error");
+
   return (
     <section className="forgot-password-section">
       <div className="forgot-password-container">
-        {/* Logo y encabezado */}
-        {/* <div className="forgot-password-header">
-          <img src="/public/images/lovebites-logo.jpg" className="logo-image" />
-          <h1 className="bakery-title">Panadería Artesanal</h1>
-          <p className="bakery-subtitle">El sabor de la tradición</p>
-        </div> */}
-
         <div className="forgot-password-card">
           <div className="card-header">
             <HeadProfile
@@ -108,19 +100,32 @@ export function ForgotPasswordPage() {
               subtittleHead={""}
             />
             <p className="card-description">
-              {serverMessage
+              {serverMessage && !isErrorMessage
                 ? "Revisa tu correo electrónico"
-                : "Ingresa tu correo electrónico para recuperar tu contraseña"}
+                : ""}
             </p>
           </div>
 
           {serverMessage ? (
-            // Pantalla de confirmación
+            // Pantalla de confirmación o error
             <div className="success-container">
               <div className="success-icon-container">
-                <CheckCircle className="success-icon" />
+                {/* Si hay un mensaje de error, mostrar el XCircle */}
+                {isErrorMessage ? (
+                  <XCircle className="error-icon" color="red" size={40} />
+                ) : (
+                  <CheckCircle
+                    className="success-icon"
+                    color="green"
+                    size={40}
+                  />
+                )}
               </div>
-              <div className="server-message success-message">
+              <div
+                className={`server-message ${
+                  isErrorMessage ? "error-message" : "success-message"
+                }`}
+              >
                 <p>{serverMessage}</p>
               </div>
               <div className="button-group">
@@ -136,7 +141,6 @@ export function ForgotPasswordPage() {
             // Formulario de recuperación
             <form onSubmit={handleSubmit} className="forgot-password-form">
               <div className="form-fields">
-                {/* Campo Email */}
                 <div className="field-group">
                   <label htmlFor="email" className="field-label">
                     Correo Electrónico
@@ -167,7 +171,6 @@ export function ForgotPasswordPage() {
                   )}
                 </div>
 
-                {/* Campo Confirmar Email */}
                 <div className="field-group">
                   <label htmlFor="confirmEmail" className="field-label">
                     Confirmar Correo Electrónico
@@ -199,7 +202,6 @@ export function ForgotPasswordPage() {
                 </div>
               </div>
 
-              {/* Información adicional */}
               <div className="info-message">
                 <p>
                   Te enviaremos un enlace de recuperación a tu correo
@@ -207,7 +209,6 @@ export function ForgotPasswordPage() {
                 </p>
               </div>
 
-              {/* Botones */}
               <div className="button-group">
                 <button
                   type="submit"
@@ -228,7 +229,6 @@ export function ForgotPasswordPage() {
           )}
         </div>
 
-        {/* Footer */}
         <div className="forgot-password-footer">
           <p>© 2024 Panadería Artesanal. Todos los derechos reservados.</p>
         </div>
