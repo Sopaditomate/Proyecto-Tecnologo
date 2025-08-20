@@ -51,8 +51,9 @@ class ProductionController {
     // POST /api/production/:id/add-detail - Agregar detalle a una producción
     async addProductionDetail(req, res) {
         const { id } = req.params;
+        console.log(id);
         const { id_product, planned_quantity } = req.body;
-
+        console.log(req.body);
         if (!id_product || !planned_quantity) {
             return res.status(400).json({ error: "Missing required fields" });
         }

@@ -40,13 +40,12 @@ class ProductionModel {
         try {
             await conn.beginTransaction();
 
-            const [result] = await conn.query(
-                `CALL sp_insert_production(?, ?)`,
-                [totalProducts, idProductionStatus]
-            );
+            const [result] = await conn.query(`CALL sp_insert_production(?, ?)`, [totalProducts, idProductionStatus]);
+            console.log(result); // Verifica la estructura de `result`
 
             await conn.commit();
-            return result;
+            // Si sp_insert_production devuelve un objeto con insertId
+            return { id_production: result.insertId };  // Asegúrate de devolver este valor
         } catch (error) {
             await conn.rollback();
             console.error("Error creating production:", error);

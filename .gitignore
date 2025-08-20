@@ -1,10 +1,10 @@
 # Archivos de entorno
-.env
+*.env
 .env.local
 .env.*.local
 
 # Archivos de base de datos
-#.sql
+*.sql
 *.sqlite
 *.db
 

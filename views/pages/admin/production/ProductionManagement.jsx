@@ -3,6 +3,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TableContainer from "../../../components/table-components/TableContainer";
+import { Modal, Form, Button } from "react-bootstrap";
 
 export const AdminProductions = () => {
   const [productions, setProductions] = useState([]);
@@ -160,6 +161,37 @@ export const AdminProductions = () => {
     setStatusFilter("");
   };
 
+  const handleCreateProduction = async () => {
+    if (selectedItems.some(item => Number(item.quantity) <= 0)) {
+      toast.warn("La cantidad debe ser mayor a cero.");
+      return;
+    }
+    try {
+      // 1. Crear producción vacía
+      const res = await axios.post("http://localhost:5001/api/produccion/production", {
+        total_products: selectedItems.reduce((acc, i) => acc + Number(i.quantity), 0),
+        id_production_status: statuses.length ? statuses[0].id_production_status : null
+      });
+
+      const newProductionId = res.data.data.insertId || res.data.data.id_production;
+
+      // 2. Agregar detalles
+      for (const item of selectedItems) {
+        await axios.post(
+          `http://localhost:5001/api/produccion/production/${newProductionId}/add-detail`,
+          { id_product: item.id_product, planned_quantity: item.quantity }
+        );
+      }
+
+      toast.success("Producción creada exitosamente.");
+      fetchProductions();
+      closeCreateModal();
+    } catch (err) {
+      console.error("Error creando producción:", err);
+      toast.error("No se pudo crear la producción.");
+    }
+  };
+
   const openCreateModal = () => {
     setSelectedItems([]);
     setShowCreateModal(true);
@@ -200,6 +232,9 @@ export const AdminProductions = () => {
       itemsPerPage={itemsPerPage}
       showUpload={false}
       showExport={false}
+      onAdd={openCreateModal}
+      addLabel="Nueva Producción"
+      showAdd={true}
     />
 
     <Modal show={showCreateModal} onHide={closeCreateModal}>
