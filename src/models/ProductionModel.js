@@ -15,7 +15,7 @@ class ProductionModel {
             conn.release();
         }
     }
-
+///
     // Get production details
     async getProductionDetails(productionId) {
         const conn = await pool.getConnection();
@@ -33,6 +33,7 @@ class ProductionModel {
         }
     }
 
+///
     // Create new production
     async createProduction(totalProducts, idProductionStatus) {
         const conn = await pool.getConnection();
@@ -54,7 +55,7 @@ class ProductionModel {
             conn.release();
         }
     }
-
+///
     // Add detail to production
     async addProductionDetail(productionId, productId, quantity) {
         const conn = await pool.getConnection();
@@ -75,7 +76,7 @@ class ProductionModel {
             conn.release();
         }
     }
-
+///
     // Update production status
     async updateProductionStatus(productionId, newStatus) {
         const conn = await pool.getConnection();
@@ -96,6 +97,7 @@ class ProductionModel {
             conn.release();
         }
     }
+///
 
     // Logical delete of a production detail
     async deleteProductionDetail(productionId, productId) {
@@ -117,6 +119,20 @@ class ProductionModel {
             conn.release();
         }
     }
+    //obtener los estado de produccion
+    async getAllStatuses() {
+        const conn = await pool.getConnection();
+        try {
+            const [rows] = await conn.query(`SELECT * FROM vw_get_production_status`);
+            return rows;
+        } catch (error) {
+            console.error("Error fetching production statuses:", error);
+            throw new Error("Could not fetch production statuses.");
+        } finally {
+            conn.release();
+        }
+    }
+
 
 }
 

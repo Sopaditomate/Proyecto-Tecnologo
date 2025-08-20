@@ -1041,6 +1041,16 @@ WHERE
     pd.id_state = 1 AND
     pr.id_state = 1;
 
+
+CREATE OR REPLACE VIEW vw_get_production_status AS
+SELECT 
+    id_production_status,
+    name
+FROM 
+    production_status
+WHERE 
+    id_state = 1;
+
 -------------------------------------PROCEDURES----------------------------------
 
 DELIMITER $$

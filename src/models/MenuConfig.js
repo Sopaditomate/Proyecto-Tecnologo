@@ -90,6 +90,10 @@ export const getMenuItems = (UserType) => {
           path: "/admin/products",
         },
         {
+          name: "Produccion",
+          path: "/admin/productions",
+        },
+        {
           name: "Inventario",
           path: "/admin/inventory",
         },

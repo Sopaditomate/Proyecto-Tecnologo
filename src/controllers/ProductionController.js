@@ -96,6 +96,18 @@ class ProductionController {
             res.status(500).json({ message: error.message || "Could not delete detail" });
         }
     }
+
+    // Obtener todos los estados de producción activos
+    async getAllStatuses(req, res) {
+        try {
+            const statuses = await ProductionModel.getAllStatuses();
+            res.json(statuses);
+        } catch (error) {
+            console.error("Error retrieving production statuses:", error);
+            res.status(500).json({ message: "Error retrieving production statuses" });
+        }
+    }
+
 }
 
 export default new ProductionController();

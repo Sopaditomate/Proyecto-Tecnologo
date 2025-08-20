@@ -4,11 +4,14 @@ import ProductionController from "../controllers/ProductionController.js";
 
 const router = express.Router();
 
-// Obtener detalles de una producción específica
-router.get("/production/:id", ProductionController.getProductionDetails);
+// Obtener todos los estados de producción (no se porque no funciona)
+router.get("/production/status", ProductionController.getAllStatuses);
 
 // Obtener todas las producciones activas
 router.get("/production", ProductionController.getActiveProductions);
+
+// Obtener detalles de una producción específica
+router.get("/production/:id", ProductionController.getProductionDetails);
 
 // Crear una nueva producción
 router.post("/production", ProductionController.createProduction);

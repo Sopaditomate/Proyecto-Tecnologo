@@ -1,4 +1,4 @@
-GET http://localhost:5001/api/pedidos/orders/1100000
+POST http://localhost:5001/api/produccion/production/
 
 
 
