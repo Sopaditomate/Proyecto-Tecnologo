@@ -578,15 +578,12 @@ INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES
 INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200006, 1400006, 0.02, 1);-- Levadura Seca
 
 
-
-//falta terminar la logica
 -- Inserciones para producción (solo admin - 700002)
 INSERT INTO production (total_products, id_production_status)
 VALUES 
 (90, 600000),  -- Producción en curso
 (150, 600001); -- Producción finalizada
 
-//lo mismo aqui
 -- Detalles para producción 1800000 (en curso)
 INSERT INTO production_detail (id_production, id_product, planned_quantity)
 VALUES
@@ -925,7 +922,6 @@ WHERE (u.id_state = 1 OR u.id_state = 2)
   AND ur.id_state = 1
   AND r.id_state = 1
   AND d.id_state = 1;
-
 
 CREATE OR REPLACE VIEW vw_active_get_client_id AS
 SELECT 
@@ -2312,6 +2308,8 @@ CREATE PROCEDURE sp_insert_production(
 BEGIN
     INSERT INTO production (total_products, id_production_status)
     VALUES (p_total_products, p_id_production_status);
+
+    SELECT LAST_INSERT_ID() AS id_production;
 END $$
 
 DELIMITER ;
@@ -2339,16 +2337,40 @@ CREATE PROCEDURE sp_update_production_status(
     IN p_new_status INT
 )
 BEGIN
-    UPDATE production
-    SET id_production_status = p_new_status
-    WHERE id_production = p_id_production;
-
-    IF ROW_COUNT() = 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Production entry not found';
+    -- Verificar si el nuevo estado es válido
+    IF p_new_status NOT IN (600000, 600001) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid status. Only "En Producción" (600000) and "Finalizado" (600001) are allowed';
     END IF;
+
+    -- Si el estado es "Finalizado" (600001), actualizar la fecha de fin
+    IF p_new_status = 600001 THEN
+        UPDATE production
+        SET 
+            id_production_status = p_new_status,
+            end_datetime = NOW()  -- Registrar la fecha de finalización
+        WHERE id_production = p_id_production AND id_production_status = 600000;  -- Solo si está en "En Producción"
+        
+        IF ROW_COUNT() = 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Production not found or already finished';
+        END IF;
+    
+    -- Si el estado es "En Producción" (600000), permitir volver a este estado desde "Finalizado"
+    ELSEIF p_new_status = 600000 THEN
+        UPDATE production
+        SET 
+            id_production_status = p_new_status,
+            end_datetime = NULL  -- Limpiar la fecha de fin si se reactiva la producción
+        WHERE id_production = p_id_production AND id_production_status = 600001;  -- Solo si está en "Finalizado"
+
+        IF ROW_COUNT() = 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Production not found or not finalized';
+        END IF;
+    END IF;
+    
 END $$
 
 DELIMITER ;
+
 
 
 DELIMITER $$

@@ -1,4 +1,4 @@
-POST http://localhost:5001/api/produccion/production/
+PUT http://localhost:5001/api/produccion/production/1800000/change-status
 
 
 

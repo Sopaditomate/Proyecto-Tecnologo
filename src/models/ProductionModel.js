@@ -44,8 +44,8 @@ class ProductionModel {
             console.log(result); // Verifica la estructura de `result`
 
             await conn.commit();
-            // Si sp_insert_production devuelve un objeto con insertId
-            return { id_production: result.insertId };  // Asegúrate de devolver este valor
+            const id_production = result?.[0]?.[0]?.id_production;
+            return { id_production }; //Esto garantiza que el frontend reciba el ID correctamente
         } catch (error) {
             await conn.rollback();
             console.error("Error creating production:", error);

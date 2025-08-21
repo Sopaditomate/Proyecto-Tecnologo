@@ -70,14 +70,14 @@ class ProductionController {
     // PUT /api/production/:id/change-status - Cambiar el estado de la producción
     async updateProductionStatus(req, res) {
         const { id } = req.params;
-        const { new_status } = req.body;
+        const new_status = req.body;
 
         if (!new_status) {
             return res.status(400).json({ error: "Missing status value" });
         }
 
         try {
-            await ProductionModel.updateProductionStatus(id, new_status);
+            await ProductionModel.updateProductionStatus(id, new_status.id_production_status);
             res.json({ message: "Production status updated successfully" });
         } catch (error) {
             console.error("Error updating status:", error);

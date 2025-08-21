@@ -19,6 +19,10 @@ export const AdminProductions = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [availableProducts, setAvailableProducts] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
+  
+  // Controla si el cambio bidireccional está activado
+  const [reactivateMode, setReactivateMode] = useState(false); 
+
 
 
 
@@ -110,8 +114,8 @@ export const AdminProductions = () => {
   // === Definición de columnas ===
   const columns = [
     {
-      Header: "ID Producción",
-      accessor: "id_production",
+    Header: "ID Producción",
+    accessor: "id_production",
     },
     {
       Header: "Fecha Inicio",
@@ -140,6 +144,39 @@ export const AdminProductions = () => {
             ? "bg-warning text-dark"
             : "bg-secondary";
         return <span className={`badge ${color}`}>{value}</span>;
+      },
+    },
+    {
+      Header: "Acciones",
+      accessor: "acciones",
+      Cell: ({ row }) => {
+        const prod = row.original;
+
+        if (prod.production_status === "En Producción") {
+          return (
+            <Button
+              size="sm"
+              variant="success"
+              onClick={() => handleFinishProduction(prod.id_production)}
+            >
+              Finalizar
+            </Button>
+          );
+        } 
+        // 🔹 Solo muestra "Reactivar Producción" si está activado el modo
+        else if (prod.production_status === "Finalizado" && reactivateMode) {
+          return (
+            <Button
+              size="sm"
+              variant="info"
+              onClick={() => handleReactivateProduction(prod.id_production)}
+            >
+              Reactivar Producción
+            </Button>
+          );
+        }
+
+        return null;
       },
     },
     // {
@@ -173,7 +210,12 @@ export const AdminProductions = () => {
         id_production_status: statuses.length ? statuses[0].id_production_status : null
       });
 
-      const newProductionId = res.data.data.insertId || res.data.data.id_production;
+      const newProductionId = res.data?.data?.id_production;
+      console.log("Producción creada con ID:", newProductionId);
+
+      if (!newProductionId) {
+        throw new Error("ID de producción no recibido desde el backend.");
+      }
 
       // 2. Agregar detalles
       for (const item of selectedItems) {
@@ -191,6 +233,57 @@ export const AdminProductions = () => {
       toast.error("No se pudo crear la producción.");
     }
   };
+
+  // Cambiar estado de la producción a "Finalizado"
+  const handleFinishProduction = async (id_production) => {
+    try {
+      // Buscar el estado "Finalizado"
+      const statusFinalizado = statuses.find(s => s.name === "Finalizado");
+      if (!statusFinalizado) {
+        toast.error("No se encontró el estado 'Finalizado'");
+        return;
+      }
+
+      // Cambiar el estado de la producción a "Finalizado"
+      await axios.put(`http://localhost:5001/api/produccion/production/${id_production}/change-status`, {
+        id_production_status: statusFinalizado.id_production_status,
+      });
+
+      // Actualizar la fecha de finalización (esto debería hacerse en el backend)
+      toast.success("Producción finalizada correctamente.");
+      fetchProductions();  // Refrescar las producciones
+    } catch (err) {
+      console.error("Error al finalizar producción:", err);
+      toast.error("No se pudo finalizar la producción.");
+    }
+  };
+
+
+  const handleReactivateProduction = async (id_production) => {
+    try {
+      // Cambiar el estado de la producción a "En Producción"
+      const statusEnProduccion = statuses.find(s => s.name === "En Producción");
+      if (!statusEnProduccion) {
+        toast.error("No se encontró el estado 'En Producción'");
+        return;
+      }
+
+      // Llamar al backend para actualizar el estado de la producción
+      await axios.put(`http://localhost:5001/api/produccion/production/${id_production}/change-status`, {
+        id_production_status: statusEnProduccion.id_production_status,
+      });
+
+      // Desactivar el cambio bidireccional
+      setReactivateMode(true);  // Cambiar a modo desactivado
+
+      toast.success("Producción reactivada correctamente.");
+      fetchProductions();  // Refrescar las producciones
+    } catch (err) {
+      console.error("Error al reactivar producción:", err);
+      toast.error("No se pudo reactivar la producción.");
+    }
+  };
+
 
   const openCreateModal = () => {
     setSelectedItems([]);
@@ -235,6 +328,16 @@ export const AdminProductions = () => {
       onAdd={openCreateModal}
       addLabel="Nueva Producción"
       showAdd={true}
+      // 🔹 Aquí agregamos el botón extra
+      customActions={
+        <Button
+          variant={reactivateMode ? "danger" : "info"}
+          onClick={() => setReactivateMode(!reactivateMode)}
+          size="sm"
+        >
+          {reactivateMode ? "Salir de Reactivar" : "Reactivar"}
+        </Button>
+      }
     />
 
     <Modal show={showCreateModal} onHide={closeCreateModal}>
