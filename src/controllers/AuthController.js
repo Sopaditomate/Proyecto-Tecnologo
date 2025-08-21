@@ -221,6 +221,7 @@ class AuthController {
       });
     } catch (error) {
       console.error("Error en forgotPassword:", error);
+      
       res
         .status(500)
         .json({ message: "Error al enviar el correo de recuperación." });

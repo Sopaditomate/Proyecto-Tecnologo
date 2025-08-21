@@ -1,4 +1,4 @@
-import * as UserProfileModel from "../models/userProfileModel.js";
+import * as UserProfileModel from "../models/UserProfileModel.js";
 import { sendSMS } from "../services/sendSMS.js";
 import { sendEmail } from "../services/sendEmail.js";
 import jwt from "jsonwebtoken";
@@ -35,7 +35,6 @@ export const getProfile = async (req, res) => {
   }
 };
 
-
 //para el modulo de usuario del administrador
 export const getUsersInfo = async (req, res) => {
   try {
@@ -47,23 +46,27 @@ export const getUsersInfo = async (req, res) => {
   }
 };
 
-
 export const updateUserState = async (req, res) => {
-  const id_user = parseInt(req.params.id, 10);  // Tomamos el id desde la URL y lo convertimos a número
+  const id_user = parseInt(req.params.id, 10); // Tomamos el id desde la URL y lo convertimos a número
 
   if (isNaN(id_user)) {
-    return res.status(400).json({ message: 'ID de usuario inválido' });
+    return res.status(400).json({ message: "ID de usuario inválido" });
   }
 
   try {
     const result = await UserModel.updateStateUser(id_user);
-    res.status(200).json({ message: 'Estado del usuario actualizado correctamente', data: result });
+    res.status(200).json({
+      message: "Estado del usuario actualizado correctamente",
+      data: result,
+    });
   } catch (error) {
     console.error("Error al actualizar el estado del usuario:", error);
-    res.status(500).json({ message: 'Error al cambiar el estado del usuario', error: error.message });
+    res.status(500).json({
+      message: "Error al cambiar el estado del usuario",
+      error: error.message,
+    });
   }
 };
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -77,6 +80,16 @@ export const updateProfile = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Todos los campos son obligatorios",
+      });
+    }
+
+    // Expresión regular para evitar emojis y caracteres no alfanuméricos en los nombres
+    const emojiRegex = /[\p{Emoji}\p{So}\p{C}\u200B\uFEFF]/gu; // Para capturar emojis y caracteres invisibles
+    if (emojiRegex.test(nombres) || emojiRegex.test(apellidos)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Los nombres y apellidos no pueden contener emojis o caracteres especiales.",
       });
     }
 
@@ -363,7 +376,7 @@ export const changePassword = async (req, res) => {
     }
 
     // Busca el usuario
-    const user = await userModel.findById(userId);
+    const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -391,7 +404,7 @@ export const changePassword = async (req, res) => {
 
     // Hashea y actualiza la contraseña
     const hashed = await bcrypt.hash(newPassword, 10);
-    await userModel.updatePasswordAndClearToken(userId, hashed);
+    await UserModel.updatePasswordAndClearToken(userId, hashed);
 
     res.json({
       success: true,
