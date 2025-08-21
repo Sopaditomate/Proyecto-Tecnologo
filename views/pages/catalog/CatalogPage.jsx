@@ -249,7 +249,7 @@ export function CatalogPage() {
           <p>No se encontraron productos que coincidan con tu búsqueda.</p>
         </div>
       ) : (
-        <section id="container-products">
+        <section id="container-products" className="products">
           {products.map((product, idx) => (
             <ProductCard key={product.id ? `${product.id}-${idx}` : idx} product={product} />
           ))}

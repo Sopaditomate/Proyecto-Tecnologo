@@ -16,24 +16,28 @@ const ADMIN_CARDS = [
     title: "Productos",
     description: "Gestiona el catálogo de productos",
     buttonText: "Ver Productos",
+    link:"/admin/products"
   },
   {
     id: "pedidos",
     title: "Pedidos",
     description: "Administra los pedidos de los clientes",
     buttonText: "Ver Pedidos",
+    link: "/admin/orders",
   },
   {
     id: "inventario",
     title: "Inventario",
     description: "Controla el inventario de materias primas",
     buttonText: "Ver Inventario",
+    link: "/admin/inventory",
   },
   {
     id: "usuarios",
     title: "Usuarios",
     description: "Gestiona las cuentas de usuarios",
     buttonText: "Ver Usuarios",
+    link: "/admin/users",
   },
 ];
 
@@ -59,9 +63,14 @@ export function AdminDashboard() {
   };
 
   const handleCardClick = (cardId) => {
-    // TODO: Implementar navegación específica para cada card
-    console.log(`Navegando a: ${cardId}`);
-  };
+  const card = ADMIN_CARDS.find((c) => c.id === cardId);
+  if (card?.link) {
+    navigate(card.link);
+  } else {
+    console.warn(`No se encontró link para la tarjeta: ${cardId}`);
+  }
+};
+
 
   // Early return si no está autenticado o no es admin
   if (!isAuthenticated || !isAdmin) {
