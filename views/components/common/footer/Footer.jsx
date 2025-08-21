@@ -41,10 +41,6 @@ const Footer = forwardRef((props, ref) => {
               <Link to="/catalogo">Catálogo</Link>{" "}
               {/* Enlace a la página del catálogo */}
             </li>
-            <li>
-              <Link to="">Servicios</Link>{" "}
-              {/* Enlace a la página de servicios (vacío por ahora) */}
-            </li>
           </ul>
         </div>
 

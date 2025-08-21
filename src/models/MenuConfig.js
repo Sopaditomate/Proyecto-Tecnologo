@@ -8,11 +8,6 @@ export const menuItems = [
     path: "/catalogo",
     icon: "/assets/baguette-catalog.svg",
   },
-  {
-    name: "Servicios",
-    path: "",
-    icon: "/assets/services.svg",
-  },
   { name: "Contacto", icon: "/assets/contact.svg" },
 ];
 
@@ -31,7 +26,6 @@ export const getHeaderItems = (type) => {
   const commonItems = [
     { name: "Inicio", path: "/" },
     { name: "Catálogo", path: "/catalogo" },
-    { name: "Servicios" },
     { name: "Contacto" },
     { name: "Otro" },
   ];
@@ -47,7 +41,6 @@ export const getMenuItems = (UserType) => {
       return [
         { name: "Inicio", path: "/" },
         { name: "Catalogo", path: "/catalogo" },
-        { name: "Servicios" },
         { name: "Contacto" },
         { name: "Perfil", path: "/profile" }, // <-- AGREGA ESTO
         { name: "Cerrar Sesion" },
