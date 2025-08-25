@@ -282,7 +282,7 @@
   margin-bottom: 2rem;
 }
 
-.input-group {
+.input-group-footer {
   display: flex;
   flex-direction: column;
 }
@@ -522,7 +522,7 @@
     gap: 1rem;
   }
   
-  .input-group {
+  .input-group-footer {
     flex-direction: column;
   }
   

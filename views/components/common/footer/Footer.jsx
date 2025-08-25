@@ -62,9 +62,7 @@ const Footer = forwardRef((props, ref) => {
             <p className="logo-text-header">Love Bites</p>
           </Link>
 
-          <h3 style={{ marginTop: "20px" }}>
-            Horneando con amor desde 2025
-          </h3>
+          <h3 style={{ marginTop: "20px" }}>Horneando con amor desde 2025</h3>
           <p className="footer-description">
             Ofrecemos los mejores productos de panadería artesanal, elaborados
             con ingredientes de primera calidad y técnicas tradicionales que han
@@ -161,7 +159,7 @@ const Footer = forwardRef((props, ref) => {
           </p>
 
           <form onSubmit={handleNewsletterSubmit} className="newsletter-form">
-            <div className="input-group">
+            <div className="input-group-footer">
               <input
                 type="email"
                 placeholder="Tu correo electrónico"
@@ -169,7 +167,7 @@ const Footer = forwardRef((props, ref) => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="newsletter-input"
-                style={{color:"black"}}
+                style={{ color: "black" }}
               />
               <button type="submit" className="newsletter-btn">
                 Suscribirse

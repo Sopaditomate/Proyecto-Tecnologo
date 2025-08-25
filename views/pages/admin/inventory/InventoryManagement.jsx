@@ -269,7 +269,7 @@ const InventoryManagement = () => {
 
       if (isEditing) {
         await axios.put(
-          `${VITE_API_URL}/${currentInsumo.ID_INVENTARIO}`,
+          `${VITE_API_URL}/inventario/${currentInsumo.ID_INVENTARIO}`,
           {
             nombre: MATERIA_PRIMA,
             id_tipo_materia: TIPO,
