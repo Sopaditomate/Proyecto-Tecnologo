@@ -1,0 +1,444 @@
+/* Reset y estilos base */
+* {
+  box-sizing: border-box;
+}
+
+.ml-wizard-label-2 {
+  color: #666;
+  font-weight: 600;
+}
+
+/* Container principal */
+.register-form-container {
+  width: 100%;
+  background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 50%, #fef3c7 100%);
+}
+
+/* Sección principal del formulario */
+.register-page {
+  max-width: 520px;
+  min-height: auto;
+  margin: 10px auto;
+  padding: 0;
+  /* animation: fadeIn 0.5s ease; */ /* Animación opcional tal vez lo ponga */
+}
+
+/* Card principal */
+.ml-wizard-card {
+  border-radius: 6px;
+  max-width: 408px;
+  width: 100%;
+}
+
+/* Título principal */
+.ml-wizard-title {
+  font-family: "Roboto", sans-serif;
+  font-size: 1.5rem;
+  color: #5c3317;
+  text-align: center;
+}
+
+/* Lista de pasos */
+.ml-wizard-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0 auto;
+}
+
+.ml-wizard-step-list {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  padding: 16px 20px;
+  gap: 14px;
+  width: 100%;
+  height: auto;
+  min-height: auto;
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: default;
+  opacity: 0.9;
+}
+
+.ml-wizard-step-list.active {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
+  opacity: 1;
+  border: 2px solid rgb(151, 240, 17);
+}
+
+.ml-wizard-step-list.done {
+  opacity: 0.7;
+  background: #f5f5f5;
+}
+
+/* Iconos de los pasos */
+.ml-wizard-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.ml-wizard-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+/* Contenido del paso */
+.ml-wizard-step-content {
+  flex: 1;
+  width: 10px;
+}
+
+.ml-wizard-label {
+  font-size: 16px;
+  font-weight: 400;
+  color: #333;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+}
+
+.ml-wizard-desc,
+.ml-wizard-desc-2 {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.ml-wizard-desc-2 {
+  text-align: start;
+}
+
+/* Botones de los pasos */
+.ml-wizard-btn-ml {
+  background: #d97706;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: auto;
+  width: 100px;
+}
+
+.ml-wizard-btn-ml:hover {
+  background: #b45309;
+}
+
+.ml-wizard-btn-ml:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Check de completado */
+.ml-wizard-check {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.ml-wizard-check svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Formulario de paso individual */
+.ml-wizard-form-ml {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: none;
+  border-radius: 20px;
+  background-color: rgba(116, 115, 115, 0.041);
+}
+
+.ml-wizard-icon-big {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.ml-wizard-icon-big svg {
+  width: 48px;
+  height: 48px;
+}
+
+/* Inputs de password */
+.input-password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-password-container input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.toggle-password-icon {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  color: #555;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+}
+
+.toggle-password-icon:hover {
+  color: #d97706;
+}
+
+/* Inputs del formulario */
+.ml-wizard-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #333;
+  background: #fff;
+  transition: all 0.2s ease;
+  outline: none;
+  margin: 0;
+}
+
+.ml-wizard-input:focus {
+  border-color: #d97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+.ml-wizard-input.input-error {
+  border-color: #f23d4f;
+}
+
+.ml-wizard-input.input-valid {
+  border-color: #00a650;
+}
+
+.ml-wizard-input::placeholder {
+  color: #999;
+}
+
+/* Botón principal del formulario */
+.ml-wizard-btn-ml-2 {
+  background: #d97706;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  height: 48px;
+  margin-top: 8px;
+}
+
+.ml-wizard-btn-ml-2:hover:not(:disabled) {
+  background: #b45309;
+}
+
+.ml-wizard-btn-ml-2:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #ccc;
+}
+
+/* Botón cancelar */
+.ml-wizard-btn-cancel,
+.ml-wizard-btn-cancel-2 {
+  background: #e53935;
+  color: #fff;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ml-wizard-btn-cancel:hover,
+.ml-wizard-btn-cancel-2:hover {
+  background: #c62828;
+}
+
+/* Enlaces */
+.ml-wizard-login-link {
+  text-align: center;
+  margin: 16px 0 0 0;
+  font-size: 14px;
+}
+
+.ml-wizard-login-link a {
+  color: #3483fa;
+  text-decoration: none;
+  font-weight: 400;
+  transition: all 0.2s ease;
+}
+
+.ml-wizard-login-link a:hover {
+  text-decoration: underline;
+  color: #1976d2;
+}
+
+/* Mensajes de error y éxito */
+.error-message {
+  color: #f23d4f;
+  font-size: 12px;
+  margin: 4px 0 0 0;
+  line-height: 1.3;
+}
+
+.success-message,
+.success-message-register {
+  color: #00a650;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  margin: 8px 0;
+  padding: 8px;
+  background-color: rgba(76, 175, 80, 0.1);
+  border-radius: 4px;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.success-message-register {
+  font-size: 20px;
+}
+
+/* Términos y condiciones */
+.ml-wizard-terms {
+  font-size: 12px;
+  color: #666;
+  margin: 16px 0 0 0;
+  line-height: 1.4;
+}
+
+.ml-wizard-terms label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.ml-wizard-terms input[type="checkbox"] {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.ml-wizard-terms a {
+  color: #3483fa;
+  text-decoration: none;
+}
+
+.ml-wizard-terms a:hover {
+  text-decoration: underline;
+}
+
+/* FadeIn animación simple */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .register-form-container {
+    padding: 16px 8px;
+  }
+
+  .ml-wizard-card {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+  }
+
+  .ml-wizard-step-content {
+    width: 100%;
+  }
+
+  .ml-wizard-step-list {
+    padding: 10px;
+    gap: 10px;
+    width: 90%;
+    margin-left: 20px;
+  }
+
+  .ml-wizard-btn-cancel {
+    width: 90%;
+  }
+
+  .ml-wizard-title {
+    font-size: 20px;
+  }
+
+  .ml-wizard-step-list {
+    padding: 12px;
+    min-height: 64px;
+  }
+
+  .ml-wizard-label {
+    font-size: 15px;
+  }
+
+  .ml-wizard-desc {
+    font-size: 13px;
+  }
+
+  .ml-wizard-input {
+    padding: 10px 12px;
+    font-size: 16px; /* Evita zoom en iOS */
+  }
+
+  #section-login.register-page {
+    max-width: 520px;
+    height: auto;
+    margin: 10px auto;
+    padding: 0;
+    margin-top: 50px;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 370px) {
+  .ml-wizard-step-list {
+    padding: 10px;
+    gap: 10px;
+    width: 95%;
+    margin-left: 10px;
+  }
+
+  .ml-wizard-btn-cancel {
+    width: 95%;
+  }
+
+  .ml-wizard-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .ml-wizard-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  #section-login.register-page {
+    max-width: 520px;
+    height: auto;
+    margin: 10px auto;
+    padding: 0;
+    margin-top: 50px;
+  }
+}

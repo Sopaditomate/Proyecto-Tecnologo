@@ -1,0 +1,6 @@
+GET `${VITE_API_URL}/pedidos/orders/1100000
+
+
+
+
+//pa hacer pruebas, pero todavia no he visto si se maneja bien el back
