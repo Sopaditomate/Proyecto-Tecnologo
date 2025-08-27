@@ -40,61 +40,88 @@ class AuthController {
     }
   }
 
- // Login de usuario
+  // Login de usuario
   async login(req, res) {
     try {
       const { email, password } = req.body;
+      console.log("Intentando login con:", email);
 
-      // Buscar usuario
       const user = await UserModel.findByEmail(email);
+      console.log("Usuario encontrado:", user);
       if (!user) {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.PASSWORD);
+      console.log("Password válido:", isPasswordValid);
+
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
-      // Solo para admin: verificar si ya hay admin logueado
+      // Verificación de admin ya logueado
       if (user.ID_ROL === 100001) {
-        // Verificar si ya hay un admin logueado
-        const [[rows]] = await pool.query("CALL sp_check_admin_logged_in()");
-        const isAdminLogged = rows[0].count > 0;
-
-        // Si hay admin logueado y no es este usuario, rechazar
-        if (isAdminLogged) {
-          return res.status(403).json({
-            message: "Ya hay un administrador con sesión activa",
+        if (user.IS_LOGGED_IN) {
+          return res.status(401).json({
+            message: "Credenciales inválidas.",
           });
         }
 
-        // Marcar admin como logueado
-        await pool.query("CALL sp_set_admin_logged_in(?, ?)", [
-          user.ID_USUARIO,
-          true,
-        ]);
+        await UserModel.setAdminLoggedIn(user.ID_USUARIO, true);
       }
 
-      // Continúa el flujo de login normal...
+      // Obtener información completa del usuario
+      const userInfo = await UserModel.getUserInfo(user.ID_USUARIO);
 
-      // Generar token JWT, etc.
+      // Generar JWT
+      const token = jwt.sign(
+        {
+          userId: userInfo.ID_USUARIO,
+          email: userInfo.USUARIO || userInfo.EMAIL,
+          role: userInfo.ID_ROL,
+        },
+        process.env.JWT_SECRET || "your_jwt_secret",
+        { expiresIn: "1h" }
+      );
 
-      // ...
+      // Enviar token como cookie
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // solo en https en producción
+        maxAge: 60 * 60 * 1000, // 1 hora
+      });
+
+      // Responder con el usuario completo para frontend
+      res.status(200).json({
+        success: true,
+        message: "Inicio de sesión exitoso",
+        token,
+        user: {
+          id: userInfo.ID_USUARIO,
+          email: userInfo.USUARIO,
+          role: userInfo.ID_ROL,
+          roleInfo: {
+            id: userInfo.ID_ROL,
+            name: userInfo.ROL_NOMBRE,
+          },
+          nombres: userInfo.NOMBRES,
+          apellidos: userInfo.APELLIDOS,
+          direccion: userInfo.DIRECCION,
+          telefono: userInfo.TELEFONO,
+          // agrega más campos si quieres enviar más info al frontend
+        },
+      });
     } catch (error) {
-      // Manejo de errores
+      console.error("Error en login:", error);
+      res.status(500).json({ message: "Error en el servidor" });
     }
   }
 
-  // Cerrar sesión
+  // Logout
   async logout(req, res) {
     try {
       if (req.user.role === 100001) {
-        // Marcar admin como desconectado
-        await pool.query("CALL sp_set_admin_logged_in(?, ?)", [
-          req.user.userId,
-          false,
-        ]);
+        await UserModel.setAdminLoggedIn(req.user.userId, false);
       }
 
       res.clearCookie("token");
@@ -104,7 +131,6 @@ class AuthController {
       res.status(500).json({ message: "Error al cerrar sesión" });
     }
   }
-
   // Validar email (método estático para usar en el frontend)
   static validateEmail(email) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -209,7 +235,7 @@ class AuthController {
       });
     } catch (error) {
       console.error("Error en forgotPassword:", error);
-      
+
       res
         .status(500)
         .json({ message: "Error al enviar el correo de recuperación." });

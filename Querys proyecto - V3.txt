@@ -2722,11 +2722,30 @@ DELIMITER ;
 
 
 
-
+aqui 27/08/2025 9:06 a.m nuevos procedimientos y una nueva columna para que el sistema solo puede tener la sesion de el mismo administrador o usuario a la vez
 
 ALTER TABLE user_account ADD COLUMN is_logged_in BOOLEAN DEFAULT FALSE;
 
+
 -------------------------
+
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS sp_check_admin_logged_in //
+
+CREATE PROCEDURE sp_check_admin_logged_in()
+BEGIN
+    SELECT COUNT(*) AS count
+    FROM user_account ua
+    JOIN user_role ur ON ua.id_user = ur.id_user
+    WHERE ur.id_role = 100001 AND ua.is_logged_in = TRUE;
+END //
+
+DELIMITER ;
+
+
+
+-------------------------------
 
 DELIMITER //
 
@@ -2746,17 +2765,30 @@ END //
 DELIMITER ;
 
 
-
--------------------------------
-
 DELIMITER //
-DROP PROCEDURE IF EXISTS sp_check_admin_logged_in;
-CREATE PROCEDURE sp_check_admin_logged_in()
+
+DROP PROCEDURE IF EXISTS sp_find_user_by_email//
+
+CREATE PROCEDURE sp_find_user_by_email(
+IN `p_email` VARCHAR(100))
 BEGIN
-    SELECT COUNT(*) AS count
-    FROM user_account
-    WHERE id_role = 100001 AND is_logged_in = TRUE; 
+    SELECT 
+        ua.id_user AS ID_USUARIO,
+        ua.email AS USUARIO,
+        ua.password AS PASSWORD,
+        ua.id_state AS ESTADO,
+        ur.id_role AS ID_ROL
+    FROM
+        user_account ua
+    LEFT JOIN
+        user_role ur ON ua.id_user = ur.id_user
+    WHERE
+        ua.email COLLATE utf8mb4_general_ci = p_email COLLATE utf8mb4_general_ci
+        AND ua.id_state = 1
+    LIMIT 1;
 END //
 
 DELIMITER ;
+
+
 

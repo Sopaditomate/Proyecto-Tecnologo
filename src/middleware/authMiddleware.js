@@ -6,7 +6,6 @@ const ROLE_ADMIN = 100001;
 
 // Middleware para verificar token JWT
 const verifyToken = (req, res, next) => {
-  // Obtener token de las cookies o del header de autorización
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
   if (!token) {
@@ -16,18 +15,19 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
-    // Verificar token
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET || "your_jwt_secret"
     );
 
-    // Añadir información del usuario al objeto request
+    if (!decoded?.userId || !decoded?.role) {
+      return res.status(401).json({ message: "Token inválido o incompleto" });
+    }
+
     req.user = {
       userId: decoded.userId,
       email: decoded.email,
       role: decoded.role,
-      clientId: decoded.clientId,
     };
 
     next();

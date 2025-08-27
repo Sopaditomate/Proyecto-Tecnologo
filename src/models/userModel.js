@@ -4,25 +4,19 @@ import bcrypt from "bcrypt";
 class UserModel {
   // Verifica si ya hay un admin logueado
   async isAdminLoggedIn() {
-    const [[rows]] = await pool.query(
-      "SELECT COUNT(*) AS count FROM usuarios WHERE ID_ROL = 100001 AND is_logged_in = TRUE"
-    );
-    return rows[0].count > 0;
+    const [[rows]] = await pool.query("CALL sp_check_admin_logged_in()");
+    return rows?.count > 0;
   }
 
-  // Marca al admin como logueado
+  // Marca al admin como logueado o deslogueado
   async setAdminLoggedIn(userId, value) {
-    await pool.query(
-      "UPDATE usuarios SET is_logged_in = ? WHERE ID_USUARIO = ?",
-      [value, userId]
-    );
+    await pool.query("CALL sp_set_admin_logged_in(?, ?)", [userId, value]);
   }
 
   async findByEmail(email) {
     const [[rows]] = await pool.query("CALL sp_find_user_by_email(?)", [email]);
     return rows[0];
   }
-
   async create({
     email,
     password,
