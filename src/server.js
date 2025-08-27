@@ -43,9 +43,9 @@ const initializeDatabase = async () => {
   console.log("🔌 Testing database connection...");
   const isConnected = await testConnection();
   if (!isConnected) {
-    console.error(
+    /*console.error(
       "❌ Failed to connect to the database. Please check your connection settings in .env"
-    );
+    );*/
     process.exit(1); //detiene el proceso si falla
   }
 };
@@ -126,7 +126,7 @@ app.get("*", (req, res) => {
 
 // Manejo de errores
 app.use((err, req, res, next) => {
-  console.error("Error en el servidor:", err);
+  //console.error("Error en el servidor:", err);
   res.status(500).json({ error: "Error interno del servidor" });
 });
 

@@ -7,7 +7,7 @@ class AuthController {
   // Registro de usuario
   async register(req, res) {
     try {
-      console.log("Datos recibidos en registro:", req.body);
+      //console.log("Datos recibidos en registro:", req.body);
       const { email, password, nombres, apellidos, direccion, telefono } =
         req.body;
 
@@ -44,29 +44,33 @@ class AuthController {
   async login(req, res) {
     try {
       const { email, password } = req.body;
-      console.log("Intentando login con:", email);
+      //console.log("Intentando login con:", email);
 
       const user = await UserModel.findByEmail(email);
-      console.log("Usuario encontrado:", user);
+      //console.log("Usuario encontrado:", user);
       if (!user) {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.PASSWORD);
-      console.log("Password válido:", isPasswordValid);
+      //console.log("Password válido:", isPasswordValid);
 
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
-      // Verificación de admin ya logueado
-      if (user.ID_ROL === 100001) {
-        if (user.IS_LOGGED_IN) {
-          return res.status(401).json({
-            message: "Credenciales inválidas.",
-          });
-        }
+      // Verificación de sesión activa para cualquier usuario
+      if (user.IS_LOGGED_IN) {
+        return res.status(403).json({
+          message: "Credenciales inválidas.",
+        });
+      }
 
+      // Marcar sesión como activa (para todos los usuarios)
+      await UserModel.setLoggedInStatus(user.ID_USUARIO, true);
+
+      // Si es admin, también marca como activo en la lógica interna si tienes otra tabla
+      if (user.ID_ROL === 100001) {
         await UserModel.setAdminLoggedIn(user.ID_USUARIO, true);
       }
 
@@ -120,9 +124,7 @@ class AuthController {
   // Logout
   async logout(req, res) {
     try {
-      if (req.user.role === 100001) {
-        await UserModel.setAdminLoggedIn(req.user.userId, false);
-      }
+      await UserModel.setLoggedInStatus(req.user.userId, false);
 
       res.clearCookie("token");
       res.json({ success: true, message: "Sesión cerrada correctamente" });
@@ -140,7 +142,7 @@ class AuthController {
   // Verificar estado de autenticación
   async checkAuth(req, res) {
     if (!req.user) {
-      return res.status(401).json({ message: "No autenticado" });
+      return res.json({ isAuthenticated: false });
     }
 
     try {

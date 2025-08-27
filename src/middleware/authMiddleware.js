@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
 
-// Constantes de roles (mejora de la legibilidad)
+// Constantes de roles (para legibilidad)
 const ROLE_CLIENT = 100000;
 const ROLE_ADMIN = 100001;
 
-// Middleware para verificar token JWT
+// Middleware para verificar token JWT de forma estricta (bloquea si no está)
 const verifyToken = (req, res, next) => {
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
@@ -37,7 +37,40 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Middleware genérico para verificar el rol
+// Middleware para verificar token JWT de forma opcional (no bloquea, solo asigna req.user o null)
+const optionalVerifyToken = (req, res, next) => {
+  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "your_jwt_secret"
+    );
+
+    if (!decoded?.userId || !decoded?.role) {
+      req.user = null;
+    } else {
+      req.user = {
+        userId: decoded.userId,
+        email: decoded.email,
+        role: decoded.role,
+      };
+    }
+
+    next();
+  } catch (error) {
+    console.error("Error al verificar token:", error);
+    req.user = null;
+    next();
+  }
+};
+
+// Middleware genérico para verificar rol
 const checkRole = (requiredRole) => {
   return (req, res, next) => {
     if (req.user && req.user.role === requiredRole) {
@@ -52,10 +85,7 @@ const checkRole = (requiredRole) => {
   };
 };
 
-// Middleware para verificar rol de administrador
 const isAdmin = checkRole(ROLE_ADMIN);
-
-// Middleware para verificar rol de cliente
 const isClient = checkRole(ROLE_CLIENT);
 
-export { verifyToken, isAdmin, isClient };
+export { verifyToken, optionalVerifyToken, isAdmin, isClient };

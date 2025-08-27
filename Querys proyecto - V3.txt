@@ -2792,3 +2792,22 @@ DELIMITER ;
 
 
 
+----------------------------------------
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS sp_set_logged_in //
+
+CREATE PROCEDURE sp_set_logged_in(
+    IN p_user_id INT,
+    IN p_is_logged_in BOOLEAN
+)
+BEGIN
+    UPDATE user_account
+    SET is_logged_in = p_is_logged_in
+    WHERE id_user = p_user_id;
+END //
+
+DELIMITER ;
+
+
+

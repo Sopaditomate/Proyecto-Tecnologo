@@ -13,6 +13,12 @@ class UserModel {
     await pool.query("CALL sp_set_admin_logged_in(?, ?)", [userId, value]);
   }
 
+  async setLoggedInStatus(userId, status) {
+    const query = "CALL sp_set_logged_in(?, ?)";
+    const [result] = await pool.execute(query, [userId, status]);
+    return result;
+  }
+
   async findByEmail(email) {
     const [[rows]] = await pool.query("CALL sp_find_user_by_email(?)", [email]);
     return rows[0];
@@ -54,7 +60,6 @@ class UserModel {
       ]);
 
       return result[0]; // Retornamos el primer conjunto de resultados que devuelve el SP
-      console.log("Cambio exitoso");
     } catch (error) {
       console.error("Error al cambiar el estado del usuario:", error);
       throw error; // Lanza el error para manejarlo a un nivel superior si es necesario
