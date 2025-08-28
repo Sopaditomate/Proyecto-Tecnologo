@@ -1,5 +1,4 @@
-PUT http://localhost:5001/api/produccion/production/1800000/change-status
-
+DELETE http://localhost:3000/api/production/101/detail/202
 
 
 

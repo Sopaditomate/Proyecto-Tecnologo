@@ -24,6 +24,7 @@ import { AdminDashboard } from "../pages/admin/AdminDashboard";
 import InventoryManagement from "../pages/admin/inventory/InventoryManagement.jsx";
 import { AdminOrders } from "../pages/admin/orders/OrderManagement.jsx";
 import { AdminProductions } from "../pages/admin/production/ProductionManagement.jsx";
+import  AdminProductionDetails  from "../pages/admin/production/AdminProductionDetails.jsx";
 import { AdminProducts } from "../pages/admin/products/ProductManagement.jsx";
 import { AdminUsers } from "../pages/admin/users/UserManagement.jsx";
 import {AdminOrderDetails} from "../pages/admin/orders/detalleOrder.jsx"
@@ -260,23 +261,23 @@ export function AppRoutes() {
       />
 
        <Route
-        path="/orders/:orderId"
-        element={
-          <ProtectedRoute requireAdmin={true}>
-            <PageLayout
-              config={{
-                itemHeader: getHeaderItems("admin"),
-                itemMenu: getMenuItems("admin"),
-                iconMenu: defaultIcons.iconMenu,
-                icon1: defaultIcons.icon1,
-                link: "/",
-              }}
-            >
-              <AdminOrderDetails/>
-            </PageLayout>
-          </ProtectedRoute>
-        }
-      />
+          path="/orders/:orderId"
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <PageLayout
+                config={{
+                  itemHeader: getHeaderItems("admin"),
+                  itemMenu: getMenuItems("admin"),
+                  iconMenu: defaultIcons.iconMenu,
+                  icon1: defaultIcons.icon1,
+                  link: "/",
+                }}
+              >
+                <AdminOrderDetails/>
+              </PageLayout>
+            </ProtectedRoute>
+          }
+        />
 
 
       {/* ruta para la gestion del inventario o existencias*/}
@@ -317,6 +318,28 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/productions/:ProductionId"
+        element={
+          <ProtectedRoute requireAdmin={true}>
+            <PageLayout
+              config={{
+                itemHeader: getHeaderItems("admin"),
+                itemMenu: getMenuItems("admin"),
+                iconMenu: defaultIcons.iconMenu,
+                icon1: defaultIcons.icon1,
+                link: "/",
+              }}
+            >
+              <AdminProductionDetails />
+            </PageLayout>
+          </ProtectedRoute>
+        }
+      />
+
+
+
+
       {/* ruta para el crud de recetas */}
       <Route
         path="/crud_rece/:id"

@@ -1008,7 +1008,7 @@ JOIN product_type t ON p.id_product_type = t.id_product_type
 WHERE (p.id_state = 1 OR p.id_state = 2)
   AND (t.id_state = 1 OR t.id_state = 2);
 
-//falta ver
+
 -- Vista para producciones activas
 CREATE OR REPLACE VIEW vw_get_active_production AS
 SELECT 
@@ -2391,6 +2391,102 @@ END $$
 
 DELIMITER ;
 
+//para validaciones produccion
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_calculate_max_production(IN p_id_product INT)
+BEGIN
+    SELECT 
+        r.id_product,
+        p.name AS product_name,
+        MIN(FLOOR(i.quantity / r.quantity_required)) AS max_producible
+    FROM recipe r
+    JOIN product p ON p.id_product = r.id_product
+    JOIN inventory i ON i.id_material = r.id_material
+    WHERE r.id_product = p_id_product
+    GROUP BY r.id_product, p.name;
+END$$
+
+DELIMITER ;
+
+
+//nunca se uso el siguiente SP - NUSP
+DELIMITER $$
+
+CREATE PROCEDURE sp_materials_needed(
+    IN p_id_product INT,
+    IN p_quantity INT
+)
+BEGIN
+    SELECT 
+        r.id_material,
+        m.name AS material_name,
+        (r.quantity_required * p_quantity) AS required,
+        i.quantity AS available,
+        GREATEST((r.quantity_required * p_quantity) - i.quantity, 0) AS missing
+    FROM recipe r
+    JOIN raw_material m ON m.id_material = r.id_material
+    JOIN inventory i ON i.id_material = r.id_material
+    WHERE r.id_product = p_id_product;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_check_missing_materials (
+    IN p_id_product INT,
+    IN p_requested_qty INT
+)
+BEGIN
+    SELECT 
+        r.id_material,
+        rm.name AS material_name,
+        (r.quantity_required * p_requested_qty) AS required,
+        IFNULL(i.quantity, 0) AS available,
+        GREATEST((r.quantity_required * p_requested_qty) - IFNULL(i.quantity, 0), 0) AS missing
+    FROM recipe r
+    JOIN raw_material rm ON rm.id_material = r.id_material
+    LEFT JOIN inventory i ON i.id_material = r.id_material
+    WHERE r.id_product = p_id_product;
+END$$
+
+DELIMITER ;
+
+//filtrado de productos con receta
+DROP PROCEDURE IF EXISTS sp_get_products_with_recipe;
+DELIMITER $$
+CREATE PROCEDURE sp_get_products_with_recipe()
+BEGIN
+    SELECT DISTINCT
+        p.id_product,
+        p.name
+    FROM product p
+    INNER JOIN recipe r 
+        ON p.id_product = r.id_product
+    WHERE p.id_state = 1
+      AND r.id_state = 1;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_production (
+    IN p_id_production INT
+)
+BEGIN
+    UPDATE production
+    SET id_state = 3
+    WHERE id_production = p_id_production;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Production not found';
+    END IF;
+END $$
+
+DELIMITER ;
 
 
 -------------------------------------TRIGGERS------------------------------------

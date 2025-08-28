@@ -34,6 +34,26 @@ class ProductionModel {
     }
 
 ///
+
+    //trae productos con receta
+    async getProductsWithRecipe() {
+        try {
+        const [resultSets] = await pool.query("CALL sp_get_products_with_recipe()");
+        // mysql2 con CALL devuelve [[rows], meta] → el primer [0] son las filas
+        const rows = resultSets[0] || resultSets; 
+
+        return rows.map((product) => ({
+            id_product: product.id_product,
+            name: product.name,
+        }));
+        } catch (error) {
+        console.error("Error al obtener productos con receta:", error);
+        throw error;
+        }
+    }
+
+
+
     // Create new production
     async createProduction(totalProducts, idProductionStatus) {
         const conn = await pool.getConnection();
@@ -131,6 +151,72 @@ class ProductionModel {
             conn.release();
         }
     }
+
+    // Calcular producción máxima posible de un producto
+    async calculateMaxProduction(productId) {
+        const conn = await pool.getConnection();
+        try {
+            const [rows] = await conn.query(`CALL sp_calculate_max_production(?)`, [productId]);
+            // rows[0] = primer result set (array de filas)
+            return rows?.[0] ?? []; 
+        } catch (error) {
+            console.error("Error calculating max production:", error);
+            throw new Error("Could not calculate max production.");
+        } finally {
+            conn.release();
+        }
+        }
+
+        async validateProduction(productId, requestedQty) {
+        const conn = await pool.getConnection();
+        try {
+            // 1) Máximo producible
+            const [maxResultSets] = await conn.query(`CALL sp_calculate_max_production(?)`, [productId]);
+            const maxProducible = maxResultSets?.[0]?.[0]?.max_producible ?? 0; // <-- ojo al [0][0]
+
+            // 2) Faltantes
+            const [missingResultSets] = await conn.query(`CALL sp_check_missing_materials(?, ?)`, [
+            productId,
+            requestedQty
+            ]);
+
+            // Algunos MySQL devuelven: [[rows], meta]; nos quedamos con el primer set
+            const missingRows = Array.isArray(missingResultSets?.[0]) ? missingResultSets[0] : (missingResultSets || []);
+            const missing = missingRows.filter(r => Number(r.missing ?? 0) > 0);
+
+            return {
+            maxProducible,
+            canProduce: Number(requestedQty) <= Number(maxProducible),
+            missing
+            };
+        } catch (error) {
+            console.error("Error validating production:", error);
+            throw new Error("Could not validate production.");
+        } finally {
+            conn.release();
+        }
+        }
+
+        // Logical delete of a production
+async deleteProduction(productionId) {
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        await conn.query(
+            `CALL sp_delete_production(?)`,
+            [productionId]
+        );
+
+        await conn.commit();
+    } catch (error) {
+        await conn.rollback();
+        console.error("Error deleting production:", error);
+        throw new Error("Could not delete production.");
+    } finally {
+        conn.release();
+    }
+}
 
 
 }

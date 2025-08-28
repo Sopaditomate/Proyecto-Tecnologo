@@ -1,5 +1,6 @@
 import ProductionModel from "../models/ProductionModel.js";
 
+
 class ProductionController {
 
     // GET /api/production/:id - Obtener detalles de una producción
@@ -30,6 +31,24 @@ class ProductionController {
             res.status(500).json({ message: "Error retrieving productions" });
         }
     }
+
+
+    async getProductsWithRecipe(req, res) {
+        try {
+        const products = await ProductionModel.getProductsWithRecipe();
+
+        if (!products || products.length === 0) {
+            return res.status(404).json({ message: "No se encontraron productos con receta" });
+        }
+
+        res.json(products);
+        } catch (error) {
+        console.error("Error obteniendo productos con receta:", error);
+        res.status(500).json({ message: "Error al obtener productos con receta" });
+        }
+    }
+
+
 
     // POST /api/production - Crear nueva producción
     async createProduction(req, res) {
@@ -98,6 +117,20 @@ class ProductionController {
         }
     }
 
+    // DELETE /api/production/:id - Borrado lógico de una producción
+async deleteProduction(req, res) {
+    const { id } = req.params;
+
+    try {
+        await ProductionModel.deleteProduction(id);
+        res.json({ message: "Production deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting production:", error);
+        res.status(500).json({ message: error.message || "Could not delete production" });
+    }
+}
+
+
     // Obtener todos los estados de producción activos
     async getAllStatuses(req, res) {
         try {
@@ -106,6 +139,32 @@ class ProductionController {
         } catch (error) {
             console.error("Error retrieving production statuses:", error);
             res.status(500).json({ message: "Error retrieving production statuses" });
+        }
+    }
+    async getMaxProduction(req, res) {
+        try {
+            const { productId } = req.params;
+            const result = await ProductionModel.calculateMaxProduction(productId);
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    };
+
+    async validateProduction(req, res) {
+        try {
+            const { productId, requestedQty } = req.body;
+
+            if (!productId || !requestedQty) {
+                return res.status(400).json({ message: "productId y requestedQty son requeridos." });
+            }
+
+            const result = await ProductionModel.validateProduction(productId, requestedQty);
+
+            return res.status(200).json(result);
+        } catch (error) {
+            console.error("Error en validateProduction controller:", error.message);
+            return res.status(500).json({ message: "Error validando la producción." });
         }
     }
 
