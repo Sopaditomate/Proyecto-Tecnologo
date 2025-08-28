@@ -92,9 +92,9 @@ export function Recetasform() {
     }
 
     const dataToSend = {
-      ID_PRODUCTO: id,
-      ID_MATERIAL: formData.ID_MATERIA,
-      CANTIDAD_USAR: formData.CANTIDAD_USAR,
+      ID_PRODUCTO: Number(id),
+      ID_MATERIAL: Number(formData.ID_MATERIA),
+      CANTIDAD_USAR: Number(formData.CANTIDAD_USAR),
     };
     console.log("Datos a enviar:", dataToSend);
     axios
@@ -102,6 +102,7 @@ export function Recetasform() {
         `${VITE_API_URL}/recetas_crud/${id}/${formData.ID_MATERIA}`,
         dataToSend
       )
+      
       .then(() => {
         toast.success("✅ Receta agregada correctamente", {
           closeButton: false,
@@ -112,13 +113,17 @@ export function Recetasform() {
         closeModals();
       })
       .catch((err) => {
-        console.error("Error al agregar receta:", err);
-        toast.error("❌ Error al insertar receta", {
-          closeButton: false,
-          className: "receta-toast error",
-        });
-      });
+  console.error("Error al agregar receta:", err.response ? err.response.data : err.message);
+  toast.error("❌ Error al insertar receta", {
+    closeButton: false,
+    className: "receta-toast error",
+  });
+});
+
+
   };
+
+ 
 
   // Handle updating a selected recipe
   const handleUpdate = (e) => {
@@ -197,12 +202,43 @@ export function Recetasform() {
       ])
     ).values()
   );
-  console.log(tipoMateria);
+  console.log(formData.CANTIDAD_USAR);
 
   // Render the form fields
-  const renderFormFields = () => (
+  const renderFormFieldsEdit = () => (
     <>
     
+
+      <Form.Group className="mb-3">
+        <Form.Label>Cantidad a Usar</Form.Label>
+        <Form.Control
+          type="text"
+          name="CANTIDAD_USAR"
+          value={formData.CANTIDAD_USAR}
+          onChange={handleChange}
+       
+        />
+      </Form.Group>
+    </>
+  );
+const renderFormFields = () => (
+    <>
+        <Form.Group className="mb-3">
+        <Form.Label>seleccione un tipo de materia</Form.Label>
+        <Form.Select
+          type="text"
+          name="ID_MATERIA"
+          value={formData.ID_MATERIA}
+          onChange={handleChange}
+ >
+         <option value=""></option>  {/* Opción por defecto */}
+    {materiasPrimas.map((materia) => (
+      <option key={materia.ID_MATERIA} value={materia.ID_MATERIA}>
+        {materia.NOMBRE_MATE}
+      </option>
+         ))}
+           </Form.Select>
+      </Form.Group>
 
       <Form.Group className="mb-3">
         <Form.Label>Cantidad a Usar</Form.Label>
@@ -216,7 +252,6 @@ export function Recetasform() {
       </Form.Group>
     </>
   );
-
   return (
     <Container fluid className="product-management-container">
       <h2 className="product-management-title">Recetas del Producto</h2>
@@ -383,7 +418,7 @@ export function Recetasform() {
         </Modal.Header>
         <Modal.Body className="modal-body">
           <Form onSubmit={handleUpdate}>
-            {renderFormFields()}
+            {renderFormFieldsEdit()}
             <div className="modal-footer d-flex gap-2 justify-content-center mt-4">
               <Button type="submit" className="btn btn-primary">
                 Actualizar Receta

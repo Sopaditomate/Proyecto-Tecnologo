@@ -38,7 +38,9 @@ class RecetasModel {
     }
 
     // Insert new recipe
+    
     async addReceta(ID_PRODUCT, ID_MATERIA, CANTIDAD_USAR) {
+        console.log(ID_PRODUCT, ID_MATERIA, CANTIDAD_USAR);
         if (!ID_PRODUCT || !ID_MATERIA || CANTIDAD_USAR <= 0) {
             throw new Error("Parámetros inválidos.");
         }
