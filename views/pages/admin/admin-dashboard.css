@@ -200,7 +200,7 @@
   color: var(--text-secondary);
   margin-bottom: var(--spacing-lg);
   font-size: 0.95rem;
-  line-height: 1.5;
+  line-height: 1;
 }
 
 .admin-card-button {

@@ -125,18 +125,21 @@ class AuthController {
 
   // Logout
   async logout(req, res) {
-    try {
-      if (req.user.role === 100001) {
-        await UserModel.setAdminLoggedIn(req.user.userId, false);
-      }
-
-      res.clearCookie("token");
-      res.json({ success: true, message: "Sesión cerrada correctamente" });
-    } catch (error) {
-      console.error("Error en logout:", error);
-      res.status(500).json({ message: "Error al cerrar sesión" });
+  try {
+    if (req.user.role === 100001) {
+      await UserModel.setAdminLoggedIn(req.user.userId, false);
+    } else {
+      await UserModel.setLoggedIn(req.user.userId, false);
     }
+
+    res.clearCookie("token");
+    res.json({ success: true, message: "Sesión cerrada correctamente" });
+  } catch (error) {
+    console.error("Error en logout:", error);
+    res.status(500).json({ message: "Error al cerrar sesión" });
   }
+}
+
   // Validar email (método estático para usar en el frontend)
   static validateEmail(email) {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

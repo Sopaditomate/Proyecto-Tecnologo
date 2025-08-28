@@ -22,9 +22,9 @@ export function BackToHome() {
         top: 16,
         right: 16,
         zIndex: 1000,
-        background: "none",
+        background: "linear-gradient(135deg, #d97706, #ea580c)",
         border: "none",
-        color: "#6366f1",
+        color: "white",
         fontWeight: "bold",
         fontSize: "1rem",
         cursor: "pointer",
@@ -34,7 +34,7 @@ export function BackToHome() {
       }}
     >
       {!isMobile && (
-        <span style={{ fontSize: "1.2em", marginRight: 6 }}>←</span>
+        <span style={{ fontSize: "1.2em", marginRight: 6 }}></span>
       )}
       Volver al inicio
     </button>

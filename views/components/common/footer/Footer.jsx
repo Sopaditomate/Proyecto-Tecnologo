@@ -4,7 +4,9 @@ import { useAuth } from "../../../context/AuthContext.jsx";
 import "./footer.css";
 import { defaultIcons } from "../../../../src/models/MenuConfig.js";
 
+
 const Footer = forwardRef((props, ref) => {
+
   const [email, setEmail] = useState("");
   const [isSubscribed, setIsSubscribed] = useState(false);
   const location = useLocation();
@@ -13,6 +15,15 @@ const Footer = forwardRef((props, ref) => {
 
   // Rutas donde NO se debe mostrar el footer
   const hideFooterRoutes = ["/login", "/register", "/reset-password"];
+
+  const handleGoToCatalog = () => {
+  navigate("/catalogo", { state: { scrollTo: "products" } });
+};
+
+const handleGoToHome = () => {
+  navigate("/", { state: { scrollTo: "home-container" } });
+};
+
 
   // Manejar suscripción al newsletter
   const handleNewsletterSubmit = (e) => {
@@ -32,6 +43,18 @@ const Footer = forwardRef((props, ref) => {
   const handleScrollToCatalog = (e) => {
     e.preventDefault(); // Prevenir el comportamiento predeterminado del enlace
     const productsSection = document.querySelector(".products");
+
+    if (productsSection) {
+      productsSection.scrollIntoView({
+        behavior: "smooth", // Para un scroll suave
+        block: "start", // Alinea el inicio del elemento con la parte superior de la vista
+      });
+    }
+  };
+
+  const handleScrollToLogin = (e) => {
+    e.preventDefault(); // Prevenir el comportamiento predeterminado del enlace
+    const productsSection = document.querySelector(".home-container");
 
     if (productsSection) {
       productsSection.scrollIntoView({
@@ -77,41 +100,50 @@ const Footer = forwardRef((props, ref) => {
         {/* Sección de navegación */}
         <div className="footer-section">
           <h3>Navegación</h3>
-          <ul className="footer-links">
-            <li>
-              <Link to="/">Inicio</Link>
-            </li>
-            <li>
-              <Link onClick={handleScrollToCatalog}>Catálogo</Link>
-            </li>
-            <li>
-              <Link to="/catalogo">Contacto</Link>
-            </li>
-            {/* Mostrar perfil solo si está autenticado */}
-            <li>
-              <Link to={isAuthenticated ? "/profile" : "/login"}>Perfil</Link>
-            </li>
-          </ul>
+         <ul className="footer-links">
+  <li>
+    <Link to="/" state={{ scrollTo: "home-container" }}>Inicio</Link>
+  </li>
+  <li>
+    <Link to="/catalogo" state={{ scrollTo: "products" }}>Catálogo</Link>
+  </li>
+  <li>
+    <Link to="/catalogo">Contacto</Link>
+  </li>
+  <li>
+    <Link to={isAuthenticated ? "/profile" : "/login"}>Perfil</Link>
+  </li>
+</ul>
+
         </div>
 
         {/* Sección de productos */}
         <div className="footer-section">
-          <h3>Nuestros Productos</h3>
-          <ul className="footer-links">
-            <li>
-              <Link onClick={handleScrollToCatalog}>Panes Artesanales</Link>
-            </li>
-            <li>
-              <Link onClick={handleScrollToCatalog}>Pasteles y Tortas</Link>
-            </li>
-            <li>
-              <Link onClick={handleScrollToCatalog}>Galletas Caseras</Link>
-            </li>
-            <li>
-              <Link onClick={handleScrollToCatalog}>Croissants</Link>
-            </li>
-          </ul>
-        </div>
+  <h3>Nuestros Productos</h3>
+  <ul className="footer-links">
+    <li>
+      <Link to="/catalogo" state={{ scrollTo: "products" }}>
+        Panes Artesanales
+      </Link>
+    </li>
+    <li>
+      <Link to="/catalogo" state={{ scrollTo: "products" }}>
+        Pasteles y Tortas
+      </Link>
+    </li>
+    <li>
+      <Link to="/catalogo" state={{ scrollTo: "products" }}>
+        Galletas Caseras
+      </Link>
+    </li>
+    <li>
+      <Link to="/catalogo" state={{ scrollTo: "products" }}>
+        Croissants
+      </Link>
+    </li>
+  </ul>
+</div>
+
 
         {/* Sección de horarios y contacto */}
         <div className="footer-section">

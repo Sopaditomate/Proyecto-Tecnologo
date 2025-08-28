@@ -6,11 +6,13 @@ import { ProductCard } from "../../components/products/ProductCard"
 import "./catalog.css"
 import { PageTitle } from "./PageTitle"
 import { useAuth } from "../../context/AuthContext"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom" // 👈 importamos useLocation
 
 export function CatalogPage() {
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
+    const location = useLocation()
+
 
   // Estados
   const [searchTerm, setSearchTerm] = useState("")
@@ -112,6 +114,17 @@ export function CatalogPage() {
   const handleCompleteProfile = () => {
     navigate("/profile")
   }
+    //  Nuevo efecto: scroll al llegar desde el Footer
+  useEffect(() => {
+    if (location.state?.scrollTo) {
+      const el = document.querySelector(`.${location.state.scrollTo}`)
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "start" })
+        }, 300) // delay para asegurar render de productos
+      }
+    }
+  }, [location, products]) // se ejecuta después de cargar productos
 
   return (
     <div className="catalogo-wrapper">

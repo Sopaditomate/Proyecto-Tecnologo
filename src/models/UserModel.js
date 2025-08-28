@@ -51,15 +51,7 @@ class UserModel {
     return rows[0]?.is_logged_in === 1;
   }
 
-  // Método para cerrar todas las sesiones de administradores (opcional)
-  async logoutAllAdmins() {
-    await pool.query(`
-      UPDATE user_account ua
-      JOIN user_role ur ON ua.id_user = ur.id_user
-      SET ua.is_logged_in = FALSE
-      WHERE ur.id_role = 100001
-    `);
-  }
+  
 
   //para el modulo de usuarios del admin
   async getAllUsersInfo() {
