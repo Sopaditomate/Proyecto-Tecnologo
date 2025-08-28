@@ -1,4 +1,4 @@
-DELETE http://localhost:3000/api/production/101/detail/202
+GET http://localhost:5001/api/produccion/production/history
 
 
 

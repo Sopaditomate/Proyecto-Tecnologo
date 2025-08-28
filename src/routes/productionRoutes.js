@@ -7,11 +7,17 @@ const router = express.Router();
 // Obtener todos los estados de producción (no se porque no funciona)
 router.get("/production/status", ProductionController.getAllStatuses);
 
-// Obtener todas las producciones activas
-router.get("/production", ProductionController.getActiveProductions);
+
 
 // Obtener productos que tienen receta
 router.get("/production/recipe", ProductionController.getProductsWithRecipe);
+
+// Obtener historial de producciones
+router.get("/production/history", ProductionController.getProductionHistory);
+
+// Obtener todas las producciones activas
+router.get("/production", ProductionController.getActiveProductions);
+
 
 // Obtener detalles de una producción específica
 router.get("/production/:id", ProductionController.getProductionDetails);

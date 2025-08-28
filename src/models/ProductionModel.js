@@ -52,6 +52,20 @@ class ProductionModel {
         }
     }
 
+    // Obtener historial de producciones
+    async getProductionHistory() {
+        const conn = await pool.getConnection();
+        try {
+            const [rows] = await conn.query(`SELECT * FROM vw_production_history`);
+            return rows;
+        } catch (error) {
+            console.error("Error getting production history:", error);
+            throw new Error("Could not fetch production history.");
+        } finally {
+            conn.release();
+        }
+    }
+
 
 
     // Create new production

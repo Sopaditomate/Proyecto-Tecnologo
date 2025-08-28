@@ -77,6 +77,7 @@ import userProfileRoutes from "./routes/userProfileRoutes.js";
 import GraficRoutes from "./routes/GraficRoutes.js";
 import orderAdminRoutes from "./routes/orderAdminRoutes.js";
 import productionRoutes from "./routes/productionRoutes.js";
+import production_pdf from "../views/pages/admin/production/production_pdf.js";
 
 
 
@@ -97,6 +98,7 @@ app.use("/api/productos_crud", productAdminRoutes);
 app.use("/api/export/", product_pdf);
 app.use("/api/export/", inventario_pdf);
 app.use("/api/export/", receta_pdf);
+app.use("/api/export/", production_pdf);
 
 app.use("/api/user", userProfileRoutes);
 app.use("/api/recetas_crud", recetaRoutes);

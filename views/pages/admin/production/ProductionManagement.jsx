@@ -4,6 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TableContainer from "../../../components/table-components/TableContainer";
 import { Modal, Form, Button } from "react-bootstrap";
+import DataTable from "../../../components/table-components/DataTable";
 import { useNavigate } from "react-router-dom";
 
 export const AdminProductions = () => {
@@ -21,6 +22,13 @@ export const AdminProductions = () => {
   const [availableProducts, setAvailableProducts] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [reactivateMode, setReactivateMode] = useState(false);
+
+  // === Historial de Producciones ===
+  const [showHistorialModal, setShowHistorialModal] = useState(false);
+  const [historial, setHistorial] = useState([]);
+  const [historialFilter, setHistorialFilter] = useState("");
+  const [historialCurrentPage, setHistorialCurrentPage] = useState(1);
+  const historialItemsPerPage = 8;
 
   const navigate = useNavigate();
 
@@ -42,6 +50,26 @@ export const AdminProductions = () => {
   useEffect(() => {
     fetchProductions();
   }, []);
+
+  const fetchHistorial = async () => {
+    try {
+      const res = await axios.get(`${VITE_API_URL}/produccion/production/history`);
+      setHistorial(res.data);
+    } catch (err) {
+      console.error("Error al obtener historial:", err);
+      toast.error("No se pudo obtener el historial de producciones.");
+    }
+  };
+
+  const handleShowHistorialModal = () => {
+    fetchHistorial();
+    setShowHistorialModal(true);
+  };
+
+  const handleCloseHistorialModal = () => {
+    setShowHistorialModal(false);
+    setHistorialCurrentPage(1);
+  };
 
   // === Filtro búsqueda ===
   const filterProductions = () => {
@@ -71,6 +99,26 @@ export const AdminProductions = () => {
     setFilteredProductions(result);
     setCurrentPage(1);
   };
+
+  const filteredHistorial = historial.filter((h) => {
+  const term = historialFilter.toLowerCase();
+    return (
+      String(h.id_historial).includes(term) ||
+      String(h.id_produccion).includes(term) ||
+      h.nombre_producto.toLowerCase().includes(term) ||
+      h.tipo_movimiento.toLowerCase().includes(term) ||
+      h.descripcion_movimiento.toLowerCase().includes(term)
+    );
+  });
+
+  const paginatedHistorial = filteredHistorial.slice(
+    (historialCurrentPage - 1) * historialItemsPerPage,
+    historialCurrentPage * historialItemsPerPage
+  );
+
+  const historialTotalPages = Math.ceil(
+    filteredHistorial.length / historialItemsPerPage
+  );
 
   useEffect(() => {
     filterProductions();
@@ -323,6 +371,21 @@ export const AdminProductions = () => {
     },
   ];
 
+
+  const historialColumns = [
+    { Header: "ID Historial", accessor: "id_historial" },
+    { Header: "ID Producción", accessor: "id_produccion" },
+    { Header: "Producto", accessor: "nombre_producto" },
+    { Header: "Cantidad", accessor: "cantidad" },
+    { Header: "Movimiento", accessor: "tipo_movimiento" },
+    { Header: "Descripción", accessor: "descripcion_movimiento" },
+    {
+      Header: "Fecha Movimiento",
+      accessor: "fecha_movimiento",
+      Cell: ({ value }) => new Date(value).toLocaleString("es-ES"),
+    },
+  ];
+
   // === Paginación ===
   const paginatedData = filteredProductions.slice(
     (currentPage - 1) * itemsPerPage,
@@ -364,6 +427,27 @@ export const AdminProductions = () => {
         totalItems={filteredProductions.length}
         itemsPerPage={itemsPerPage}
         showUpload={false}
+        //para los pdfs y excels
+        exportOptions={[
+          {
+            label: "PDF",
+            onClick: () =>
+              window.open(
+              `${VITE_API_URL}/export/pdfproduction`,
+                "_blank"
+              ),
+            variant: "outline-danger",
+          },
+          {
+            label: "Excel",
+            onClick: () =>
+              window.open(
+              `${VITE_API_URL}/export/excelproduction`,
+              "_blank"
+              ),
+            variant: "outline-success",
+          },
+        ]}
         showExport={false}
         onAdd={openCreateModal}
         addLabel="Nueva Producción"
@@ -377,6 +461,9 @@ export const AdminProductions = () => {
             {reactivateMode ? "Salir de Reactivar" : "Reactivar"}
           </Button>
         }
+        showHistory={true}
+        onHistory={handleShowHistorialModal}
+        historyLabel="Ver Historial"
       />
 
       <Modal show={showCreateModal} onHide={closeCreateModal}>
@@ -498,6 +585,45 @@ export const AdminProductions = () => {
           </Button>
           <Button variant="primary" onClick={handleCreateProduction}>
             Crear Producción
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal size="lg" show={showHistorialModal} onHide={handleCloseHistorialModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Historial de Producción</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-3">
+            <Form.Control
+              type="text"
+              placeholder="Buscar en historial..."
+              value={historialFilter}
+              onChange={(e) => setHistorialFilter(e.target.value)}
+            />
+          </div>
+
+          <DataTable
+            columns={historialColumns}
+            data={paginatedHistorial}
+            loading={false}
+            emptyMessage="No hay registros en el historial"
+            searchTerm={historialFilter}
+            selectedFilter={""}
+          />
+
+          {historialTotalPages > 1 && (
+            <TablePagination
+              currentPage={historialCurrentPage}
+              totalPages={historialTotalPages}
+              onPageChange={setHistorialCurrentPage}
+              totalItems={filteredHistorial.length}
+              itemsPerPage={historialItemsPerPage}
+            />
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseHistorialModal}>
+            Cerrar
           </Button>
         </Modal.Footer>
       </Modal>

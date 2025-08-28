@@ -599,6 +599,14 @@ VALUES
 (1800001, 1200005, 50); -- Ciabatta
 
 
+INSERT INTO production_movement_type (name, description)
+VALUES
+('Entrada', 'Registro de nueva producción con sus detalles'),
+('Salida', 'Finalización de una producción'),
+('Reactivación', 'Reapertura de una producción finalizada'),
+('Cancelación', 'Cancelación de una producción y sus detalles');
+
+
 
 /////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////---RESTRICCIONES---//////////////////////////////
@@ -1046,6 +1054,51 @@ FROM
     production_status
 WHERE 
     id_state = 1;
+
+
+CREATE OR REPLACE VIEW vw_production_report AS
+SELECT 
+    p.id_production        AS id_produccion,
+    p.start_datetime       AS fecha_inicio,
+    p.end_datetime         AS fecha_fin,
+    p.total_products       AS total_productos,
+    pd.id_product          AS id_producto,
+    pr.name                AS nombre_producto,
+    pd.planned_quantity    AS cantidad_planeada
+FROM production p
+INNER JOIN production_detail pd 
+    ON p.id_production = pd.id_production
+INNER JOIN product pr 
+    ON pd.id_product = pr.id_product
+WHERE p.id_state = 1
+  AND pd.id_state = 1
+  AND pr.id_state = 1;
+
+
+CREATE OR REPLACE VIEW vw_production_history AS
+SELECT 
+    h.id_production_history AS id_historial,
+    h.id_production        AS id_produccion,
+    p.start_datetime       AS fecha_inicio,
+    p.end_datetime         AS fecha_fin,
+    p.total_products       AS total_productos,
+    h.id_product           AS id_producto,
+    pr.name                AS nombre_producto,
+    h.quantity             AS cantidad,
+    mt.name                AS tipo_movimiento,
+    mt.description         AS descripcion_movimiento,
+    h.movement_datetime    AS fecha_movimiento
+FROM production_history h
+INNER JOIN production p 
+    ON h.id_production = p.id_production
+INNER JOIN product pr 
+    ON h.id_product = pr.id_product
+INNER JOIN production_movement_type mt 
+    ON h.id_production_movement_type = mt.id_production_movement_type
+WHERE mt.id_state = 1
+  AND pr.id_state = 1
+ORDER BY h.movement_datetime DESC;
+
 
 -------------------------------------PROCEDURES----------------------------------
 
@@ -2945,11 +2998,92 @@ END;
 
 DELIMITER ;
 
+DELIMITER //
+
+CREATE TRIGGER trg_production_detail_insert
+AFTER INSERT ON production_detail
+FOR EACH ROW
+BEGIN
+    INSERT INTO production_history (
+        id_production,
+        id_product,
+        quantity,
+        id_production_movement_type,
+        id_state
+    )
+    VALUES (
+        NEW.id_production,
+        NEW.id_product,
+        NEW.planned_quantity,
+        1, -- 'Entrada'
+        NEW.id_state
+    );
+END;
+//
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE TRIGGER trg_production_update
+AFTER UPDATE ON production
+FOR EACH ROW
+BEGIN
+    IF OLD.id_production_status <> NEW.id_production_status THEN
+        IF NEW.id_production_status = 600000 THEN -- En Producción (reactivación)
+            INSERT INTO production_history (
+                id_production, id_product, quantity, id_production_movement_type, id_state
+            )
+            SELECT 
+                NEW.id_production,
+                pd.id_product,
+                pd.planned_quantity,
+                3, -- 'Reactivación'
+                NEW.id_state
+            FROM production_detail pd
+            WHERE pd.id_production = NEW.id_production;
+
+        ELSEIF NEW.id_production_status = 600001 THEN -- Finalizado
+            INSERT INTO production_history (
+                id_production, id_product, quantity, id_production_movement_type, id_state
+            )
+            SELECT 
+                NEW.id_production,
+                pd.id_product,
+                pd.planned_quantity,
+                2, -- 'Salida'
+                NEW.id_state
+            FROM production_detail pd
+            WHERE pd.id_production = NEW.id_production;
+        END IF;
+    END IF;
+END;
+//
+
+DELIMITER ;
 
 
+DELIMITER //
 
+CREATE TRIGGER trg_production_cancel
+AFTER UPDATE ON production
+FOR EACH ROW
+BEGIN
+    IF OLD.id_state <> NEW.id_state AND NEW.id_state = 3 THEN
+        INSERT INTO production_history (
+            id_production, id_product, quantity, id_production_movement_type, id_state
+        )
+        SELECT 
+            NEW.id_production,
+            pd.id_product,
+            pd.planned_quantity,
+            4, -- ID de 'Cancelación'
+            NEW.id_state
+        FROM production_detail pd
+        WHERE pd.id_production = NEW.id_production;
+    END IF;
+END;
+//
 
-
-
-
+DELIMITER ;
 

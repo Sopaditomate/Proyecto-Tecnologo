@@ -48,6 +48,18 @@ class ProductionController {
         }
     }
 
+    // GET /api/production/history - Obtener historial de producciones
+    async getProductionHistory(req, res) {
+        try {
+            const history = await ProductionModel.getProductionHistory();
+            res.json(history);
+        } catch (error) {
+            console.error("Error getting production history:", error);
+            res.status(500).json({ message: "Error retrieving production history" });
+        }
+    }
+
+
 
 
     // POST /api/production - Crear nueva producción
