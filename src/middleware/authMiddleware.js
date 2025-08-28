@@ -1,11 +1,13 @@
 import jwt from "jsonwebtoken";
+import UserModel from "../models/UserModel.js";
 
-// Constantes de roles (para legibilidad)
+// Constantes de roles (mejora de la legibilidad)
 const ROLE_CLIENT = 100000;
 const ROLE_ADMIN = 100001;
 
-// Middleware para verificar token JWT de forma estricta (bloquea si no está)
-const verifyToken = (req, res, next) => {
+// Middleware para verificar token JWT
+const verifyToken = async (req, res, next) => {
+  // Obtener token de las cookies o del header de autorización
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
   if (!token) {
@@ -15,19 +17,27 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
+    // Verificar token
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET || "your_jwt_secret"
     );
 
-    if (!decoded?.userId || !decoded?.role) {
-      return res.status(401).json({ message: "Token inválido o incompleto" });
+    // Verificar si el usuario sigue logueado en la base de datos
+    const isLoggedIn = await UserModel.isUserLoggedIn(decoded.userId);
+    if (!isLoggedIn) {
+      return res.status(401).json({
+        message: "Sesión cerrada desde otro dispositivo",
+        code: "SESSION_CLOSED_ELSEWHERE",
+      });
     }
 
+    // Añadir información del usuario al objeto request
     req.user = {
       userId: decoded.userId,
       email: decoded.email,
       role: decoded.role,
+      clientId: decoded.clientId,
     };
 
     next();
@@ -37,40 +47,7 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// Middleware para verificar token JWT de forma opcional (no bloquea, solo asigna req.user o null)
-const optionalVerifyToken = (req, res, next) => {
-  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
-
-  if (!token) {
-    req.user = null;
-    return next();
-  }
-
-  try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "your_jwt_secret"
-    );
-
-    if (!decoded?.userId || !decoded?.role) {
-      req.user = null;
-    } else {
-      req.user = {
-        userId: decoded.userId,
-        email: decoded.email,
-        role: decoded.role,
-      };
-    }
-
-    next();
-  } catch (error) {
-    console.error("Error al verificar token:", error);
-    req.user = null;
-    next();
-  }
-};
-
-// Middleware genérico para verificar rol
+// Middleware genérico para verificar el rol
 const checkRole = (requiredRole) => {
   return (req, res, next) => {
     if (req.user && req.user.role === requiredRole) {
@@ -85,7 +62,10 @@ const checkRole = (requiredRole) => {
   };
 };
 
+// Middleware para verificar rol de administrador
 const isAdmin = checkRole(ROLE_ADMIN);
+
+// Middleware para verificar rol de cliente
 const isClient = checkRole(ROLE_CLIENT);
 
-export { verifyToken, optionalVerifyToken, isAdmin, isClient };
+export { verifyToken, isAdmin, isClient };

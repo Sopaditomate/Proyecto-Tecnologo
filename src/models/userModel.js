@@ -2,27 +2,11 @@ import pool from "../config/db.js";
 import bcrypt from "bcrypt";
 
 class UserModel {
-  // Verifica si ya hay un admin logueado
-  async isAdminLoggedIn() {
-    const [[rows]] = await pool.query("CALL sp_check_admin_logged_in()");
-    return rows?.count > 0;
-  }
-
-  // Marca al admin como logueado o deslogueado
-  async setAdminLoggedIn(userId, value) {
-    await pool.query("CALL sp_set_admin_logged_in(?, ?)", [userId, value]);
-  }
-
-  async setLoggedInStatus(userId, status) {
-    const query = "CALL sp_set_logged_in(?, ?)";
-    const [result] = await pool.execute(query, [userId, status]);
-    return result;
-  }
-
   async findByEmail(email) {
     const [[rows]] = await pool.query("CALL sp_find_user_by_email(?)", [email]);
     return rows[0];
   }
+
   async create({
     email,
     password,
@@ -45,8 +29,39 @@ class UserModel {
     return rows[0] || null;
   }
 
-  //para el modulo de usuarios del admin
+  // Métodos para el control de sesiones
+  async checkAdminLoggedIn() {
+    const [[rows]] = await pool.query("CALL sp_check_admin_logged_in()");
+    return rows[0]?.count || 0;
+  }
 
+  async setAdminLoggedIn(userId, isLoggedIn) {
+    await pool.query("CALL sp_set_admin_logged_in(?, ?)", [userId, isLoggedIn]);
+  }
+
+  async setLoggedIn(userId, isLoggedIn) {
+    await pool.query("CALL sp_set_logged_in(?, ?)", [userId, isLoggedIn]);
+  }
+
+  async isUserLoggedIn(userId) {
+    const [rows] = await pool.query(
+      "SELECT is_logged_in FROM user_account WHERE id_user = ?",
+      [userId]
+    );
+    return rows[0]?.is_logged_in === 1;
+  }
+
+  // Método para cerrar todas las sesiones de administradores (opcional)
+  async logoutAllAdmins() {
+    await pool.query(`
+      UPDATE user_account ua
+      JOIN user_role ur ON ua.id_user = ur.id_user
+      SET ua.is_logged_in = FALSE
+      WHERE ur.id_role = 100001
+    `);
+  }
+
+  //para el modulo de usuarios del admin
   async getAllUsersInfo() {
     const [rows] = await pool.query("CALL sp_get_users_info()");
     return rows[0] || [];
@@ -60,13 +75,12 @@ class UserModel {
       ]);
 
       return result[0]; // Retornamos el primer conjunto de resultados que devuelve el SP
+      console.log("Cambio exitoso");
     } catch (error) {
       console.error("Error al cambiar el estado del usuario:", error);
       throw error; // Lanza el error para manejarlo a un nivel superior si es necesario
     }
   }
-
-  //////////////////////////////////////////////////////////////////////////
 
   async getClientId(userId) {
     const [[rows]] = await pool.query("CALL sp_get_client_id(?)", [userId]);

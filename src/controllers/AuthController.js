@@ -7,7 +7,7 @@ class AuthController {
   // Registro de usuario
   async register(req, res) {
     try {
-      //console.log("Datos recibidos en registro:", req.body);
+      console.log("Datos recibidos en registro:", req.body);
       const { email, password, nombres, apellidos, direccion, telefono } =
         req.body;
 
@@ -44,76 +44,78 @@ class AuthController {
   async login(req, res) {
     try {
       const { email, password } = req.body;
-      //console.log("Intentando login con:", email);
+      console.log("Intentando login con:", email);
 
       const user = await UserModel.findByEmail(email);
-      //console.log("Usuario encontrado:", user);
+      console.log("Usuario encontrado:", user);
       if (!user) {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
       const isPasswordValid = await bcrypt.compare(password, user.PASSWORD);
-      //console.log("Password válido:", isPasswordValid);
 
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
-      // Verificación de sesión activa para cualquier usuario
-      if (user.IS_LOGGED_IN) {
-        return res.status(403).json({
-          message: "Credenciales inválidas.",
+      // Verificar si el usuario ya tiene una sesión activa
+      const isAlreadyLoggedIn = await UserModel.isUserLoggedIn(user.ID_USUARIO);
+
+      if (isAlreadyLoggedIn) {
+        return res.status(401).json({
+          message: "Credenciales inválidas",
+          code: "ADMIN_SESSION_EXISTS",
         });
-      }
-
-      // Marcar sesión como activa (para todos los usuarios)
-      await UserModel.setLoggedInStatus(user.ID_USUARIO, true);
-
-      // Si es admin, también marca como activo en la lógica interna si tienes otra tabla
-      if (user.ID_ROL === 100001) {
-        await UserModel.setAdminLoggedIn(user.ID_USUARIO, true);
       }
 
       // Obtener información completa del usuario
       const userInfo = await UserModel.getUserInfo(user.ID_USUARIO);
 
-      // Generar JWT
+      // Obtener ID de cliente si el rol es cliente
+      let clientId = null;
+      if (user.ID_ROL === 100000) {
+        clientId = await UserModel.getClientId(user.ID_USUARIO);
+      }
+
+      // Generar token JWT con expiración de 24 horas
       const token = jwt.sign(
         {
-          userId: userInfo.ID_USUARIO,
-          email: userInfo.USUARIO || userInfo.EMAIL,
-          role: userInfo.ID_ROL,
+          userId: user.ID_USUARIO,
+          email: user.USUARIO,
+          role: user.ID_ROL,
+          clientId,
         },
         process.env.JWT_SECRET || "your_jwt_secret",
-        { expiresIn: "1h" }
+        { expiresIn: "24h" }
       );
 
-      // Enviar token como cookie
+      // Marcar como logueado en la base de datos
+      await UserModel.setLoggedIn(user.ID_USUARIO, true);
+
+      // Enviar respuesta con token y cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // solo en https en producción
-        maxAge: 60 * 60 * 1000, // 1 hora
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000, // 24 horas
       });
 
-      // Responder con el usuario completo para frontend
-      res.status(200).json({
+      res.json({
         success: true,
-        message: "Inicio de sesión exitoso",
-        token,
+        message: "Login exitoso",
         user: {
           id: userInfo.ID_USUARIO,
           email: userInfo.USUARIO,
-          role: userInfo.ID_ROL,
+          role: user.ID_ROL,
           roleInfo: {
             id: userInfo.ID_ROL,
             name: userInfo.ROL_NOMBRE,
           },
           nombres: userInfo.NOMBRES,
           apellidos: userInfo.APELLIDOS,
-          direccion: userInfo.DIRECCION,
-          telefono: userInfo.TELEFONO,
-          // agrega más campos si quieres enviar más info al frontend
+          clientId,
         },
+        token,
       });
     } catch (error) {
       console.error("Error en login:", error);
@@ -124,7 +126,9 @@ class AuthController {
   // Logout
   async logout(req, res) {
     try {
-      await UserModel.setLoggedInStatus(req.user.userId, false);
+      if (req.user.role === 100001) {
+        await UserModel.setAdminLoggedIn(req.user.userId, false);
+      }
 
       res.clearCookie("token");
       res.json({ success: true, message: "Sesión cerrada correctamente" });
@@ -142,7 +146,7 @@ class AuthController {
   // Verificar estado de autenticación
   async checkAuth(req, res) {
     if (!req.user) {
-      return res.json({ isAuthenticated: false });
+      return res.status(401).json({ message: "No autenticado" });
     }
 
     try {
