@@ -101,141 +101,145 @@ export function RegisterForm() {
   };
 
   return (
-    <form
-      className="form-login register-form-container"
-      onSubmit={handleSubmit}
-      noValidate
-    >
-      {/* Icono y título de cabecera */}
-      <HeadProfile
-        titleHead="Crear Cuenta"
-        subtittleHead="Completa el formulario para registrarte"
-        icon="/assets/user.svg"
-      />
+    
+      <form
+        className="form-login register-form-container"
+        onSubmit={handleSubmit}
+        noValidate
+      >
+        {/* Icono y título de cabecera */}
+        <HeadProfile
+          titleHead="Crear Cuenta"
+          subtittleHead="Completa el formulario para registrarte"
+          icon="/assets/user.svg"
+        />
 
-      <div className="register-form-columns">
-        <div className="register-form-column">
-          <div className="container-icons-input">
-            <input
-              type="text"
-              name="nombres"
-              placeholder="Nombres"
-              value={formData.nombres}
-              onChange={handleChange}
-              className={`input-input${getInputClass("nombres")}`}
-              required
-            />
-          </div>
-          {errors.nombres && (
-            <div className="error-message">{errors.nombres}</div>
-          )}
+        <div className="register-form-columns">
+          <div className="register-form-column">
+            <div className="container-icons-input">
+              <input
+                type="text"
+                name="nombres"
+                placeholder="Nombres"
+                value={formData.nombres}
+                onChange={handleChange}
+                className={`input-input${getInputClass("nombres")}`}
+                required
+              />
+            </div>
+            {errors.nombres && (
+              <div className="error-message">{errors.nombres}</div>
+            )}
 
-          <div className="container-icons-input">
-            <input
-              type="text"
-              name="apellidos"
-              placeholder="Apellidos"
-              value={formData.apellidos}
-              onChange={handleChange}
-              className={`input-input${getInputClass("apellidos")}`}
-              required
-            />
-          </div>
-          {errors.apellidos && (
-            <div className="error-message">{errors.apellidos}</div>
-          )}
+            <div className="container-icons-input">
+              <input
+                type="text"
+                name="apellidos"
+                placeholder="Apellidos"
+                value={formData.apellidos}
+                onChange={handleChange}
+                className={`input-input${getInputClass("apellidos")}`}
+                required
+              />
+            </div>
+            {errors.apellidos && (
+              <div className="error-message">{errors.apellidos}</div>
+            )}
 
-          <div className="container-icons-input">
-            <input
-              type="text"
-              name="direccion"
-              placeholder="Dirección"
-              value={formData.direccion}
-              onChange={handleChange}
-              className={`input-input${getInputClass("direccion")}`}
-              required
-            />
+            <div className="container-icons-input">
+              <input
+                type="text"
+                name="direccion"
+                placeholder="Dirección"
+                value={formData.direccion}
+                onChange={handleChange}
+                className={`input-input${getInputClass("direccion")}`}
+                required
+              />
+            </div>
+            {errors.direccion && (
+              <div className="error-message">{errors.direccion}</div>
+            )}
           </div>
-          {errors.direccion && (
-            <div className="error-message">{errors.direccion}</div>
-          )}
+
+          <div className="register-form-column">
+            <div className="container-icons-input">
+              <input
+                type="email"
+                name="email"
+                placeholder="Correo electrónico"
+                value={formData.email}
+                onChange={handleChange}
+                className={`input-email-user${getInputClass("email")}`}
+                required
+              />
+            </div>
+            {errors.email && (
+              <div className="error-message">{errors.email}</div>
+            )}
+
+            <div className="container-icons-input">
+              <input
+                type="text"
+                name="telefono"
+                placeholder="Teléfono"
+                value={formData.telefono}
+                onChange={handleChange}
+                className={`input-input${getInputClass("telefono")}`}
+                required
+              />
+            </div>
+            {errors.telefono && (
+              <div className="error-message">{errors.telefono}</div>
+            )}
+
+            <div className="container-icons-input">
+              <input
+                type="password"
+                name="password"
+                placeholder="Contraseña"
+                value={formData.password}
+                onChange={handleChange}
+                className={`input-input${getInputClass("password")}`}
+                required
+              />
+            </div>
+            {errors.password && (
+              <div className="error-message">{errors.password}</div>
+            )}
+
+            <div className="container-icons-input">
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirmar contraseña"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`input-input${getInputClass("confirmPassword")}`}
+                required
+              />
+            </div>
+            {errors.confirmPassword && (
+              <div className="error-message">{errors.confirmPassword}</div>
+            )}
+          </div>
         </div>
 
-        <div className="register-form-column">
-          <div className="container-icons-input">
-            <input
-              type="email"
-              name="email"
-              placeholder="Correo electrónico"
-              value={formData.email}
-              onChange={handleChange}
-              className={`input-email-user${getInputClass("email")}`}
-              required
-            />
+        {errors.general && (
+          <div className="error-message" style={{ textAlign: "center" }}>
+            {errors.general}
           </div>
-          {errors.email && <div className="error-message">{errors.email}</div>}
-
-          <div className="container-icons-input">
-            <input
-              type="text"
-              name="telefono"
-              placeholder="Teléfono"
-              value={formData.telefono}
-              onChange={handleChange}
-              className={`input-input${getInputClass("telefono")}`}
-              required
-            />
+        )}
+        {success && (
+          <div className="success-message">
+            ¡Registro exitoso! Redirigiendo...
           </div>
-          {errors.telefono && (
-            <div className="error-message">{errors.telefono}</div>
-          )}
+        )}
 
-          <div className="container-icons-input">
-            <input
-              type="password"
-              name="password"
-              placeholder="Contraseña"
-              value={formData.password}
-              onChange={handleChange}
-              className={`input-input${getInputClass("password")}`}
-              required
-            />
-          </div>
-          {errors.password && (
-            <div className="error-message">{errors.password}</div>
-          )}
-
-          <div className="container-icons-input">
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirmar contraseña"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`input-input${getInputClass("confirmPassword")}`}
-              required
-            />
-          </div>
-          {errors.confirmPassword && (
-            <div className="error-message">{errors.confirmPassword}</div>
-          )}
-        </div>
-      </div>
-
-      {errors.general && (
-        <div className="error-message" style={{ textAlign: "center" }}>
-          {errors.general}
-        </div>
-      )}
-      {success && (
-        <div className="success-message">
-          ¡Registro exitoso! Redirigiendo...
-        </div>
-      )}
-
-      <button type="submit" className="btn-login" disabled={loading}>
-        {loading ? "Registrando..." : "Registrarse"}
-      </button>
-    </form>
+        <button type="submit" className="btn-login" disabled={loading}>
+          {loading ? "Registrando..." : "Registrarse"}
+        </button>
+      </form>
+   
   );
 }
