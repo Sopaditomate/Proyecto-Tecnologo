@@ -89,10 +89,10 @@ CREATE TABLE user_account (
     reset_token_expires DATETIME NULL COMMENT 'Reset password expiration datetime',
     verify_token VARCHAR(512) NULL COMMENT 'Email verification token',
     verified TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Indicate if the account is verified',
+    is_logged_in BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Indicates if the user is currently logged in',
     id_state INT NOT NULL DEFAULT 1 COMMENT 'Reference to state catalog',
     FOREIGN KEY (id_state) REFERENCES state(id_state)
 ) AUTO_INCREMENT = 700000;
-
 
 
 CREATE TABLE user_role (
@@ -636,6 +636,8 @@ ALTER TABLE user_account
 ADD COLUMN verified TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Indicate if the account is verified';
 
 ALTER TABLE catalog ADD CONSTRAINT uq_catalog_id_product UNIQUE (id_product);
+
+ALTER TABLE user_account ADD COLUMN is_logged_in BOOLEAN DEFAULT FALSE;
 
 
 /////////////////////////////////////////////////////////////////////////////////
