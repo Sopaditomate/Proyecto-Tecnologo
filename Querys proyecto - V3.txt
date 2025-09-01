@@ -578,15 +578,12 @@ INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES
 INSERT INTO recipe (id_product, id_material, quantity_required, id_state) VALUES (1200006, 1400006, 0.02, 1);-- Levadura Seca
 
 
-
-//falta terminar la logica
 -- Inserciones para producción (solo admin - 700002)
 INSERT INTO production (total_products, id_production_status)
 VALUES 
 (90, 600000),  -- Producción en curso
 (150, 600001); -- Producción finalizada
 
-//lo mismo aqui
 -- Detalles para producción 1800000 (en curso)
 INSERT INTO production_detail (id_production, id_product, planned_quantity)
 VALUES
@@ -600,6 +597,14 @@ VALUES
 (1800001, 1200003, 50), -- Pan Blanco
 (1800001, 1200004, 50), -- Focaccia
 (1800001, 1200005, 50); -- Ciabatta
+
+
+INSERT INTO production_movement_type (name, description)
+VALUES
+('Entrada', 'Registro de nueva producción con sus detalles'),
+('Salida', 'Finalización de una producción'),
+('Reactivación', 'Reapertura de una producción finalizada'),
+('Cancelación', 'Cancelación de una producción y sus detalles');
 
 
 
@@ -926,7 +931,6 @@ WHERE (u.id_state = 1 OR u.id_state = 2)
   AND r.id_state = 1
   AND d.id_state = 1;
 
-
 CREATE OR REPLACE VIEW vw_active_get_client_id AS
 SELECT 
     id_user AS ID_CLIENTE
@@ -1011,6 +1015,90 @@ FROM product p
 JOIN product_type t ON p.id_product_type = t.id_product_type
 WHERE (p.id_state = 1 OR p.id_state = 2)
   AND (t.id_state = 1 OR t.id_state = 2);
+
+
+-- Vista para producciones activas
+CREATE OR REPLACE VIEW vw_get_active_production AS
+SELECT 
+    p.id_production,
+    p.start_datetime,
+    p.end_datetime,
+    p.total_products,
+    ps.name AS production_status,
+    p.id_user
+FROM production p
+JOIN production_status ps ON p.id_production_status = ps.id_production_status
+WHERE 
+    p.id_state = 1 AND
+    ps.id_state = 1;
+
+-- Vista para detalles activos de producción
+CREATE OR REPLACE VIEW vw_get_active_production_detail AS
+SELECT 
+    pd.id_production,
+    pd.id_product,
+    pr.name AS product_name,
+    pd.planned_quantity
+FROM production_detail pd
+JOIN product pr ON pr.id_product = pd.id_product
+WHERE 
+    pd.id_state = 1 AND
+    pr.id_state = 1;
+
+
+CREATE OR REPLACE VIEW vw_get_production_status AS
+SELECT 
+    id_production_status,
+    name
+FROM 
+    production_status
+WHERE 
+    id_state = 1;
+
+
+CREATE OR REPLACE VIEW vw_production_report AS
+SELECT 
+    p.id_production        AS id_produccion,
+    p.start_datetime       AS fecha_inicio,
+    p.end_datetime         AS fecha_fin,
+    p.total_products       AS total_productos,
+    pd.id_product          AS id_producto,
+    pr.name                AS nombre_producto,
+    pd.planned_quantity    AS cantidad_planeada
+FROM production p
+INNER JOIN production_detail pd 
+    ON p.id_production = pd.id_production
+INNER JOIN product pr 
+    ON pd.id_product = pr.id_product
+WHERE p.id_state = 1
+  AND pd.id_state = 1
+  AND pr.id_state = 1;
+
+
+CREATE OR REPLACE VIEW vw_production_history AS
+SELECT 
+    h.id_production_history AS id_historial,
+    h.id_production        AS id_produccion,
+    p.start_datetime       AS fecha_inicio,
+    p.end_datetime         AS fecha_fin,
+    p.total_products       AS total_productos,
+    h.id_product           AS id_producto,
+    pr.name                AS nombre_producto,
+    h.quantity             AS cantidad,
+    mt.name                AS tipo_movimiento,
+    mt.description         AS descripcion_movimiento,
+    h.movement_datetime    AS fecha_movimiento
+FROM production_history h
+INNER JOIN production p 
+    ON h.id_production = p.id_production
+INNER JOIN product pr 
+    ON h.id_product = pr.id_product
+INNER JOIN production_movement_type mt 
+    ON h.id_production_movement_type = mt.id_production_movement_type
+WHERE mt.id_state = 1
+  AND pr.id_state = 1
+ORDER BY h.movement_datetime DESC;
+
 
 -------------------------------------PROCEDURES----------------------------------
 
@@ -2262,6 +2350,196 @@ END //
 
 DELIMITER ;
 
+////PROCEDIMIENTOS DE PRODUCCION Y SI, TIENE LLAVES COMPUESTAS
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_insert_production(
+    IN p_total_products INT,
+    IN p_id_production_status INT
+)
+BEGIN
+    INSERT INTO production (total_products, id_production_status)
+    VALUES (p_total_products, p_id_production_status);
+
+    SELECT LAST_INSERT_ID() AS id_production;
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_insert_production_detail(
+    IN p_id_production INT,
+    IN p_id_product INT,
+    IN p_planned_quantity INT
+)
+BEGIN
+    INSERT INTO production_detail (id_production, id_product, planned_quantity)
+    VALUES (p_id_production, p_id_product, p_planned_quantity);
+END $$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_update_production_status(
+    IN p_id_production INT,
+    IN p_new_status INT
+)
+BEGIN
+    -- Verificar si el nuevo estado es válido
+    IF p_new_status NOT IN (600000, 600001) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid status. Only "En Producción" (600000) and "Finalizado" (600001) are allowed';
+    END IF;
+
+    -- Si el estado es "Finalizado" (600001), actualizar la fecha de fin
+    IF p_new_status = 600001 THEN
+        UPDATE production
+        SET 
+            id_production_status = p_new_status,
+            end_datetime = NOW()  -- Registrar la fecha de finalización
+        WHERE id_production = p_id_production AND id_production_status = 600000;  -- Solo si está en "En Producción"
+        
+        IF ROW_COUNT() = 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Production not found or already finished';
+        END IF;
+    
+    -- Si el estado es "En Producción" (600000), permitir volver a este estado desde "Finalizado"
+    ELSEIF p_new_status = 600000 THEN
+        UPDATE production
+        SET 
+            id_production_status = p_new_status,
+            end_datetime = NULL  -- Limpiar la fecha de fin si se reactiva la producción
+        WHERE id_production = p_id_production AND id_production_status = 600001;  -- Solo si está en "Finalizado"
+
+        IF ROW_COUNT() = 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Production not found or not finalized';
+        END IF;
+    END IF;
+    
+END $$
+
+DELIMITER ;
+
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_production_detail(
+    IN p_id_production INT,
+    IN p_id_product INT
+)
+BEGIN
+    UPDATE production_detail
+    SET id_state = 3
+    WHERE id_production = p_id_production AND id_product = p_id_product;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Production detail not found';
+    END IF;
+END $$
+
+DELIMITER ;
+
+//para validaciones produccion
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_calculate_max_production(IN p_id_product INT)
+BEGIN
+    SELECT 
+        r.id_product,
+        p.name AS product_name,
+        MIN(FLOOR(i.quantity / r.quantity_required)) AS max_producible
+    FROM recipe r
+    JOIN product p ON p.id_product = r.id_product
+    JOIN inventory i ON i.id_material = r.id_material
+    WHERE r.id_product = p_id_product
+    GROUP BY r.id_product, p.name;
+END$$
+
+DELIMITER ;
+
+
+//nunca se uso el siguiente SP - NUSP
+DELIMITER $$
+
+CREATE PROCEDURE sp_materials_needed(
+    IN p_id_product INT,
+    IN p_quantity INT
+)
+BEGIN
+    SELECT 
+        r.id_material,
+        m.name AS material_name,
+        (r.quantity_required * p_quantity) AS required,
+        i.quantity AS available,
+        GREATEST((r.quantity_required * p_quantity) - i.quantity, 0) AS missing
+    FROM recipe r
+    JOIN raw_material m ON m.id_material = r.id_material
+    JOIN inventory i ON i.id_material = r.id_material
+    WHERE r.id_product = p_id_product;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_check_missing_materials (
+    IN p_id_product INT,
+    IN p_requested_qty INT
+)
+BEGIN
+    SELECT 
+        r.id_material,
+        rm.name AS material_name,
+        (r.quantity_required * p_requested_qty) AS required,
+        IFNULL(i.quantity, 0) AS available,
+        GREATEST((r.quantity_required * p_requested_qty) - IFNULL(i.quantity, 0), 0) AS missing
+    FROM recipe r
+    JOIN raw_material rm ON rm.id_material = r.id_material
+    LEFT JOIN inventory i ON i.id_material = r.id_material
+    WHERE r.id_product = p_id_product;
+END$$
+
+DELIMITER ;
+
+//filtrado de productos con receta
+DROP PROCEDURE IF EXISTS sp_get_products_with_recipe;
+DELIMITER $$
+CREATE PROCEDURE sp_get_products_with_recipe()
+BEGIN
+    SELECT DISTINCT
+        p.id_product,
+        p.name
+    FROM product p
+    INNER JOIN recipe r 
+        ON p.id_product = r.id_product
+    WHERE p.id_state = 1
+      AND r.id_state = 1;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_production (
+    IN p_id_production INT
+)
+BEGIN
+    UPDATE production
+    SET id_state = 3
+    WHERE id_production = p_id_production;
+
+    IF ROW_COUNT() = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Production not found';
+    END IF;
+END $$
+
+DELIMITER ;
 
 
 -------------------------------------TRIGGERS------------------------------------
@@ -2720,7 +2998,92 @@ END;
 
 DELIMITER ;
 
+DELIMITER //
+
+CREATE TRIGGER trg_production_detail_insert
+AFTER INSERT ON production_detail
+FOR EACH ROW
+BEGIN
+    INSERT INTO production_history (
+        id_production,
+        id_product,
+        quantity,
+        id_production_movement_type,
+        id_state
+    )
+    VALUES (
+        NEW.id_production,
+        NEW.id_product,
+        NEW.planned_quantity,
+        1, -- 'Entrada'
+        NEW.id_state
+    );
+END;
+//
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE TRIGGER trg_production_update
+AFTER UPDATE ON production
+FOR EACH ROW
+BEGIN
+    IF OLD.id_production_status <> NEW.id_production_status THEN
+        IF NEW.id_production_status = 600000 THEN -- En Producción (reactivación)
+            INSERT INTO production_history (
+                id_production, id_product, quantity, id_production_movement_type, id_state
+            )
+            SELECT 
+                NEW.id_production,
+                pd.id_product,
+                pd.planned_quantity,
+                3, -- 'Reactivación'
+                NEW.id_state
+            FROM production_detail pd
+            WHERE pd.id_production = NEW.id_production;
+
+        ELSEIF NEW.id_production_status = 600001 THEN -- Finalizado
+            INSERT INTO production_history (
+                id_production, id_product, quantity, id_production_movement_type, id_state
+            )
+            SELECT 
+                NEW.id_production,
+                pd.id_product,
+                pd.planned_quantity,
+                2, -- 'Salida'
+                NEW.id_state
+            FROM production_detail pd
+            WHERE pd.id_production = NEW.id_production;
+        END IF;
+    END IF;
+END;
+//
+
+DELIMITER ;
 
 
+DELIMITER //
 
+CREATE TRIGGER trg_production_cancel
+AFTER UPDATE ON production
+FOR EACH ROW
+BEGIN
+    IF OLD.id_state <> NEW.id_state AND NEW.id_state = 3 THEN
+        INSERT INTO production_history (
+            id_production, id_product, quantity, id_production_movement_type, id_state
+        )
+        SELECT 
+            NEW.id_production,
+            pd.id_product,
+            pd.planned_quantity,
+            4, -- ID de 'Cancelación'
+            NEW.id_state
+        FROM production_detail pd
+        WHERE pd.id_production = NEW.id_production;
+    END IF;
+END;
+//
+
+DELIMITER ;
 

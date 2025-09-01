@@ -91,7 +91,12 @@ import userProfileRoutes from "./routes/userProfileRoutes.js";
 import GraficRoutes from "./routes/GraficRoutes.js";
 import orderAdminRoutes from "./routes/orderAdminRoutes.js";
 
-app.use("/api/grafic", GraficRoutes);
+import productionRoutes from "./routes/productionRoutes.js";
+import production_pdf from "../views/pages/admin/production/production_pdf.js";
+
+
+
+app.use("/api/grafic",GraficRoutes);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
@@ -108,11 +113,14 @@ app.use("/api/productos_crud", productAdminRoutes);
 app.use("/api/export/", product_pdf);
 app.use("/api/export/", inventario_pdf);
 app.use("/api/export/", receta_pdf);
+app.use("/api/export/", production_pdf);
 
 app.use("/api/user", userProfileRoutes);
 app.use("/api/recetas_crud", recetaRoutes);
 app.use("/api/inventario", inventoryRoutes);
 app.use("/api/pedidos", orderAdminRoutes);
+// a probar esta
+app.use("/api/produccion", productionRoutes);
 
 // Configurar Express para servir archivos estáticos del frontend
 const __filename = fileURLToPath(import.meta.url);
@@ -122,7 +130,8 @@ app.use(express.static(path.join(__dirname, "../dist")));
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../dist/index.html"));
-});
+})
+
 
 // Manejo de errores
 app.use((err, req, res, next) => {

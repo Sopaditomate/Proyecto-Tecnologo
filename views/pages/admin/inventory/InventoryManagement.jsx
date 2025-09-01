@@ -10,7 +10,6 @@ import DataTable from "../../../components/table-components/DataTable";
 import ExpandableText from "../../../components/table-components/ExpandableText";
 import "../../../components/table-components/table-components.css";
 
-
 const InventoryManagement = () => {
   const [inventory, setInventory] = useState([]);
   const [filteredInventory, setFilteredInventory] = useState([]);
@@ -157,7 +156,7 @@ const InventoryManagement = () => {
       Cell: ({ row }) => (
         <div
           className="d-flex gap-2"
-          style={{ justifyContent: "space-around" }}
+          style={{ justifyContent: "center" }}
         >
           <Button
             variant="warning"
