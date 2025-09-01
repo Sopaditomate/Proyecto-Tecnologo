@@ -45,7 +45,6 @@ export function AdminDashboard() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
 
-<<<<<<< HEAD
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -55,14 +54,6 @@ export function AdminDashboard() {
     if (!isAdmin) {
       navigate("/catalogo");
       return;
-=======
-  // Redirect if not authenticated or not admin
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    } else if (!isAdmin) {
-      navigate("/catalogo");
->>>>>>> produccion
     }
   }, [isAuthenticated, isAdmin, navigate]);
 
@@ -71,7 +62,6 @@ export function AdminDashboard() {
     navigate("/login");
   };
 
-<<<<<<< HEAD
   const handleCardClick = (cardId) => {
   const card = ADMIN_CARDS.find((c) => c.id === cardId);
   if (card?.link) {
@@ -83,15 +73,12 @@ export function AdminDashboard() {
 
 
   // Early return si no está autenticado o no es admin
-=======
->>>>>>> produccion
   if (!isAuthenticated || !isAdmin) {
     return null;
   }
 
   return (
     <div className="admin-dashboard">
-<<<<<<< HEAD
       <Header user={user} onLogout={handleLogout} />
       <main className="admin-content">
         <AdminCards cards={ADMIN_CARDS} onCardClick={handleCardClick} />
@@ -205,78 +192,3 @@ function ChartsSection() {
 }
 
 export default AdminDashboard;
-=======
-      <div className="admin-header">
-        <h1>Panel de Administrador</h1>
-        <div className="admin-user-info">
-          <span>
-            Bienvenido, {user.nombres} {user.apellidos}
-          </span>
-          <button onClick={handleLogout} className="logout-button">
-            Cerrar Sesión
-          </button>
-        </div>
-      </div>
-
-      <div className="admin-content">
-        <div className="admin-welcome">
-          <h2>Estás en el panel de administrador</h2>
-          <p>Desde aquí puedes gestionar todos los aspectos de la panadería.</p>
-        </div>
-
-        <div className="admin-cards">
-          <div className="admin-card">
-            <h3>Productos</h3>
-            <p>Gestiona el catálogo de productos</p>
-            <button className="admin-card-button">Ver Productos</button>
-          </div>
-
-
-
-          <div className="admin-card">
-            <h3>Pedidos</h3>
-            <p>Administra los pedidos de los clientes</p>
-            <button className="admin-card-button">Ver Pedidos</button>
-          </div>
-
-          <div className="admin-card">
-            <h3>Inventario</h3>
-            <p>Controla el inventario de materias primas</p>
-            <button className="admin-card-button">Ver Inventario</button>
-          </div>
-
-          <div className="admin-card">
-            <h3>Usuarios</h3>
-            <p>Gestiona las cuentas de usuarios</p>
-            <button className="admin-card-button">Ver Usuarios</button>
-          </div>
-        </div>
-
-        <div className="admin-chart-section">
-          <InventoryChart order="desc" title="Stock Actual por Materia Prima" />
-          <InventoryChart order="asc" title="Materiales Más Escasos" />
-        </div>
-
-      </div>
-
-
-      <div className="admin-chart-section">
-        <h3>Top Productos por Precio</h3>
-        <TopProductsChart />
-      </div>
-      <div className="admin-chart-section">
-        <h3>Top Productos por rating</h3>
-        <TopRatingChart />
-      </div>
-
-   <div className="admin-chart-section">
-        <h3>Top Productos por state</h3>
-        <States />
-      </div>
-    </div >
-
-
-
-  );
-}
->>>>>>> produccion
