@@ -329,11 +329,12 @@ export const AdminProductions = () => {
         const prod = row.original;
 
         return (
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2" style={{ justifyContent: "center" }}>
             <Button
               size="sm"
               variant="primary"
               onClick={() => navigate(`/productions/${prod.id_production}`)}
+              className="action-btn"
             >
               Detalles
             </Button>
@@ -343,6 +344,7 @@ export const AdminProductions = () => {
                 size="sm"
                 variant="success"
                 onClick={() => handleFinishProduction(prod.id_production)}
+                className="action-btn"
               >
                 Finalizar
               </Button>
@@ -352,6 +354,7 @@ export const AdminProductions = () => {
               variant="danger"
               size="sm"
               onClick={() => deleteProduction(prod.id_production)}
+              className="action-btn"
             >
               Eliminar
             </Button>
@@ -361,6 +364,7 @@ export const AdminProductions = () => {
                 size="sm"
                 variant="info"
                 onClick={() => handleReactivateProduction(prod.id_production)}
+                
               >
                 Reactivar Producción
               </Button>
@@ -451,6 +455,7 @@ export const AdminProductions = () => {
         showExport={false}
         onAdd={openCreateModal}
         addLabel="Nueva Producción"
+        uploadLabel="Cargar CSV"
         showAdd={true}
         customActions={
           <Button

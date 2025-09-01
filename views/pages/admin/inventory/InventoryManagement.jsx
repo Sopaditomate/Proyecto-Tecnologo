@@ -155,7 +155,7 @@ const InventoryManagement = () => {
       Cell: ({ row }) => (
         <div
           className="d-flex gap-2"
-          style={{ justifyContent: "space-around" }}
+          style={{ justifyContent: "center" }}
         >
           <Button
             variant="warning"
