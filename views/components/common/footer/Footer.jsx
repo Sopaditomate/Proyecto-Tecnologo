@@ -14,7 +14,7 @@ const Footer = forwardRef((props, ref) => {
   const { isAuthenticated } = useAuth();
 
   // Rutas donde NO se debe mostrar el footer
-  const hideFooterRoutes = ["/login", "/register", "/reset-password"];
+  const hideFooterRoutes = ["/login", "/register", "/reset-password","/forgot-password"];
 
   const handleGoToCatalog = () => {
   navigate("/catalogo", { state: { scrollTo: "products" } });
