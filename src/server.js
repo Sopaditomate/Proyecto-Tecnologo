@@ -24,6 +24,7 @@ const allowedOrigins = [
   "http://127.0.0.1:5173",
   "https://proyecto-tecnologo-lovebites.up.railway",
   "https://proyecto-tecnologo-lovebites.up.railway.app",
+  "proyecto-tecnologo-production-e65d.up.railway.app"
 ];
 
 // Configuración de CORS
