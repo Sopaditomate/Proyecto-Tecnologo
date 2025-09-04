@@ -24,6 +24,11 @@ const TableControls = ({
   exportOptions = [],
   loading = false,
 }) => {
+  const hasQuickActions =
+    (showAdd && onAdd) ||
+    (showHistory && onHistory) ||
+    (showUpload && onUpload) ||
+    (customActions && React.Children.count(customActions) > 0);
   return (
     <div className="controls-section">
       {/* Sección de Búsqueda, Filtros y Limpiar */}
@@ -97,10 +102,12 @@ const TableControls = ({
             className="d-flex flex-column align-items-center align-items-lg-start"
           >
             <div className="quick-actions-section w-100">
-              <h6 className="d-flex justify-content-center justify-content-lg-start">
-                <span className="me-2 fs-4"></span>
-                Acciones Rápidas:
-              </h6>
+              {hasQuickActions && (
+                <h6 className="d-flex justify-content-center justify-content-lg-start">
+                  <span className="me-2 fs-4"></span>
+                  Acciones Rápidas:
+                </h6>
+              )}
               <div className="quick-actions-compact d-flex gap-2 flex-wrap justify-content-center justify-content-lg-start">
                 {showAdd && onAdd && (
                   <Button
@@ -157,6 +164,7 @@ const TableControls = ({
                 {customActions}
               </div>
             </div>
+
           </Col>
 
           {/* Sección de Exportación */}

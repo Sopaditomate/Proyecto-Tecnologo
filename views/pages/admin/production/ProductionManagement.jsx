@@ -6,6 +6,8 @@ import TableContainer from "../../../components/table-components/TableContainer"
 import { Modal, Form, Button } from "react-bootstrap";
 import DataTable from "../../../components/table-components/DataTable";
 import { useNavigate } from "react-router-dom";
+import TablePagination from "../../../components/table-components/TablePagination";
+
 
 export const AdminProductions = () => {
   const [productions, setProductions] = useState([]);
@@ -361,10 +363,10 @@ export const AdminProductions = () => {
 
             {prod.production_status === "Finalizado" && reactivateMode && (
               <Button
-                size="sm"
-                variant="info"
+                variant="success"
+                className="action-btn"
+                id="action-btn"
                 onClick={() => handleReactivateProduction(prod.id_production)}
-                
               >
                 Reactivar Producción
               </Button>
@@ -462,6 +464,7 @@ export const AdminProductions = () => {
             variant={reactivateMode ? "danger" : "info"}
             onClick={() => setReactivateMode(!reactivateMode)}
             size="sm"
+            className="reactivate-btn"
           >
             {reactivateMode ? "Salir de Reactivar" : "Reactivar"}
           </Button>
@@ -625,6 +628,8 @@ export const AdminProductions = () => {
               itemsPerPage={historialItemsPerPage}
             />
           )}
+
+
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseHistorialModal}>
@@ -637,3 +642,6 @@ export const AdminProductions = () => {
 };
 
 export default AdminProductions;
+
+
+

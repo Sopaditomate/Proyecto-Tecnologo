@@ -9,6 +9,8 @@ import TableContainer from "../../../components/table-components/TableContainer"
 import DataTable from "../../../components/table-components/DataTable";
 import ExpandableText from "../../../components/table-components/ExpandableText";
 import "../../../components/table-components/table-components.css";
+import TablePagination from "../../../components/table-components/TablePagination";
+
 
 const InventoryManagement = () => {
   const [inventory, setInventory] = useState([]);
@@ -32,6 +34,8 @@ const InventoryManagement = () => {
   const [historialCurrentPage, setHistorialCurrentPage] = useState(1);
   const historialItemsPerPage = 5;
   const VITE_API_URL = import.meta.env.VITE_API_URL 
+
+  
 
   useEffect(() => {
     fetchInventory();
@@ -57,6 +61,7 @@ const InventoryManagement = () => {
       setLoading(false);
     }
   };
+  
 
   const fetchUnidades = async () => {
     try {
@@ -91,6 +96,8 @@ const InventoryManagement = () => {
     }
   };
 
+  
+
   // Función para filtrar inventario
   const filterInventory = () => {
     let filtered = inventory;
@@ -117,6 +124,8 @@ const InventoryManagement = () => {
     setFilteredInventory(filtered);
     setCurrentPage(1); // Reset to first page when filtering
   };
+
+  
 
   // Configuración de columnas para inventario
   const inventoryColumns = [
@@ -468,11 +477,6 @@ const InventoryManagement = () => {
             : "No hay insumos en el inventario"
         }
         // Pagination props
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        totalItems={filteredInventory.length}
-        itemsPerPage={itemsPerPage}
       />
 
       {/* Modal para agregar/editar insumo */}
@@ -590,6 +594,15 @@ const InventoryManagement = () => {
             loading={false}
             emptyMessage="No hay registros en el historial"
           />
+            {historialTotalPages > 1 && (
+                      <TablePagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        totalItems={filteredInventory.length}
+                        itemsPerPage={itemsPerPage}
+                      />
+                    )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseHistorialModal}>

@@ -2,15 +2,16 @@
 
 "use client";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams,} from "react-router-dom";
 import axios from "axios";
 import TableContainer from "../../../components/table-components/TableContainer";
 import { Button } from "react-bootstrap";
 import Swal from "sweetalert2";
+import "./Productions.css"
 
 const AdminProductionDetails = () => {
   const { ProductionId } = useParams();
-  const navigate = useNavigate();
+  
   const [productionDetails, setProductionDetails] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -127,20 +128,17 @@ const AdminProductionDetails = () => {
 
   return (
     <div>
+      
       <TableContainer
+      
         title={`Detalles de Producción #${ProductionId}`}
+        btnBack
         subtitle="Lista de productos planificados en esta producción"
         columns={columns}
         data={productionDetails}
         loading={loading}
         emptyMessage="No se encontraron detalles para esta producción"
-      />
-
-      <div className="mt-3">
-        <Button variant="secondary" onClick={() => navigate(-1)}>
-          Volver
-        </Button>
-      </div>
+      />   
     </div>
   );
 };

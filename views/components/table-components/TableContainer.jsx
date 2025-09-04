@@ -3,6 +3,8 @@ import { Container } from "react-bootstrap";
 import TableControls from "./TableControls";
 import DataTable from "./DataTable";
 import TablePagination from "./TablePagination";
+import { useNavigate } from "react-router-dom";
+
 
 const TableContainer = ({
   title,
@@ -42,17 +44,27 @@ const TableContainer = ({
   itemsPerPage = 10,
   showPagination = true,
   className = "",
+  btnBack,
 }) => {
+  const navigate = useNavigate();
   return (
     <Container fluid className={`mt-4 ${className}`}>
       {title && (
-        <div className="mb-4">
+        <div>
+          {btnBack && (
+            <button className="btn-back-datatables" onClick={() => navigate(-1)}
+            >
+              Volver
+            </button>
+          )}
           <h2 className="text-3xl font-bold text-center text-brown-700">
             {title}
           </h2>
+
           {subtitle && (
             <p className="text-center text-muted mt-2">{subtitle}</p>
           )}
+
         </div>
       )}
 
