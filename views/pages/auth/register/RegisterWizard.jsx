@@ -85,7 +85,7 @@ const steps = [
 
 const STORAGE_KEY = "registerWizardData";
 
-export function RegisterWizard() {
+export function RegisterWizard({ onStepChange }) {
   // Cargar estado inicial desde localStorage si existe
   const getInitialState = () => {
     try {
@@ -132,6 +132,10 @@ export function RegisterWizard() {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (onStepChange) onStepChange(step);
+  }, [step, onStepChange]);
+
   // Guardar en localStorage cada vez que cambia algo importante
   useEffect(() => {
     localStorage.setItem(
@@ -167,7 +171,7 @@ export function RegisterWizard() {
   // Pantalla de pasos
   if (step === -1) {
     return (
-      <section className="register-page">
+      <section className="register-page-wizard">
         <h2
           className="ml-wizard-title"
           style={{ marginBottom: 24, textAlign: "center" }}

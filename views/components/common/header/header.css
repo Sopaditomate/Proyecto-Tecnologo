@@ -22,6 +22,12 @@
   justify-content: center;
   z-index: 9999;
 }
+.btn-login{
+    background: #f2e7ba;
+    position: relative;
+    color: black;
+    border-radius: 10px;
+}
 
 .logout-confirm-modal {
   background: #fff;

@@ -213,35 +213,40 @@ export function Header({
           >
             {isAuthenticated && renderUserProfile()}
             <div className={`cart-container ${toggle ? "disabled" : ""}`}>
-              {icon2 && link2 ? (
-                <Link to={link2} className="cart-link">
-                  <div className="cart-link">
-                    {icon2 === "/assets/shoppingcar.svg" && (
-                      <div className="cart-badge">{cartLength()}</div>
-                    )}
-                    <img
-                      src={icon2}
-                      className="shoppin-car-header"
-                      onClick={
-                        icon2 === "/assets/shoppingcar.svg"
-                          ? handleCartClick
-                          : null
-                      }
-                      id={toggle ? "disabled-logo" : ""}
-                      alt="Shopping Cart"
-                      tabIndex={0}
-                      aria-label="Abrir carrito"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ")
-                          handleCartClick(e);
-                      }}
-                    />
-                  </div>
-                </Link>
-              ) : (
-                <div></div>
-              )}
-            </div>
+  {icon2 ? (
+    link2 ? (
+      <Link to={link2} className="cart-link">
+        {typeof icon2 === "string" ? (
+          <div className="cart-link">
+            {icon2 === "/assets/shoppingcar.svg" && (
+              <div className="cart-badge">{cartLength()}</div>
+            )}
+            <img
+              src={icon2}
+              className="shoppin-car-header"
+              onClick={
+                icon2 === "/assets/shoppingcar.svg" ? handleCartClick : null
+              }
+              id={toggle ? "disabled-logo" : ""}
+              alt="Icon"
+            />
+          </div>
+        ) : (
+          // icon2 como componente JSX
+          <div className="custom-icon">{icon2}</div>
+        )}
+      </Link>
+    ) : (
+      // Si no hay link2, solo renderiza el icono
+      typeof icon2 === "string" ? (
+        <img src={icon2} className="shoppin-car-header" alt="Icon" />
+      ) : (
+        <div className="custom-icon">{icon2}</div>
+      )
+    )
+  ) : null}
+</div>
+
           </div>
         </div>
       </div>

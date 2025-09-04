@@ -1691,21 +1691,6 @@ DELIMITER ;
 
 DELIMITER $$
 
-CREATE PROCEDURE sp_find_user_by_email (IN p_email VARCHAR(100))
-BEGIN
-    SELECT * 
-    FROM 
-        vw_active_find_user_by_email
-    WHERE 
-        email COLLATE utf8mb4_general_ci = p_email COLLATE utf8mb4_general_ci
-    LIMIT 1;
-END $$
-
-DELIMITER ;
-
-
-DELIMITER $$
-
 CREATE PROCEDURE sp_get_user_info (IN p_userId INT)
 BEGIN
     SELECT 
@@ -3088,4 +3073,48 @@ END;
 //
 
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS sp_find_user_by_email//
+
+CREATE PROCEDURE sp_find_user_by_email(
+IN `p_email` VARCHAR(100))
+BEGIN
+    SELECT 
+        ua.id_user AS ID_USUARIO,
+        ua.email AS USUARIO,
+        ua.password AS PASSWORD,
+        ua.id_state AS ESTADO,
+        ur.id_role AS ID_ROL
+    FROM
+        user_account ua
+    LEFT JOIN
+        user_role ur ON ua.id_user = ur.id_user
+    WHERE
+        ua.email COLLATE utf8mb4_general_ci = p_email COLLATE utf8mb4_general_ci
+        AND ua.id_state = 1
+    LIMIT 1;
+END //
+
+DELIMITER ;
+
+
+
+----------------------------------------
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS sp_set_logged_in //
+
+CREATE PROCEDURE sp_set_logged_in(
+    IN p_user_id INT,
+    IN p_is_logged_in BOOLEAN
+)
+BEGIN
+    UPDATE user_account
+    SET is_logged_in = p_is_logged_in
+    WHERE id_user = p_user_id;
+END //
+
+DELIMITER ;
+
+
 

@@ -35,7 +35,7 @@ import Profile from "../pages/userProfile/userProfile.jsx";
 import VerifyEmail from "../pages/userProfile/verifyEmail.jsx";
 
 // Componente de layout para las páginas
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.jsx";
 const PageLayout = ({ children, config }) => {
   const { isAdmin } = useAuth();
   const location = useLocation();
@@ -85,6 +85,7 @@ const PageLayout = ({ children, config }) => {
 
 // Definición de todas las rutas de la aplicación
 export function AppRoutes() {
+  const { isAuthenticated } = useAuth();
   return (
     <Routes>
       <Route
@@ -96,8 +97,10 @@ export function AppRoutes() {
               itemMenu: getMenuItems(),
               iconMenu: defaultIcons.iconMenu,
               icon1: defaultIcons.icon1,
-              icon2: "/assets/login.svg",
-              link2: "/login",
+              icon2: !isAuthenticated ? (
+                <button className="btn-login">Iniciar Sesión</button>
+              ) : null,
+              link2: !isAuthenticated ? "/login" : null,
             }}
           >
             <HomePage />

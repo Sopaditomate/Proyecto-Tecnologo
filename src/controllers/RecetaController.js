@@ -78,12 +78,13 @@ async DeleteRecetas(req, res) {
 
     async AddRecetas(req, res) {
         
-        const { ID_PRODUCTO, ID_MATERIAL, CANTIDAD_USAR } = req.body;
-        if (!ID_MATERIAL || !CANTIDAD_USAR) {
+        const { ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR } = req.body;
+        
+        if (!ID_MATERIA || !CANTIDAD_USAR) {
             return res.status(400).json({ error: "Faltan campos requeridos" });
         }
         try {
-            await RecetaModel.addReceta(ID_PRODUCTO, ID_MATERIAL, CANTIDAD_USAR);
+            await RecetaModel.addReceta(ID_PRODUCTO, ID_MATERIA, CANTIDAD_USAR);
             res.status(201).json({ message: "Receta agregada correctamente" });
         } catch (err) {
             console.error("Error al agregar receta", err);

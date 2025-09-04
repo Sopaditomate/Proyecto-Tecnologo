@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link,useLocation } from "react-router-dom";
 import "./home-page.css";
 
 export function HomePage() {
@@ -11,6 +11,18 @@ export function HomePage() {
   const heroRef = useRef(null);
   const missionRef = useRef(null);
   const processRef = useRef(null);
+
+  const location = useLocation(); // 👈 capturamos la navegación con state
+
+  // 👉 Scroll al cargar si viene "scrollTo" desde navigate()
+  useEffect(() => {
+    if (location.state?.scrollTo) {
+      const el = document.querySelector(`.${location.state.scrollTo}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }, [location]);
 
   // Configurar animaciones al hacer scroll
   useEffect(() => {

@@ -3,6 +3,13 @@
   box-sizing: border-box;
 }
 
+body.register-body {
+  display: flex;
+  height: auto;
+  justify-content: center;
+  align-items: center;
+}
+
 .ml-wizard-label-2 {
   color: #666;
   font-weight: 600;
@@ -16,17 +23,18 @@
 
 /* Sección principal del formulario */
 .register-page {
-  max-width: 520px;
-  min-height: auto;
-  margin: 10px auto;
-  padding: 0;
+  max-width: 400px;
+  height: auto;
   /* animation: fadeIn 0.5s ease; */ /* Animación opcional tal vez lo ponga */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 /* Card principal */
 .ml-wizard-card {
   border-radius: 6px;
-  max-width: 408px;
+  max-width: 350px;
   width: 100%;
 }
 
@@ -150,12 +158,12 @@
 /* Formulario de paso individual */
 .ml-wizard-form-ml {
   width: 100%;
+  min-width: 350px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   border: none;
   border-radius: 20px;
-  background-color: rgba(116, 115, 115, 0.041);
 }
 
 .ml-wizard-icon-big {
@@ -358,11 +366,18 @@
     padding: 16px 8px;
   }
 
+  .register-page {
+    margin: 20px auto;
+  }
+
+  .ml-wizard-form-ml {
+    padding: 20px;
+  }
+
   .ml-wizard-card {
     margin: 0;
     border-radius: 0;
     box-shadow: none;
-    background: #fff;
   }
 
   .ml-wizard-step-content {
@@ -403,12 +418,15 @@
   }
 
   #section-login.register-page {
-    max-width: 520px;
-    height: auto;
-    margin: 10px auto;
+    max-width: 360px;
+    min-height: 600px;
     padding: 0;
-    margin-top: 50px;
-    overflow-y: auto;
+    margin: 10px auto;
+    transition: min-height 0.3s ease;
+  }
+
+  #section-login.register-page.wizard-step-active {
+    min-height: auto;
   }
 }
 
@@ -439,6 +457,5 @@
     height: auto;
     margin: 10px auto;
     padding: 0;
-    margin-top: 50px;
   }
 }

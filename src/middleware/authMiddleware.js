@@ -1,11 +1,12 @@
 import jwt from "jsonwebtoken";
+import UserModel from "../models/UserModel.js";
 
 // Constantes de roles (mejora de la legibilidad)
 const ROLE_CLIENT = 100000;
 const ROLE_ADMIN = 100001;
 
 // Middleware para verificar token JWT
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   // Obtener token de las cookies o del header de autorización
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
@@ -21,6 +22,15 @@ const verifyToken = (req, res, next) => {
       token,
       process.env.JWT_SECRET || "your_jwt_secret"
     );
+
+    // Verificar si el usuario sigue logueado en la base de datos
+    const isLoggedIn = await UserModel.isUserLoggedIn(decoded.userId);
+    if (!isLoggedIn) {
+      return res.status(401).json({
+        message: "Sesión cerrada desde otro dispositivo",
+        code: "SESSION_CLOSED_ELSEWHERE",
+      });
+    }
 
     // Añadir información del usuario al objeto request
     req.user = {

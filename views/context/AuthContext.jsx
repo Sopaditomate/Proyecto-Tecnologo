@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
       } catch (error) {
         if (error.response && error.response.status === 401) {
           if (process.env.NODE_ENV === "development") {
-            console.warn("No autorizado. El usuario no está autenticado.");
+            //console.warn("No autorizado. El usuario no está autenticado.");
           }
           setUser(null);
         } else {

@@ -44,23 +44,28 @@ class AuthController {
   async login(req, res) {
     try {
       const { email, password } = req.body;
+      console.log("Intentando login con:", email);
 
-      console.log("Intento de login con email:", email);
-
-      // Buscar el usuario
       const user = await UserModel.findByEmail(email);
+      console.log("Usuario encontrado:", user);
       if (!user) {
-        console.log("Usuario no encontrado");
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
-      console.log("Usuario encontrado:", user);
-      // Verificar la contraseña (siempre usando bcrypt para mayor seguridad)
       const isPasswordValid = await bcrypt.compare(password, user.PASSWORD);
 
       if (!isPasswordValid) {
-        console.log("Contraseña inválida");
         return res.status(401).json({ message: "Credenciales inválidas" });
+      }
+
+      // Verificar si el usuario ya tiene una sesión activa
+      const isAlreadyLoggedIn = await UserModel.isUserLoggedIn(user.ID_USUARIO);
+
+      if (isAlreadyLoggedIn) {
+        return res.status(401).json({
+          message: "Credenciales inválidas",
+          code: "ADMIN_SESSION_EXISTS",
+        });
       }
 
       // Obtener información completa del usuario
@@ -84,11 +89,14 @@ class AuthController {
         { expiresIn: "24h" }
       );
 
+      // Marcar como logueado en la base de datos
+      await UserModel.setLoggedIn(user.ID_USUARIO, true);
+
       // Enviar respuesta con token y cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // solo en HTTPS en producción
-        sameSite: "lax", // O "strict" si necesitas mayor seguridad
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
         maxAge: 24 * 60 * 60 * 1000, // 24 horas
       });
 
@@ -98,7 +106,7 @@ class AuthController {
         user: {
           id: userInfo.ID_USUARIO,
           email: userInfo.USUARIO,
-          role: user.ID_ROL, // Enviar directamente el ID del rol
+          role: user.ID_ROL,
           roleInfo: {
             id: userInfo.ID_ROL,
             name: userInfo.ROL_NOMBRE,
@@ -110,17 +118,32 @@ class AuthController {
         token,
       });
     } catch (error) {
-      console.error("Error en el login:", error);
-      res
-        .status(500)
-        .json({ message: "Error en el servidor", error: error.message });
+      console.error("Error en login:", error);
+      res.status(500).json({ message: "Error en el servidor" });
     }
   }
 
-  // Cerrar sesión
+  // Logout
   async logout(req, res) {
+  try {
+    if (req.user.role === 100001) {
+      await UserModel.setAdminLoggedIn(req.user.userId, false);
+    } else {
+      await UserModel.setLoggedIn(req.user.userId, false);
+    }
+
     res.clearCookie("token");
     res.json({ success: true, message: "Sesión cerrada correctamente" });
+  } catch (error) {
+    console.error("Error en logout:", error);
+    res.status(500).json({ message: "Error al cerrar sesión" });
+  }
+}
+
+  // Validar email (método estático para usar en el frontend)
+  static validateEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
   }
 
   // Verificar estado de autenticación
@@ -221,7 +244,6 @@ class AuthController {
       });
     } catch (error) {
       console.error("Error en forgotPassword:", error);
-      
       res
         .status(500)
         .json({ message: "Error al enviar el correo de recuperación." });

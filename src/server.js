@@ -24,7 +24,7 @@ const allowedOrigins = [
   "http://127.0.0.1:5173",
   "https://proyecto-tecnologo-lovebites.up.railway",
   "https://proyecto-tecnologo-lovebites.up.railway.app",
-  "proyecto-tecnologo-production-e65d.up.railway.app"
+  "https://proyecto-tecnologo-bakingdata.up.railway.app"
 ];
 
 // Configuración de CORS
@@ -44,9 +44,9 @@ const initializeDatabase = async () => {
   console.log("🔌 Testing database connection...");
   const isConnected = await testConnection();
   if (!isConnected) {
-    console.error(
+    /*console.error(
       "❌ Failed to connect to the database. Please check your connection settings in .env"
-    );
+    );*/
     process.exit(1); //detiene el proceso si falla
   }
 };
@@ -131,12 +131,11 @@ app.use(express.static(path.join(__dirname, "../dist")));
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../dist/index.html"));
-})
-
+});
 
 // Manejo de errores
 app.use((err, req, res, next) => {
-  console.error("Error en el servidor:", err);
+  //console.error("Error en el servidor:", err);
   res.status(500).json({ error: "Error interno del servidor" });
 });
 
