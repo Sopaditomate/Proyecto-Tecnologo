@@ -13,7 +13,7 @@ router.get('/pdfreceta/:productId', async (req, res) => {
 
     // Query the view and filter by product ID
     const [rows] = await pool.query(
-      'SELECT * FROM vw_active_recipe_pdf WHERE ID_RECETA = ?',
+      'SELECT * FROM vw_active_recipe WHERE ID_RECETA = ?',
       [productId]  // Pass the productId as a parameter to the query
     );
 
@@ -45,7 +45,7 @@ router.get('/excelreceta/:productId', async (req, res) => {
 
     // Query the view and filter by product ID
     const [rows] = await pool.query(
-      'SELECT * FROM vw_active_recipe_pdf WHERE ID_RECETA = ?',
+      'SELECT * FROM vw_active_recipe WHERE ID_RECETA = ?',
       [productId]  // Pass the productId as a parameter to the query
     );
 

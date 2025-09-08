@@ -156,17 +156,6 @@ CREATE TABLE order_detail (
     FOREIGN KEY (id_state) REFERENCES state(id_state)
 ) AUTO_INCREMENT = 1300000;
 
-CREATE TABLE order_history (
-    id_order_history INT AUTO_INCREMENT PRIMARY KEY,
-    id_user INT NOT NULL,
-    id_order INT NOT NULL,
-    history_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    id_state INT NOT NULL DEFAULT 1,
-    FOREIGN KEY (id_user) REFERENCES user_account(id_user),
-    FOREIGN KEY (id_order) REFERENCES order_header(id_order),
-    FOREIGN KEY (id_state) REFERENCES state(id_state)
-) AUTO_INCREMENT = 2100000;
-
 CREATE TABLE raw_material (
     id_material INT AUTO_INCREMENT PRIMARY KEY,
     id_material_type INT NOT NULL,
@@ -670,13 +659,18 @@ WHERE inv.id_state = 1
   AND uni.id_state = 1
   AND typ.id_state = 1;
 
-CREATE VIEW vw_active_material_types AS
-SELECT id_type_material, name 
-FROM material_type 
-WHERE id_state = 1;
+CREATE OR REPLACE VIEW VW_ACTIVE_MATERIAL_TYPES AS
+SELECT 
+    ID_TIP_MATERIA   AS ID_TIP_MATERIA,
+    NOMBRE           AS NOMBRE
+FROM 
+    MATERIAL_TYPE
+WHERE 
+    ID_STATE = 1;
+
 
 CREATE VIEW vw_active_units AS
-SELECT id_unit, name 
+SELECT id_unit AS ID_UNIDAD, name AS NOMBRE 
 FROM unit 
 WHERE id_state = 1;
 
@@ -858,7 +852,7 @@ FROM
 JOIN 
     product p ON od.id_product = p.id_product
 WHERE 
-    od.id_state = 1; -- se queda asi de momento, pero esto hace que productos eliminados, se sigan viendo.
+    od.id_state = 1; 
 
 
 CREATE OR REPLACE VIEW vw_active_find_user_by_id AS
@@ -968,22 +962,6 @@ WHERE id_state = 1;
 
 
 CREATE OR REPLACE VIEW vw_active_recipe AS
-SELECT 
-    r.id_product AS ID_RECETA,
-    p.name AS NOMBRE_PROD,
-    m.name AS NOMBRE_MATE,
-    m.id_material AS ID_MATERIA,
-    r.quantity_required AS CANTIDAD_USAR
-FROM recipe r
-JOIN product p ON p.id_product = r.id_product
-JOIN raw_material m ON m.id_material = r.id_material
-WHERE 
-    r.id_state = 1
-    AND p.id_state = 1
-    AND m.id_state = 1;
-
-
-CREATE OR REPLACE VIEW vw_active_recipe_pdf AS
 SELECT 
     r.id_product AS ID_RECETA,
     p.name AS NOMBRE_PROD,
@@ -1299,16 +1277,6 @@ END //
 
 DELIMITER ;
 
-
-//ya no se va a usar de momento(temporalmente)
-DELIMITER //
-
-CREATE PROCEDURE sp_get_inventory_history()
-BEGIN
-    SELECT * FROM vw_active_inventory_history;
-END //
-
-DELIMITER ;
 
 
 DELIMITER //
@@ -2529,6 +2497,50 @@ END $$
 DELIMITER ;
 
 
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS sp_find_user_by_email//
+
+CREATE PROCEDURE sp_find_user_by_email(
+IN `p_email` VARCHAR(100))
+BEGIN
+    SELECT 
+        ua.id_user AS ID_USUARIO,
+        ua.email AS USUARIO,
+        ua.password AS PASSWORD,
+        ua.id_state AS ESTADO,
+        ur.id_role AS ID_ROL
+    FROM
+        user_account ua
+    LEFT JOIN
+        user_role ur ON ua.id_user = ur.id_user
+    WHERE
+        ua.email COLLATE utf8mb4_general_ci = p_email COLLATE utf8mb4_general_ci
+        AND ua.id_state = 1
+    LIMIT 1;
+END //
+
+DELIMITER ;
+
+
+
+DELIMITER //
+
+DROP PROCEDURE IF EXISTS sp_set_logged_in //
+
+CREATE PROCEDURE sp_set_logged_in(
+    IN p_user_id INT,
+    IN p_is_logged_in BOOLEAN
+)
+BEGIN
+    UPDATE user_account
+    SET is_logged_in = p_is_logged_in
+    WHERE id_user = p_user_id;
+END //
+
+DELIMITER ;
+
+
 -------------------------------------TRIGGERS------------------------------------
 
 DELIMITER //
@@ -2762,20 +2774,6 @@ FOR EACH ROW
 BEGIN
   SIGNAL SQLSTATE '45000'
   SET MESSAGE_TEXT = 'Deleting records from review is not allowed. Use id_state to deactivate.';
-END;
-//
-
-DELIMITER ;
-
-
-DELIMITER //
-
-CREATE TRIGGER trg_prevent_delete_order_history
-BEFORE DELETE ON order_history
-FOR EACH ROW
-BEGIN
-  SIGNAL SQLSTATE '45000'
-  SET MESSAGE_TEXT = 'Deleting records from order_history is not allowed. Use id_state to deactivate.';
 END;
 //
 
@@ -3072,49 +3070,7 @@ BEGIN
 END;
 //
 
-DELIMITER ;
 
-DROP PROCEDURE IF EXISTS sp_find_user_by_email//
-
-CREATE PROCEDURE sp_find_user_by_email(
-IN `p_email` VARCHAR(100))
-BEGIN
-    SELECT 
-        ua.id_user AS ID_USUARIO,
-        ua.email AS USUARIO,
-        ua.password AS PASSWORD,
-        ua.id_state AS ESTADO,
-        ur.id_role AS ID_ROL
-    FROM
-        user_account ua
-    LEFT JOIN
-        user_role ur ON ua.id_user = ur.id_user
-    WHERE
-        ua.email COLLATE utf8mb4_general_ci = p_email COLLATE utf8mb4_general_ci
-        AND ua.id_state = 1
-    LIMIT 1;
-END //
-
-DELIMITER ;
-
-
-
-----------------------------------------
-DELIMITER //
-
-DROP PROCEDURE IF EXISTS sp_set_logged_in //
-
-CREATE PROCEDURE sp_set_logged_in(
-    IN p_user_id INT,
-    IN p_is_logged_in BOOLEAN
-)
-BEGIN
-    UPDATE user_account
-    SET is_logged_in = p_is_logged_in
-    WHERE id_user = p_user_id;
-END //
-
-DELIMITER ;
 
 
 
