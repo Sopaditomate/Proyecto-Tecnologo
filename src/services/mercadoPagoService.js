@@ -1,6 +1,6 @@
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 
-const CLIENT_URL = process.env.CLIENT_URL;
+const VITE_API_URL = process.env.VITE_API_URL
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
@@ -97,13 +97,13 @@ export default {
       const preference = {
         items: preferenceItems,
         back_urls: {
-          success: `${CLIENT_URL}/payments/mercado-pago/success`,
-          failure: `${CLIENT_URL}/payments/mercado-pago/failure`,
-          pending: `${CLIENT_URL}/payments/mercado-pago/pending`,
+          success: `${VITE_API_URL}/payments/mercado-pago/success`,
+          failure: `${VITE_API_URL}/payments/mercado-pago/failure`,
+          pending: `${VITE_API_URL}/payments/mercado-pago/pending`,
         },
         auto_return: "approved",
         external_reference: orderId.toString(),
-        notification_url: `${CLIENT_URL}/payments/mercado-pago/webhook`,
+        notification_url: `${VITE_API_URL}/payments/mercado-pago/webhook`,
         expires: true,
         expiration_date_from: new Date().toISOString(),
         expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutos

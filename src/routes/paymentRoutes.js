@@ -55,7 +55,7 @@ router.get("/mercado-pago/success", (req, res) => {
   }
 
   // Redirige al frontend con los parámetros necesarios
-  const frontendUrl = process.env.CLIENT_URL || "http://localhost:5173";
+  const frontendUrl = process.env.CLIENT_URL ;
   res.redirect(
     `${frontendUrl}?collection_id=${collectionId}&collection_status=${status}&payment_return=true`
   );
@@ -63,14 +63,14 @@ router.get("/mercado-pago/success", (req, res) => {
 
 router.get("/mercado-pago/failure", (req, res) => {
   console.log("MercadoPago failure return:", req.query);
-  const frontendUrl = process.env.CLIENT_URL || "http://localhost:5173";
+  const frontendUrl = process.env.CLIENT_URL;
   res.redirect(`${frontendUrl}?collection_status=rejected&payment_return=true`);
 });
 
 router.get("/mercado-pago/pending", (req, res) => {
   console.log("MercadoPago pending return:", req.query);
   const collectionId = req.query.collection_id || req.query.payment_id;
-  const frontendUrl = process.env.CLIENT_URL || "http://localhost:5173";
+  const frontendUrl = process.env.CLIENT_URL ;
   res.redirect(
     `${frontendUrl}?collection_id=${collectionId}&collection_status=pending&payment_return=true`
   );
