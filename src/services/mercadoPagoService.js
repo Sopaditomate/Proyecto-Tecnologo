@@ -103,7 +103,7 @@ export default {
         },
         auto_return: "approved",
         external_reference: orderId.toString(),
-        notification_url: `${VITE_API_URL}/payments/mercado-pago/webhook`,
+        notification_url: `${CLIENT_URL}/payments/mercado-pago/webhook`,
         expires: true,
         expiration_date_from: new Date().toISOString(),
         expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutos
