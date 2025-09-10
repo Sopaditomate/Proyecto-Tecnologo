@@ -1,0 +1,21 @@
+/* Toastify - Solo estilos personalizados actuales */
+
+/*toasty*/
+.Toastify__toast {
+  font-family: inherit;
+  font-size: 1rem;
+}
+.Toastify__toast--success {
+  background: #4caf50;
+  color: #fff;
+}
+.Toastify__toast--info {
+  background: #1976d2;
+  color: #fff;
+}
+.Toastify__toast-container {
+  z-index: 99999;
+}
+.Toastify__progress-bar {
+  background: #fff176;
+}
