@@ -48,9 +48,10 @@ const verifyToken = async (req, res, next) => {
     if (error.name === "TokenExpiredError") {
       const decoded = jwt.decode(token);
 
-      // Si se pudo decodificar el token, cerrar sesión en la base de datos
+      // Si el token se pudo decodificar correctamente y contiene un userId
       if (decoded && decoded.userId) {
         try {
+          // Cerrar sesión en la base de datos
           await UserModel.setLoggedIn(decoded.userId, false);
         } catch (dbError) {
           console.error("Error al cerrar sesión al expirar el token:", dbError);
@@ -63,6 +64,7 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
+    // Error genérico si el token no es válido
     return res.status(401).json({ message: "No autorizado - Token inválido" });
   }
 };
