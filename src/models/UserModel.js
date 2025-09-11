@@ -51,8 +51,6 @@ class UserModel {
     return rows[0]?.is_logged_in === 1;
   }
 
-  
-
   //para el modulo de usuarios del admin
   async getAllUsersInfo() {
     const [rows] = await pool.query("CALL sp_get_users_info()");
@@ -104,6 +102,16 @@ class UserModel {
       token,
     ]);
     return rows.length && rows[0].verified === 1;
+  }
+
+  async getAllLoggedInUsers() {
+    const [rows] = await pool.query(`
+    SELECT ua.id_user as id, ua.is_logged_in, ua.last_token, u.ID_ROL as role 
+    FROM user_account ua 
+    JOIN usuario u ON ua.id_user = u.ID_USUARIO 
+    WHERE ua.is_logged_in = 1
+  `);
+    return rows;
   }
 }
 

@@ -95,7 +95,7 @@ class AuthController {
       // Enviar respuesta con token y cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV ,
         sameSite: "lax",
         maxAge: 15 * 60 * 1000, // 15 minutos
       });
