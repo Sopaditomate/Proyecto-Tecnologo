@@ -2323,6 +2323,7 @@ END $$
 DELIMITER ;
 
 
+DROP PROCEDURE IF EXISTS sp_insert_production_detail;
 DELIMITER $$
 
 CREATE PROCEDURE sp_insert_production_detail(
@@ -2331,11 +2332,36 @@ CREATE PROCEDURE sp_insert_production_detail(
     IN p_planned_quantity INT
 )
 BEGIN
+    -- 1. Insertar detalle de producción
     INSERT INTO production_detail (id_production, id_product, planned_quantity)
     VALUES (p_id_production, p_id_product, p_planned_quantity);
+
+    -- 2. Validar disponibilidad antes de restar
+    IF EXISTS (
+        SELECT 1
+        FROM inventory i
+        JOIN recipe r ON i.id_material = r.id_material
+        WHERE r.id_product = p_id_product
+          AND r.id_state = 1          -- solo recetas activas
+          AND i.id_state = 1          -- solo inventario activo
+          AND i.quantity < (r.quantity_required * p_planned_quantity)
+    ) THEN
+        -- Si no hay suficiente inventario, revertir
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'No hay suficiente inventario para producir la cantidad solicitada';
+    ELSE
+        -- 3. Restar insumos
+        UPDATE inventory i
+        JOIN recipe r ON i.id_material = r.id_material
+        SET i.quantity = i.quantity - (r.quantity_required * p_planned_quantity)
+        WHERE r.id_product = p_id_product
+          AND r.id_state = 1
+          AND i.id_state = 1;
+    END IF;
 END $$
 
 DELIMITER ;
+
 
 
 DELIMITER $$

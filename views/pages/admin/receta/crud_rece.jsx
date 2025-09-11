@@ -7,6 +7,9 @@ import "./receta.css";
 import { Container, Table, Button, Modal, Form } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+const MySwal = withReactContent(Swal);
 
 export function Recetasform() {
   const [recetas, setRecetas] = useState([]);
@@ -164,30 +167,46 @@ export function Recetasform() {
   };
 
   // Handle deleting a recipe
-  const handleDelete = (receta) => {
-    if (window.confirm("¿Estás seguro de eliminar esta receta?")) {
-      axios
-        .delete(
-          `${VITE_API_URL}/recetas_crud/${id}/${receta.ID_MATERIA}`
-        )
-        .then(() => {
-          toast.success("✅ Receta eliminada correctamente", {
-            closeButton: false,
-            className: "receta-toast success",
-          });
-          fetchRecetas();
-          fetchMateriasPrimas();
-        })
-        .catch((err) => {
-          console.error("Error al eliminar receta", err);
-          toast.error("❌ No se pudo eliminar la receta", {
-            closeButton: false,
-            className: "receta-toast error",
-          });
-        });
-    }
-  };
+  const handleDelete = async (receta) => {
+  const result = await MySwal.fire({
+    title: "¿Estás seguro?",
+    html: (
+      <>
+        ¿Estás seguro de que deseas eliminar la receta con{" "}
+        <b>{receta.NOMBRE_MATE}</b> del producto <b>{receta.NOMBRE_PROD}</b>?
+        <br />
+        <span style={{ color: "#d33" }}>
+          Esta acción no se puede deshacer.
+        </span>
+      </>
+    ),
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    focusCancel: true,
+  });
 
+  if (result.isConfirmed) {
+    try {
+      await axios.delete(`${VITE_API_URL}/recetas_crud/${id}/${receta.ID_MATERIA}`);
+      toast.success("✅ Receta eliminada correctamente", {
+        closeButton: false,
+        className: "receta-toast success",
+      });
+      fetchRecetas();
+      fetchMateriasPrimas();
+    } catch (error) {
+      console.error("Error al eliminar receta", error);
+      toast.error("❌ No se pudo eliminar la receta", {
+        closeButton: false,
+        className: "receta-toast error",
+      });
+    }
+  }
+};
   // Handle going back to the previous page
   const handleGoBack = () => {
     navigate(-1);
