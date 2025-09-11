@@ -1495,7 +1495,6 @@ END $$
 DELIMITER ;
 
 
-
 DROP PROCEDURE IF EXISTS sp_delete_recipe;
 DELIMITER $$
 
@@ -1504,8 +1503,7 @@ CREATE PROCEDURE sp_delete_recipe(
     IN p_id_material INT
 )
 BEGIN
-    UPDATE recipe
-    SET id_state = 3 -- assuming 3 means deleted
+    DELETE FROM recipe
     WHERE id_product = p_id_product AND id_material = p_id_material;
 
     IF ROW_COUNT() = 0 THEN
@@ -1514,6 +1512,7 @@ BEGIN
 END $$
 
 DELIMITER ;
+
 
 
 DROP PROCEDURE IF EXISTS sp_insert_product_admin;
@@ -1921,11 +1920,16 @@ BEGIN
             SELECT r.id_material
             FROM recipe r
             WHERE r.id_product = product_id  -- Usamos el parámetro product_id
+              AND r.id_state = 1  -- Solo los materiales activos en la receta
+        )
+        OR rm.id_material NOT IN (
+            SELECT r.id_material
+            FROM recipe r
+            WHERE r.id_product = product_id
         );
 END $$
 
 DELIMITER ;
-
 
 DROP PROCEDURE IF EXISTS sp_get_categories;
 DELIMITER $$
@@ -2819,7 +2823,7 @@ END;
 
 DELIMITER ;
 
-
+//eliminado por restricciones de uso
 DELIMITER //
 
 CREATE TRIGGER trg_prevent_delete_recipe
