@@ -284,6 +284,24 @@ CREATE TABLE catalog (
 ) AUTO_INCREMENT = 2000000;
 
 
+CREATE TABLE IF NOT EXISTS payment_transaction (
+     id_payment_transaction INT AUTO_INCREMENT PRIMARY KEY,
+     id_order INT NOT NULL,
+     payment_method VARCHAR(50) NOT NULL,
+     amount DECIMAL(10,2) NOT NULL,
+     reference VARCHAR(100) NOT NULL,
+     id_transaction VARCHAR(200) NOT NULL, -- ID de la transacción externa (Mercado Pago)
+    state VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+     creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+     update_date TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+     id_state INT NOT NULL DEFAULT 1,
+     FOREIGN KEY (id_order) REFERENCES order_header(id_order),
+     FOREIGN KEY (id_state) REFERENCES state(id_state),
+     INDEX idx_transaction_id (id_transaction),
+     INDEX idx_order_payment (id_order, payment_method)
+ ) AUTO_INCREMENT = 1400000;
+
+
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////---INSERCIONES---///////////////////////////////
 
@@ -1514,7 +1532,6 @@ END $$
 DELIMITER ;
 
 
-
 DROP PROCEDURE IF EXISTS sp_insert_product_admin;
 DELIMITER $$
 CREATE PROCEDURE sp_insert_product_admin(
@@ -2365,7 +2382,6 @@ BEGIN
 END $$
 
 DELIMITER ;
-
 
 
 DELIMITER $$

@@ -32,7 +32,7 @@ const verifyToken = async (req, res, next) => {
       });
     }
 
-    // Añadir información del usuario al objeto request
+    // información del usuario al objeto request
     req.user = {
       userId: decoded.userId,
       email: decoded.email,
@@ -43,6 +43,39 @@ const verifyToken = async (req, res, next) => {
     next();
   } catch (error) {
     console.error("Error al verificar token:", error);
+
+    // Si el token es inválido o ha expirado, marcar usuario como no logueado
+    if (
+      error.name === "JsonWebTokenError" ||
+      error.name === "TokenExpiredError"
+    ) {
+      try {
+        // Intentar decodificar el token sin verificar para obtener el userId
+        const decodedPayload = jwt.decode(token);
+        if (decodedPayload && decodedPayload.userId) {
+          // Marcar como no logueado en la base de datos
+          if (decodedPayload.role === ROLE_ADMIN) {
+            await UserModel.setAdminLoggedIn(decodedPayload.userId, false);
+          } else {
+            await UserModel.setLoggedIn(decodedPayload.userId, false);
+          }
+          console.log(
+            `Usuario ${decodedPayload.userId} marcado como no logueado debido a token expirado/inválido`
+          );
+        }
+      } catch (decodeError) {
+        console.error(
+          "Error al decodificar token para logout automático:",
+          decodeError
+        );
+      }
+
+      return res.status(401).json({
+        message: "Sesión expirada - Por favor inicie sesión nuevamente",
+        code: "TOKEN_EXPIRED",
+      });
+    }
+
     return res.status(401).json({ message: "No autorizado - Token inválido" });
   }
 };

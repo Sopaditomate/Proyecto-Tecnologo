@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useCart } from "../../context/CartContext.jsx";
 import PaymentService from "../../../src/services/paymentService.js";
 import "./checkout-modal.css";
+import { initMercadoPago } from "@mercadopago/sdk-react";
 
 export function CheckoutModal({
   onClose,
@@ -13,146 +14,298 @@ export function CheckoutModal({
   taxes,
   total,
   address,
+  initialStep = "confirmation",
+  orderId: propOrderId,
 }) {
   const { clearCart, closeCart } = useCart();
 
-  // Estados para el proceso de checkout
-  const [step, setStep] = useState("confirmation"); // confirmation, payment, success
+  // Estados del flujo
+  const [step, setStep] = useState(initialStep);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
 
-  // Estados para la dirección y envío
-  const [addressData, setAddress] = useState(address || "");
-  const [coordinates, setCoordinates] = useState(null);
-  const [shippingCost, setShipping] = useState(shipping);
-  // Asumimos que la dirección ya es válida si viene del primer paso
-  const [isValidAddress, setIsValidAddress] = useState(!!address);
+  // Estados de dirección
+  const [addressData] = useState(address || "");
+  const [shippingCost] = useState(shipping);
+  const [isValidAddress] = useState(!!address);
 
-  // Estados para el pago con Nequi
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [qrCode, setQrCode] = useState("");
-  const [transactionId, setTransactionId] = useState("");
-  const [orderId, setOrderId] = useState(
-    `ORD-${Math.floor(Math.random() * 10000)}`
-  );
-  const [paymentStatus, setPaymentStatus] = useState("PENDING");
+  // Estados del pedido
+  const [orderId, setOrderId] = useState(propOrderId || null);
+
+  // Estados Mercado Pago
+  const [preferenceId, setPreferenceId] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState(null);
   const [statusCheckInterval, setStatusCheckInterval] = useState(null);
 
-  // Truncar descripción
-  const truncateDescription = (text, maxLength = 30) => {
-    if (!text) return "";
-    return text.length > maxLength
-      ? text.substring(0, maxLength) + "..."
-      : text;
-  };
+  const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+  const API_URL = import.meta.env.VITE_API_URL;
 
-  // Manejar confirmación del pedido
-  const handleConfirmOrder = () => {
-    setStep("payment");
-    generateQRCode();
-  };
+  useEffect(() => {
+    if (publicKey) {
+      initMercadoPago(publicKey, { locale: "es-CO" });
+    }
+  }, [publicKey]);
 
-  // Manejar cancelación del pedido
-  const handleCancelOrder = () => {
-    onClose();
-  };
+  // Verificar si hay parámetros de pago al montar el componente
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const collectionId = urlParams.get("collection_id");
+    const paymentReturn = urlParams.get("payment_return");
+    const collectionStatus = urlParams.get("collection_status");
 
-  // Generar código QR para pago con Nequi
-  const generateQRCode = async () => {
+    if (collectionId && paymentReturn && collectionStatus === "approved") {
+      console.log(
+        "Detectado retorno exitoso de MercadoPago, procesando pedido..."
+      );
+
+      // Ir directamente al paso de procesamiento y crear el pedido
+      setStep("payment");
+      setPaymentStatus("approved");
+
+      // Crear el pedido inmediatamente
+      createOrderAfterPayment(collectionId);
+    } else if (collectionId && paymentReturn && step === "confirmation") {
+      // Si hay parámetros pero el pago no está aprobado, ir al paso de pago
+      console.log("Detectado retorno de MercadoPago, cambiando a paso de pago");
+      setStep("payment");
+      startPaymentStatusCheck();
+    }
+  }, [step]);
+
+  // Crear preferencia de MercadoPago sin crear el pedido aún
+  const handleConfirmOrder = async () => {
+    setIsProcessing(true);
+    setPaymentError(null);
+
     try {
-      setIsProcessing(true);
-      setPaymentError(null);
+      // Guardar datos del carrito temporalmente para el hook detector
+      const pendingPaymentData = {
+        items: cartItems.map((item) => ({
+          id: item.id,
+          price: item.price,
+          cantidad: item.cantidad,
+          nameProduct: item.nameProduct,
+        })),
+        deliveryAddress: addressData,
+        shippingCost: shippingCost,
+      };
 
-      // Simular la creación de un pedido (en producción, esto vendría del backend)
-      // En un entorno real, primero crearías el pedido y luego generarías el QR con el ID real
+      localStorage.setItem(
+        "pendingPaymentData",
+        JSON.stringify(pendingPaymentData)
+      );
+      console.log("Saved pending payment data:", pendingPaymentData);
 
-      // Generar QR para el pago
-      const qrResponse = await PaymentService.generateNequiQR(orderId);
+      // Crear solo la preferencia de pago con los datos del carrito
+      const additionalItems = [];
 
-      if (qrResponse.success) {
-        setQrCode(qrResponse.qrImage || qrResponse.qrCode);
-        setTransactionId(qrResponse.transactionId);
+      // Solo agregar IVA si es mayor a 0
+      if (taxes > 0) {
+        additionalItems.push({
+          title: "IVA (19%)",
+          quantity: 1,
+          unit_price: taxes,
+          description: "Impuesto sobre las ventas",
+        });
+      }
 
-        // Iniciar verificación periódica del estado del pago
-        startPaymentStatusCheck(qrResponse.transactionId);
+      // Solo agregar envío si es mayor a 0
+      if (shippingCost > 0) {
+        additionalItems.push({
+          title: "Envío",
+          quantity: 1,
+          unit_price: shippingCost,
+          description: "Costo de envío a domicilio",
+        });
+      }
+
+      const paymentData = {
+        items: cartItems.map((item) => ({
+          title: item.nameProduct,
+          quantity: item.cantidad,
+          unit_price: item.price,
+          description: item.description || "",
+        })),
+        additionalItems: additionalItems,
+        amount: total,
+        description: `Pedido LoveBites Bakery`,
+        deliveryAddress: addressData,
+      };
+
+      console.log("Creando preferencia de pago:", paymentData);
+
+      const paymentResponse = await PaymentService.createMercadoPagoPreference(
+        paymentData
+      );
+
+      if (!paymentResponse.success) {
+        throw new Error("Error al crear preferencia de pago");
+      }
+
+      setPreferenceId(paymentResponse.preferenceId);
+
+      if (paymentResponse.init_point) {
+        window.location.href = paymentResponse.init_point;
       } else {
-        setPaymentError("No se pudo generar el código QR para el pago");
+        throw new Error("No se encontró la URL de pago");
       }
     } catch (error) {
-      console.error("Error al generar QR:", error);
+      console.error("Error al confirmar pedido:", error);
       setPaymentError(
-        "Error al generar el código QR: " +
-          (error.message || "Error desconocido")
+        error.response?.data?.message ||
+          error.message ||
+          "Error al procesar el pedido"
+      );
+
+      // Limpiar datos temporales si hay error
+      localStorage.removeItem("pendingPaymentData");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Monitorear estado del pago y crear pedido cuando se complete
+  const startPaymentStatusCheck = () => {
+    if (statusCheckInterval) clearInterval(statusCheckInterval);
+
+    const interval = setInterval(async () => {
+      try {
+        // Verificar si hay un collection_id en la URL (indica que volvió de MercadoPago)
+        const urlParams = new URLSearchParams(window.location.search);
+        const collectionId = urlParams.get("collection_id");
+        const paymentStatus = urlParams.get("collection_status");
+
+        if (collectionId) {
+          console.log("Detectado pago:", { collectionId, paymentStatus });
+
+          if (paymentStatus === "approved") {
+            clearInterval(interval);
+            setPaymentStatus("approved");
+            await createOrderAfterPayment(collectionId);
+            return;
+          }
+
+          // Verificar el estado del pago
+          const statusResponse = await PaymentService.checkMercadoPagoStatus(
+            collectionId
+          );
+
+          if (statusResponse.success) {
+            setPaymentStatus(statusResponse.status);
+
+            if (statusResponse.status === "approved") {
+              clearInterval(interval);
+              await createOrderAfterPayment(collectionId);
+            } else if (
+              ["rejected", "cancelled", "refunded"].includes(
+                statusResponse.status
+              )
+            ) {
+              clearInterval(interval);
+              setPaymentError(`Pago ${statusResponse.status}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error al verificar estado de pago:", error);
+      }
+    }, 3000);
+
+    setStatusCheckInterval(interval);
+  };
+
+  // Crear pedido después de que el pago sea exitoso
+  const createOrderAfterPayment = async (paymentId) => {
+    try {
+      setIsProcessing(true);
+      console.log("Creating order after payment with payment ID:", paymentId);
+
+      // Crear el pedido en el backend
+      const orderData = {
+        items: cartItems.map((item) => ({
+          id: item.id,
+          price: item.price,
+          cantidad: item.cantidad,
+          nameProduct: item.nameProduct,
+        })),
+        deliveryAddress: addressData,
+        shippingCost: shippingCost,
+        paymentId: paymentId,
+      };
+
+      console.log("Creando pedido después del pago:", orderData);
+
+      const createOrderResponse = await PaymentService.createOrderAfterPayment(
+        orderData
+      );
+
+      if (!createOrderResponse.success) {
+        throw new Error(
+          createOrderResponse.message || "Error al crear el pedido"
+        );
+      }
+
+      console.log("Order created successfully:", createOrderResponse);
+      setOrderId(createOrderResponse.orderId);
+
+      handlePaymentComplete();
+    } catch (error) {
+      console.error("Error al crear pedido después del pago:", error);
+      setPaymentError(
+        "Error al procesar el pedido después del pago: " + error.message
       );
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Iniciar verificación periódica del estado del pago
-  const startPaymentStatusCheck = (txId) => {
-    // Limpiar cualquier intervalo existente
-    if (statusCheckInterval) {
-      clearInterval(statusCheckInterval);
-    }
-
-    // Crear nuevo intervalo para verificar el estado cada 5 segundos
-    const interval = setInterval(async () => {
-      try {
-        const statusResponse = await PaymentService.checkPaymentStatus(txId);
-
-        if (statusResponse.success) {
-          setPaymentStatus(statusResponse.status);
-
-          // Si el pago fue aprobado, avanzar al paso de éxito
-          if (statusResponse.status === "APPROVED") {
-            clearInterval(interval);
-            handlePaymentComplete();
-          }
-          // Si el pago fue rechazado o cancelado, mostrar error
-          else if (
-            ["REJECTED", "CANCELED", "FAILED"].includes(statusResponse.status)
-          ) {
-            clearInterval(interval);
-            setPaymentError(
-              `Pago ${
-                statusResponse.statusDescription ||
-                statusResponse.status.toLowerCase()
-              }`
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Error al verificar estado del pago:", error);
-      }
-    }, 5000); // Verificar cada 5 segundos
-
-    setStatusCheckInterval(interval);
-  };
-
-  // Limpiar intervalo al desmontar el componente
+  // Limpiar intervalos
   useEffect(() => {
     return () => {
-      if (statusCheckInterval) {
-        clearInterval(statusCheckInterval);
-      }
+      if (statusCheckInterval) clearInterval(statusCheckInterval);
     };
   }, [statusCheckInterval]);
 
-  // Manejar pago completado
+  // Pago completado
   const handlePaymentComplete = () => {
     setIsProcessing(false);
     setStep("success");
     clearCart();
+
+    localStorage.removeItem("pendingPaymentData");
+
+    // Limpiar parámetros de la URL
+    const url = new URL(window.location);
+    url.searchParams.delete("collection_id");
+    url.searchParams.delete("collection_status");
+    url.searchParams.delete("payment_id");
+    url.searchParams.delete("status");
+    url.searchParams.delete("external_reference");
+    url.searchParams.delete("payment_type");
+    url.searchParams.delete("merchant_order_id");
+    url.searchParams.delete("preference_id");
+    url.searchParams.delete("site_id");
+    url.searchParams.delete("processing_mode");
+    url.searchParams.delete("merchant_account_id");
+    url.searchParams.delete("payment_return");
+    window.history.replaceState({}, document.title, url);
   };
 
-  // Manejar cierre después de completar el pedido
+  // Finalizar
   const handleFinish = () => {
+    clearCart();
     closeCart();
     onClose();
   };
 
-  // Formatear fecha estimada de entrega (30 minutos desde ahora)
+  // Helpers
+  const truncateDescription = (text, maxLength = 30) =>
+    !text
+      ? ""
+      : text.length > maxLength
+      ? text.substring(0, maxLength) + "..."
+      : text;
+
   const getEstimatedDelivery = () => {
     const now = new Date();
     now.setMinutes(now.getMinutes() + 30);
@@ -166,30 +319,34 @@ export function CheckoutModal({
           ×
         </button>
 
+        {/* Paso 1: Confirmación */}
         {step === "confirmation" && (
           <div className="confirmation-step">
-            <h2>Confirmar Pedido</h2>
+            <div className="step-header">
+              <h2>Confirmar Pedido</h2>
+              <div className="step-indicator">
+                <span className="step active">1</span>
+                <span className="step">2</span>
+                <span className="step">3</span>
+              </div>
+            </div>
 
             <div className="order-summary">
               <h3>Resumen del pedido</h3>
-
               <div className="order-items">
                 {cartItems.map((item) => (
                   <div className="order-item" key={item.id}>
                     <div className="order-item-name">
-                      <span>{item.cantidad}x</span> {item.nameProduct}
-                      <small
-                        style={{
-                          display: "block",
-                          color: "#666",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        {truncateDescription(item.description)}
-                      </small>
+                      <span className="quantity">{item.cantidad}x</span>
+                      <div>
+                        <div className="item-name">{item.nameProduct}</div>
+                        <small className="item-description">
+                          {truncateDescription(item.description)}
+                        </small>
+                      </div>
                     </div>
                     <div className="order-item-price">
-                      ${(item.price * item.cantidad).toFixed(3)}
+                      ${(item.price * item.cantidad).toLocaleString("es-CO")}
                     </div>
                   </div>
                 ))}
@@ -198,115 +355,166 @@ export function CheckoutModal({
               <div className="order-totals">
                 <div className="order-total-row">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(3)}</span>
+                  <span>${subtotal.toLocaleString("es-CO")}</span>
                 </div>
                 <div className="order-total-row">
                   <span>Envío</span>
                   <span>
                     {shippingCost === 0
                       ? "Gratis"
-                      : `$${shippingCost.toFixed(0)}`}
+                      : `$${shippingCost.toLocaleString("es-CO")}`}
                   </span>
                 </div>
                 <div className="order-total-row">
                   <span>IVA (19%)</span>
-                  <span>${taxes.toFixed(3)}</span>
+                  <span>${taxes.toLocaleString("es-CO")}</span>
                 </div>
                 <div className="order-total-row total">
                   <span>Total</span>
-                  <span>${total.toFixed(3)}</span>
+                  <span>${total.toLocaleString("es-CO")}</span>
                 </div>
               </div>
             </div>
 
             <div className="delivery-info">
               <h3>Información de entrega</h3>
+              <div className="address-card">
+                <div className="address-icon">📍</div>
+                <div className="address-text">
+                  <strong>Dirección de entrega:</strong>
+                  <p>{addressData}</p>
+                </div>
+              </div>
+            </div>
 
-              {/* Usamos directamente la dirección del primer paso sin verificación adicional */}
-              <div className="selected-address-info">
-                <p>
-                  <strong>Dirección de entrega:</strong> {addressData}
-                </p>
+            <div className="payment-method-section">
+              <h3>Método de pago</h3>
+              <div className="payment-method-card selected">
+                <img
+                  src="https://http2.mlstatic.com/storage/logos-api-admin/0daa1670-5c81-11ec-ae75-df2bef173be2-xl@2x.png"
+                  alt="Mercado Pago"
+                  className="mp-logo"
+                />
+                <div>
+                  <strong>Mercado Pago</strong>
+                  <p>Pago seguro con tarjeta o efectivo</p>
+                </div>
               </div>
             </div>
 
             <div className="confirmation-actions">
-              <button className="cancel-order-btn" onClick={handleCancelOrder}>
+              <button className="cancel-order-btn" onClick={onClose}>
                 Cancelar
               </button>
               <button
                 className="confirm-order-btn"
                 onClick={handleConfirmOrder}
-                disabled={!isValidAddress || !addressData}
+                disabled={!isValidAddress || !addressData || isProcessing}
               >
-                {!isValidAddress && addressData
-                  ? "Dirección inválida"
-                  : "Confirmar Pedido"}
+                {isProcessing ? (
+                  <div className="btn-loading">
+                    <div className="spinner"></div>
+                    Ir a pagar...
+                  </div>
+                ) : (
+                  "Ir a pagar"
+                )}
               </button>
             </div>
+
+            {paymentError && (
+              <div className="payment-error">
+                <strong>Error:</strong> {paymentError}
+              </div>
+            )}
           </div>
         )}
 
+        {/* Paso 2: Esperando pago */}
         {step === "payment" && (
           <div className="payment-step">
-            <h2>Pago con Nequi</h2>
-
-            <div className="payment-qr-container">
-              <div className="qr-code">
-                {isProcessing ? (
-                  <div className="loading-spinner">Generando código QR...</div>
-                ) : qrCode ? (
-                  <img
-                    src={qrCode || "/placeholder.svg"}
-                    alt="Código QR de Nequi"
-                    className="nequi-qr-code"
-                  />
-                ) : (
-                  <div className="qr-placeholder">
-                    <p>No se pudo cargar el código QR</p>
-                  </div>
-                )}
-              </div>
-              <div className="payment-instructions">
-                <h3>Instrucciones:</h3>
-                <ol>
-                  <li>Abre la app de Nequi en tu celular</li>
-                  <li>Selecciona la opción "Pagar"</li>
-                  <li>Escanea el código QR</li>
-                  <li>Confirma el pago de ${total.toFixed(3)}</li>
-                </ol>
-
-                {paymentStatus === "PENDING" && (
-                  <div className="payment-status pending">
-                    <p>Esperando confirmación del pago...</p>
-                    <div className="loading-dots">
-                      <span>.</span>
-                      <span>.</span>
-                      <span>.</span>
-                    </div>
-                  </div>
-                )}
-
-                {paymentError && (
-                  <div className="payment-error">
-                    <p>{paymentError}</p>
-                    <button
-                      className="retry-payment-btn"
-                      onClick={generateQRCode}
-                      disabled={isProcessing}
-                    >
-                      Reintentar
-                    </button>
-                  </div>
-                )}
+            <div className="step-header">
+              <h2>Procesando Pago</h2>
+              <div className="step-indicator">
+                <span className="step completed">✓</span>
+                <span className="step active">2</span>
+                <span className="step">3</span>
               </div>
             </div>
 
+            <div className="payment-content">
+              <div className="payment-info">
+                <div className="payment-status-card">
+                  <div className="payment-icon">
+                    {paymentStatus === "approved" ? (
+                      <div className="success-icon-large">✅</div>
+                    ) : (
+                      <div className="spinner-large"></div>
+                    )}
+                  </div>
+                  {paymentStatus === "approved" ? (
+                    <>
+                      <h3>¡Pago confirmado!</h3>
+                      <p>Creando su pedido, por favor espere...</p>
+                    </>
+                  ) : (
+                    <>
+                      <h3>Esperando confirmación de pago</h3>
+                      <p>
+                        Hemos abierto MercadoPago en una nueva pestaña. Complete
+                        su pago y regrese aquí.
+                      </p>
+                    </>
+                  )}
+                  <div className="order-summary-mini">
+                    <p>
+                      Total a pagar:{" "}
+                      <strong>${total.toLocaleString("es-CO")} COP</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {paymentStatus && (
+                <div className={`payment-status ${paymentStatus}`}>
+                  {paymentStatus === "pending" && (
+                    <div className="status-pending">
+                      <div className="status-icon">⏳</div>
+                      <p>Procesando pago...</p>
+                    </div>
+                  )}
+                  {paymentStatus === "in_process" && (
+                    <div className="status-processing">
+                      <div className="status-icon">🔄</div>
+                      <p>Pago en proceso, por favor espera</p>
+                    </div>
+                  )}
+                  {paymentStatus === "approved" && (
+                    <div className="status-success">
+                      <div className="status-icon">✅</div>
+                      <p>¡Pago aprobado! Creando su pedido...</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {paymentError && (
+              <div className="payment-error">
+                <strong>Error en el pago:</strong> {paymentError}
+                <button
+                  className="retry-payment-btn"
+                  onClick={() => setStep("confirmation")}
+                >
+                  Intentar nuevamente
+                </button>
+              </div>
+            )}
+
             <div className="payment-actions">
               <button
-                className="cancel-payment-btn"
+                className="back-btn"
                 onClick={() => setStep("confirmation")}
-                disabled={isProcessing}
               >
                 Volver
               </button>
@@ -314,29 +522,63 @@ export function CheckoutModal({
           </div>
         )}
 
+        {/* Paso 3: Éxito */}
         {step === "success" && (
           <div className="success-step">
-            <div className="success-icon">✓</div>
-            <h2>¡Pedido Confirmado!</h2>
-
-            <div className="order-details">
-              <p className="order-id">Pedido #{orderId}</p>
-              <p className="estimated-delivery">
-                Entrega estimada: <strong>{getEstimatedDelivery()}</strong>
-              </p>
-              <p className="delivery-address">
-                Se entregará en: <strong>{addressData}</strong>
-              </p>
+            <div className="step-header">
+              <h2>¡Pedido Confirmado!</h2>
+              <div className="step-indicator">
+                <span className="step completed">✓</span>
+                <span className="step completed">✓</span>
+                <span className="step completed">✓</span>
+              </div>
             </div>
 
-            <p className="thank-you-message">
-              Gracias por tu compra. Puedes seguir el estado de tu pedido en la
-              sección "Mis Pedidos".
-            </p>
+            <div className="success-content">
+              <div className="success-icon">
+                <div className="checkmark">✓</div>
+              </div>
 
-            <button className="finish-btn" onClick={handleFinish}>
-              Finalizar
-            </button>
+              <div className="success-details">
+                <h3>Pedido #{orderId}</h3>
+                <p className="success-message">
+                  Tu pago ha sido procesado exitosamente y tu pedido ha sido
+                  creado
+                </p>
+
+                <div className="delivery-summary">
+                  <div className="delivery-item">
+                    <span className="icon">🚚</span>
+                    <div>
+                      <strong>Entrega estimada:</strong>
+                      <p>{getEstimatedDelivery()}</p>
+                    </div>
+                  </div>
+
+                  <div className="delivery-item">
+                    <span className="icon">📍</span>
+                    <div>
+                      <strong>Dirección:</strong>
+                      <p>{addressData}</p>
+                    </div>
+                  </div>
+
+                  <div className="delivery-item">
+                    <span className="icon">💰</span>
+                    <div>
+                      <strong>Total pagado:</strong>
+                      <p>${total.toLocaleString("es-CO")} COP</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="success-actions">
+              <button className="finish-btn" onClick={handleFinish}>
+                Finalizar
+              </button>
+            </div>
           </div>
         )}
       </div>

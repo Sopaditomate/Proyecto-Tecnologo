@@ -16,8 +16,8 @@ export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("nequi");
-  const [shippingCost, setShippingCost] = useState(0); // Estado para el costo de envío
+  const [paymentMethod, setPaymentMethod] = useState("mercadopago");
+  const [shippingCost, setShippingCost] = useState(0);
 
   const API_URL = import.meta.env.VITE_API_URL;
   const isInitialLoad = useRef(true);
@@ -214,7 +214,6 @@ export function CartProvider({ children }) {
   };
 
   const getShippingCost = () => {
-    // Usar el estado de costo de envío si está disponible
     return shippingCost;
   };
 
@@ -281,7 +280,7 @@ export function CartProvider({ children }) {
     getProductTotal,
     getCartSubtotal,
     getShippingCost,
-    setShippingCostValue, // Agregar la nueva función para establecer el costo de envío
+    setShippingCostValue,
     getTaxes,
     getCartTotal,
     cartLength,

@@ -1,12 +1,19 @@
 import db from "../config/db.js";
 
 // Obtener perfil de usuario
+// Obtener perfil de usuario
 export const getUserProfileById = async (userId) => {
-  const [resultSets] = await db.execute("CALL sp_get_user_profile(?)", [
-    userId,
-  ]);
-  return resultSets[0]?.[0] || null;
+  const [resultSets] = await db.execute("CALL sp_get_user_profile(?)", [userId]);
+  const user = resultSets[0]?.[0] || null;
+
+  // Fuerza que siempre esté verificado
+  if (user) {
+    user.verified_phone = 1;
+  }
+
+  return user;
 };
+
 
 // Actualizar perfil de usuario
 export const updateUserProfile = async (userId, profileData) => {

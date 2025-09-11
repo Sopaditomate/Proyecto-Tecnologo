@@ -49,7 +49,7 @@ class OrderController {
     try {
       console.log("req.user:", req.user);
       const clientId = req.user.clientId;
-      console.log(clienteId);
+      console.log(clientId);
 
       if (!clientId) {
         return res

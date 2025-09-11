@@ -51,8 +51,6 @@ class UserModel {
     return rows[0]?.is_logged_in === 1;
   }
 
-  
-
   //para el modulo de usuarios del admin
   async getAllUsersInfo() {
     const [rows] = await pool.query("CALL sp_get_users_info()");

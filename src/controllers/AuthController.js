@@ -86,7 +86,7 @@ class AuthController {
           clientId,
         },
         process.env.JWT_SECRET || "your_jwt_secret",
-        { expiresIn: "24h" }
+        { expiresIn: "15m" }
       );
 
       // Marcar como logueado en la base de datos
@@ -95,9 +95,9 @@ class AuthController {
       // Enviar respuesta con token y cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV ,
         sameSite: "lax",
-        maxAge: 24 * 60 * 60 * 1000, // 24 horas
+        maxAge: 15 * 60 * 1000, // 15 minutos
       });
 
       res.json({
@@ -125,20 +125,20 @@ class AuthController {
 
   // Logout
   async logout(req, res) {
-  try {
-    if (req.user.role === 100001) {
-      await UserModel.setAdminLoggedIn(req.user.userId, false);
-    } else {
-      await UserModel.setLoggedIn(req.user.userId, false);
-    }
+    try {
+      if (req.user.role === 100001) {
+        await UserModel.setAdminLoggedIn(req.user.userId, false);
+      } else {
+        await UserModel.setLoggedIn(req.user.userId, false);
+      }
 
-    res.clearCookie("token");
-    res.json({ success: true, message: "Sesión cerrada correctamente" });
-  } catch (error) {
-    console.error("Error en logout:", error);
-    res.status(500).json({ message: "Error al cerrar sesión" });
+      res.clearCookie("token");
+      res.json({ success: true, message: "Sesión cerrada correctamente" });
+    } catch (error) {
+      console.error("Error en logout:", error);
+      res.status(500).json({ message: "Error al cerrar sesión" });
+    }
   }
-}
 
   // Validar email (método estático para usar en el frontend)
   static validateEmail(email) {

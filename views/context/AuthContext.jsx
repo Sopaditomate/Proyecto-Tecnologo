@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 // Crear contexto de autenticación
 const AuthContext = createContext();
@@ -16,6 +17,42 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
+
+  // Función para cerrar sesión local (sin llamada al servidor)
+  const logoutLocal = () => {
+    setUser(null);
+    delete axios.defaults.headers.common["Authorization"];
+  };
+
+  // Configurar interceptor de axios para manejar tokens expirados
+  useEffect(() => {
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          const errorCode = error.response?.data?.code;
+
+          if (
+            errorCode === "TOKEN_EXPIRED" ||
+            errorCode === "SESSION_CLOSED_ELSEWHERE"
+          ) {
+            // Token expirado o sesión cerrada, hacer logout automático
+            logoutLocal();
+            toast.error(
+              "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+            );
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    // Cleanup del interceptor
+    return () => {
+      axios.interceptors.response.eject(responseInterceptor);
+    };
+  }, []);
 
   // Verificar si hay una sesión activa al cargar la aplicación
   useEffect(() => {
@@ -87,8 +124,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     } finally {
-      setUser(null);
-      delete axios.defaults.headers.common["Authorization"];
+      logoutLocal();
     }
   };
 
