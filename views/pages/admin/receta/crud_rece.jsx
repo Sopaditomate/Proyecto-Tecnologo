@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -11,6 +12,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 const MySwal = withReactContent(Swal);
 
+
 export function Recetasform() {
   const [recetas, setRecetas] = useState([]);
   const [materiasPrimas, setMateriasPrimas] = useState([]);
@@ -20,7 +22,8 @@ export function Recetasform() {
   const [showEditModal, setShowEditModal] = useState(false);
   const { id } = useParams(); // Get the product ID from the URL
   const navigate = useNavigate();
-  const VITE_API_URL = import.meta.env.VITE_API_URL 
+  const VITE_API_URL = import.meta.env.VITE_API_URL
+
 
   function initialFormState() {
     return {
@@ -28,6 +31,7 @@ export function Recetasform() {
       CANTIDAD_USAR: "",
     };
   }
+
 
   // Fetch all recipes for the specific product
   const fetchRecetas = () => {
@@ -37,12 +41,14 @@ export function Recetasform() {
       .catch((err) => console.error("Error al cargar las recetas:", err));
   };
 
+
   useEffect(() => {
     if (id) {
       fetchRecetas(); // Fetch recipes when the ID changes
       fetchMateriasPrimas();
     }
   }, [id]);
+
 
   const fetchMateriasPrimas = () => {
     axios
@@ -54,10 +60,12 @@ export function Recetasform() {
       .catch((err) => console.error("Error al cargar materias primas:", err));
   };
 
+
   const openInsertModal = () => {
     setFormData(initialFormState());
     setShowInsertModal(true);
   };
+
 
   const openEditModal = (receta) => {
     setEditReceta({
@@ -71,11 +79,13 @@ export function Recetasform() {
     setShowEditModal(true);
   };
 
+
   const closeModals = () => {
     setShowInsertModal(false);
     setShowEditModal(false);
     setEditReceta(null);
   };
+
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -83,88 +93,117 @@ export function Recetasform() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+
   // Handle adding a new recipe
-  const handleInsert = (e) => {
-    e.preventDefault();
-    if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR) {
-      toast.error("Por favor complete todos los campos", {
+ const handleInsert = (e) => {
+  e.preventDefault();
+
+
+  const cantidad = Number(formData.CANTIDAD_USAR);
+
+
+  if (!formData.ID_MATERIA || !formData.CANTIDAD_USAR || isNaN(cantidad)) {
+    toast.error("Por favor complete todos los campos correctamente", {
+      closeButton: false,
+      className: "receta-toast error",
+    });
+    return;
+  }
+
+
+  if (cantidad <= 0) {
+    toast.error("La cantidad a usar debe ser mayor que cero", {
+      closeButton: false,
+      className: "receta-toast error",
+    });
+    return;
+  }
+
+
+  const dataToSend = {
+    ID_PRODUCTO: Number(id),
+    ID_MATERIAL: Number(formData.ID_MATERIA),
+    CANTIDAD_USAR: cantidad,
+  };
+
+
+  axios
+    .post(`${VITE_API_URL}/recetas_crud/${id}/${formData.ID_MATERIA}`, dataToSend)
+    .then(() => {
+      toast.success("✅ Receta agregada correctamente", {
+        closeButton: false,
+        className: "receta-toast success",
+      });
+      fetchRecetas();
+      fetchMateriasPrimas();
+      closeModals();
+    })
+    .catch((err) => {
+      console.error("Error al agregar receta:", err.response ? err.response.data : err.message);
+      toast.error("❌ Error al insertar receta", {
         closeButton: false,
         className: "receta-toast error",
       });
-      return;
-    }
-
-    const dataToSend = {
-      ID_PRODUCTO: Number(id),
-      ID_MATERIAL: Number(formData.ID_MATERIA),
-      CANTIDAD_USAR: Number(formData.CANTIDAD_USAR),
-    };
-    console.log("Datos a enviar:", dataToSend);
-    axios
-      .post(
-        `${VITE_API_URL}/recetas_crud/${id}/${formData.ID_MATERIA}`,
-        dataToSend
-      )
-      
-      .then(() => {
-        toast.success("✅ Receta agregada correctamente", {
-          closeButton: false,
-          className: "receta-toast success",
-        });
-        fetchRecetas();
-        fetchMateriasPrimas();
-        closeModals();
-      })
-      .catch((err) => {
-  console.error("Error al agregar receta:", err.response ? err.response.data : err.message);
-  toast.error("❌ Error al insertar receta", {
-    closeButton: false,
-    className: "receta-toast error",
-  });
-});
+    });
+};
 
 
-  };
+
 
  
 
+
   // Handle updating a selected recipe
-  const handleUpdate = (e) => {
-    e.preventDefault();
-    if ( !formData.CANTIDAD_USAR) {
-      toast.error("Por favor complete todos los campos", {
+const handleUpdate = (e) => {
+  e.preventDefault();
+
+
+  const cantidad = Number(formData.CANTIDAD_USAR);
+
+
+  if (!formData.CANTIDAD_USAR || isNaN(cantidad)) {
+    toast.error("Por favor complete todos los campos correctamente", {
+      closeButton: false,
+      className: "receta-toast error",
+    });
+    return;
+  }
+
+
+  if (cantidad <= 0) {
+    toast.error("La cantidad a usar debe ser mayor que cero", {
+      closeButton: false,
+      className: "receta-toast error",
+    });
+    return;
+  }
+
+
+  axios
+    .put(
+      `${VITE_API_URL}/recetas_crud/${editReceta.ID_PRODUCT}/${editReceta.ID_MATERIAL}`,
+      { CANTIDAD_USAR: cantidad }
+    )
+    .then(() => {
+      toast.success("✅ Receta actualizada correctamente", {
+        closeButton: false,
+        className: "receta-toast success",
+      });
+      fetchRecetas();
+      fetchMateriasPrimas();
+      closeModals();
+    })
+    .catch((err) => {
+      console.error("Error al actualizar receta:", err);
+      toast.error("❌ Error al actualizar receta", {
         closeButton: false,
         className: "receta-toast error",
       });
-      return;
-    }
+    });
+};
 
-    // Verifica que los datos a actualizar estén presentes
-    console.log("Datos a actualizar:", editReceta, formData);
 
-    // Realiza el PUT con los dos parámetros necesarios en la URL
-    axios
-      .put(
-        `${VITE_API_URL}/recetas_crud/${editReceta.ID_PRODUCT}/${editReceta.ID_MATERIAL}`,
-        {CANTIDAD_USAR: formData.CANTIDAD_USAR } // Asegúrate de que este campo esté en el cuerpo
-      )
-      .then(() => {
-        toast.success("✅ Receta actualizada correctamente", {
-          closeButton: false,
-          className: "receta-toast success",
-        });
-        fetchRecetas();
-        fetchMateriasPrimas();
-        closeModals();
-      })
-      .catch((err) => {
-        console.error("Error al actualizar receta:", err);
-        toast.error("❌ Error al actualizar receta", {
-          closeButton: false,
-          className: "receta-toast error",
-        });
-      });
-  };
+
 
   // Handle deleting a recipe
   const handleDelete = async (receta) => {
@@ -189,6 +228,7 @@ export function Recetasform() {
     focusCancel: true,
   });
 
+
   if (result.isConfirmed) {
     try {
       await axios.delete(`${VITE_API_URL}/recetas_crud/${id}/${receta.ID_MATERIA}`);
@@ -212,6 +252,7 @@ export function Recetasform() {
     navigate(-1);
   };
 
+
   // Extract unique materia prima options for the select input
   const tipoMateria = Array.from(
     new Map(
@@ -223,10 +264,12 @@ export function Recetasform() {
   );
   console.log(formData.CANTIDAD_USAR);
 
+
   // Render the form fields
   const renderFormFieldsEdit = () => (
     <>
-    
+   
+
 
       <Form.Group className="mb-3">
         <Form.Label>Cantidad a Usar</Form.Label>
@@ -259,6 +302,7 @@ const renderFormFields = () => (
            </Form.Select>
       </Form.Group>
 
+
       <Form.Group className="mb-3">
         <Form.Label>Cantidad a Usar</Form.Label>
         <Form.Control
@@ -275,7 +319,9 @@ const renderFormFields = () => (
     <Container fluid className="product-management-container">
       <h2 className="product-management-title">Recetas del Producto</h2>
 
+
       {/* Sección de controles */}
+
 
       <div className="controls-section" id="controls-section">
         <div>
@@ -329,6 +375,7 @@ const renderFormFields = () => (
           </div>
         </div>
       </div>
+
 
       {/* Contenedor de tabla */}
       <div className="table-container">
@@ -394,6 +441,7 @@ const renderFormFields = () => (
         </div>
       </div>
 
+
       {/* Modal Insertar */}
       <Modal
         show={showInsertModal}
@@ -425,6 +473,7 @@ const renderFormFields = () => (
         </Modal.Body>
       </Modal>
 
+
       {/* Modal Editar */}
       <Modal
         show={showEditModal}
@@ -453,6 +502,7 @@ const renderFormFields = () => (
           </Form>
         </Modal.Body>
       </Modal>
+
 
       {/* Toast Container */}
       <ToastContainer
