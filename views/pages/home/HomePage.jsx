@@ -4,6 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import { Link,useLocation } from "react-router-dom";
 import "./home-page.css";
 
+
+import Chatbot from '../../components/Chatbot/chatbot.jsx';
+
+
 export function HomePage() {
   // Estado para controlar el índice actual del carrusel
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -138,7 +142,31 @@ export function HomePage() {
     );
     setTimeout(() => setIsAnimating(false), 500);
   };
+const Chatbot = () => {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'https://cdn.voiceflow.com/widget-next/bundle.mjs';
+    script.onload = () => {
+      window.voiceflow.chat.load({
+        verify: { projectID: '68586fbc210563ada9429c49' },
+        url: 'https://general-runtime.voiceflow.com',
+        versionID: 'production',
+        voice: {
+          url: "https://runtime-api.voiceflow.com"
+        }
+      });
+    };
+    document.body.appendChild(script);
 
+    return () => {
+      // Eliminar el script al desmontar el componente (limpieza)
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  return <div>Chatbot Cargado</div>;
+};
   // Navegar a la siguiente imagen
   const handleNext = () => {
     if (isAnimating) return;
