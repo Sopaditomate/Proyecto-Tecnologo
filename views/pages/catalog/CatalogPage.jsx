@@ -7,7 +7,7 @@ import "./catalog.css"
 import { PageTitle } from "./PageTitle"
 import { useAuth } from "../../context/AuthContext"
 import { useNavigate, useLocation } from "react-router-dom" // 👈 importamos useLocation
-
+import Chatbot from '../../components/Chatbot/chatbot.jsx';
 export function CatalogPage() {
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
@@ -268,6 +268,8 @@ export function CatalogPage() {
           ))}
         </section>
       )}
+            {/* Chatbot Component */}
+      <Chatbot />
     </div>
   )
 }
