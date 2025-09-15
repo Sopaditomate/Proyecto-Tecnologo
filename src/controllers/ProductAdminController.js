@@ -1,5 +1,5 @@
 import ProductAdminModel from "../models/ProducAdminModel.js";
-import csv from 'csv-parser'; 
+import csv from 'csv-parser';
 import { Readable } from 'stream';
 class ProductAdminController {
   async getProductos(req, res) {
@@ -61,6 +61,7 @@ class ProductAdminController {
       IMAGEN_URL,
       NOTA_ACTUAL,
       ADVERTENCIA,
+      ID_CATALOGO
     } = req.body;
     try {
       await ProductAdminModel.AddProduct(
@@ -70,7 +71,8 @@ class ProductAdminController {
         DESCRIPCION,
         IMAGEN_URL,
         NOTA_ACTUAL,
-        ADVERTENCIA
+        ADVERTENCIA,
+        ID_CATALOGO
       );
       res.status(201).json({ message: "producto agregado correctamente" });
     } catch (err) {
@@ -104,44 +106,44 @@ class ProductAdminController {
     }
   }
   async CargarMasivaProductos(req, res) {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No se recibió ningún archivo.' });
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No se recibió ningún archivo.' });
+      }
+
+      const buffer = req.file.buffer;
+      const registros = [];
+
+      const contenido = buffer.toString('utf8');
+      const stream = Readable.from(contenido);
+
+      stream
+        .pipe(csv({ separator: ';' }))
+        .on('data', (row) => {
+          registros.push(row);
+        })
+        .on('end', async () => {
+          try {
+            await ProductAdminModel.cargarMasivaDesdeCSV(registros);
+            res.status(200).json({
+              message: 'Carga masiva completada con éxito.',
+              registrosProcesados: registros.length
+            });
+          } catch (modelError) {
+            console.error('Error al guardar en BD:', modelError);
+            res.status(500).json({ message: 'Error al guardar los registros en la base de datos.' });
+          }
+        })
+        .on('error', (parseError) => {
+          console.error('Error al leer CSV:', parseError);
+          res.status(500).json({ message: 'Error al procesar el archivo CSV.' });
+        });
+
+    } catch (err) {
+      console.error('Error general en la carga masiva:', err);
+      res.status(500).json({ message: 'Error en la carga masiva del inventario.' });
     }
-
-    const buffer = req.file.buffer;
-    const registros = [];
-
-    const contenido = buffer.toString('utf8');
-    const stream = Readable.from(contenido);
-
-    stream
-      .pipe(csv({ separator: ';' }))
-      .on('data', (row) => {
-        registros.push(row);
-      })
-      .on('end', async () => {
-        try {
-          await ProductAdminModel.cargarMasivaDesdeCSV(registros);
-          res.status(200).json({
-            message: 'Carga masiva completada con éxito.',
-            registrosProcesados: registros.length
-          });
-        } catch (modelError) {
-          console.error('Error al guardar en BD:', modelError);
-          res.status(500).json({ message: 'Error al guardar los registros en la base de datos.' });
-        }
-      })
-      .on('error', (parseError) => {
-        console.error('Error al leer CSV:', parseError);
-        res.status(500).json({ message: 'Error al procesar el archivo CSV.' });
-      });
-
-  } catch (err) {
-    console.error('Error general en la carga masiva:', err);
-    res.status(500).json({ message: 'Error en la carga masiva del inventario.' });
   }
-}
 
 }
 export default new ProductAdminController();

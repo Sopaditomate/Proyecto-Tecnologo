@@ -75,12 +75,13 @@ class ProductAdminModel {
     DESCRIPCION,
     IMAGEN_URL,
     NOTA_ACTUAL,
-    ADVERTENCIA
+    ADVERTENCIA,
+    ID_CATALOGO
   ) {
     const conn = await pool.getConnection();
     try {
       await conn.beginTransaction();
-      await conn.query("CALL sp_insert_product_admin(?, ?, ?, ?, ?, ?, ?)", [
+      await conn.query("CALL sp_insert_product_admin(?, ?, ?, ?, ?, ?, ?, ?)", [
         ID_TIPO_PRO,
         NOMBRE_PROD,
         PRECIO,
@@ -88,6 +89,7 @@ class ProductAdminModel {
         IMAGEN_URL,
         NOTA_ACTUAL,
         ADVERTENCIA,
+        ID_CATALOGO
       ]);
       await conn.commit();
     } catch (error) {
@@ -133,38 +135,38 @@ class ProductAdminModel {
     }
   }
   async cargarMasivaDesdeCSV(registros) {
-  const conn = await pool.getConnection();
-  try {
-    await conn.beginTransaction();
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
 
-    for (const row of registros) {
-      const {
-        ID_TIPO_PRO,
-        NOMBRE,
-        PRECIO,
-        DESCRIPCION,
-        IMAGEN_URL,
-        NOTA_ACTUAL,
-        ADVERTENCIA
-      } = row;
+      for (const row of registros) {
+        const {
+          ID_TIPO_PRO,
+          NOMBRE,
+          PRECIO,
+          DESCRIPCION,
+          IMAGEN_URL,
+          NOTA_ACTUAL,
+          ADVERTENCIA
+        } = row;
 
-      if (!NOMBRE || !ID_TIPO_PRO || !PRECIO || !IMAGEN_URL || !NOTA_ACTUAL || !ADVERTENCIA) continue;
+        if (!NOMBRE || !ID_TIPO_PRO || !PRECIO || !IMAGEN_URL || !NOTA_ACTUAL || !ADVERTENCIA) continue;
 
-      await conn.query(
-        `CALL sp_insert_massive_product_admin(?, ?, ?, ?, ?, ?, ?)`,
-        [ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA]
-      );
+        await conn.query(
+          `CALL sp_insert_massive_product_admin(?, ?, ?, ?, ?, ?, ?)`,
+          [ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA]
+        );
+      }
+
+      await conn.commit();
+    } catch (error) {
+      await conn.rollback();
+      console.error('Error en cargaMasivaDesdeCSV:', error);
+      throw error;
+    } finally {
+      conn.release();
     }
-
-    await conn.commit();
-  } catch (error) {
-    await conn.rollback();
-    console.error('Error en cargaMasivaDesdeCSV:', error);
-    throw error;
-  } finally {
-    conn.release();
   }
-}
 
 }
 export default new ProductAdminModel();

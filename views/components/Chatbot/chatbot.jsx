@@ -25,7 +25,7 @@ const Chatbot = () => {
 
   return (
     <div id="chatbot-container">
-      <h3>Chatbot Cargado</h3>
+
     </div>
   );
 };

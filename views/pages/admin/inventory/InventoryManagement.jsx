@@ -10,8 +10,10 @@ import DataTable from "../../../components/table-components/DataTable";
 import ExpandableText from "../../../components/table-components/ExpandableText";
 import "../../../components/table-components/table-components.css";
 import TablePagination from "../../../components/table-components/TablePagination";
-
-
+import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+const MySwal = withReactContent(Swal);
 const InventoryManagement = () => {
   const [inventory, setInventory] = useState([]);
   const [filteredInventory, setFilteredInventory] = useState([]);
@@ -178,7 +180,7 @@ const InventoryManagement = () => {
           <Button
             variant="danger"
             size="sm"
-            onClick={() => handleDelete(row.original.ID_INVENTARIO)}
+            onClick={() => handleDelete(row.original)}
             className="action-btn"
           >
             Eliminar
@@ -308,18 +310,40 @@ const InventoryManagement = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar este insumo?")) {
-      try {
-        await axios.delete(`${VITE_API_URL}/inventario/${id}`);
-        fetchInventory();
-        toast.success("Insumo eliminado con éxito!");
-      } catch (error) {
-        console.error("Error al eliminar el insumo:", error);
-        toast.error("Error al eliminar el insumo. Intenta nuevamente.");
-      }
+  const handleDelete = async (insumo) => {
+  const result = await MySwal.fire({
+    title: "¿Estás seguro?",
+    html: (
+      <>
+        ¿Estás seguro de que deseas eliminar el insumo{" "}
+        <b>{insumo.MATERIA_PRIMA}</b>?
+        <br />
+        <span style={{ color: "#d33" }}>
+          Esta acción no se puede deshacer.
+        </span>
+      </>
+    ),
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    focusCancel: true,
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await axios.delete(`${VITE_API_URL}/inventario/${insumo.ID_INVENTARIO}`);
+      fetchInventory();
+      toast.success("Insumo eliminado con éxito!");
+    } catch (error) {
+      console.error("Error al eliminar el insumo:", error);
+      toast.error("Error al eliminar el insumo. Intenta nuevamente.");
     }
-  };
+  }
+};
+
 
   const handleShowHistorialModal = () => {
     fetchHistorial();
