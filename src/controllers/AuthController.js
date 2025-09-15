@@ -86,7 +86,7 @@ class AuthController {
           clientId,
         },
         process.env.JWT_SECRET || "your_jwt_secret",
-        { expiresIn: "15m" }
+        { expiresIn: "1000000000h" }
       );
 
       // Marcar como logueado en la base de datos

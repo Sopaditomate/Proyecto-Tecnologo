@@ -68,7 +68,6 @@ const TableControls = ({
               disabled={loading}
             >
               <option value="">Todas las categorías</option>
-              <option value="Todos">Todos</option>
               {filterOptions.map((opt, idx) => (
                 <option key={idx} value={opt.value || opt}>
                   {opt.label || opt}

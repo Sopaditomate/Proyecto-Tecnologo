@@ -318,18 +318,6 @@ export const AdminUsers = () => {
         showAdd={false}
         showHistory={false}
         showUpload={false}
-        exportOptions={[
-          {
-            label: "PDF",
-            onClick: () => console.log("Exportar PDF"),
-            variant: "outline-danger",
-          },
-          {
-            label: "Excel",
-            onClick: () => console.log("Exportar Excel"),
-            variant: "outline-success",
-          },
-        ]}
         columns={columns}
         data={paginatedUsers}
         loading={loading}
