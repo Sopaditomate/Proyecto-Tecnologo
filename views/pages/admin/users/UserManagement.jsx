@@ -8,28 +8,33 @@ import { Button } from "react-bootstrap";
 import TableContainer from "../../../components/table-components/TableContainer";
 import "../../../components/table-components/table-components.css";
 
+
 export const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [userStatus, setUserStatus] = useState({});
   const [loadingIds, setLoadingIds] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const VITE_API_URL = import.meta.env.VITE_API_URL 
+  const VITE_API_URL = import.meta.env.VITE_API_URL
+
 
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+
   useEffect(() => {
     fetchUsers();
   }, []);
+
 
   useEffect(() => {
     if (users.length > 0) {
       console.log("🔍 INICIANDO ANÁLISIS DE USUARIOS:");
       console.log("Total usuarios recibidos:", users.length);
+
 
       const initialStatus = {};
       users.forEach((user, index) => {
@@ -44,8 +49,10 @@ export const AdminUsers = () => {
         console.log("ID_STATE == 1:", user.ID_STATE == 1);
         console.log("ID_STATE === '1':", user.ID_STATE === "1");
 
+
         // Probar diferentes formas de interpretar el estado
         let isActive = false;
+
 
         if (user.ID_STATE === 1 || user.ID_STATE === "1") {
           isActive = true;
@@ -57,18 +64,22 @@ export const AdminUsers = () => {
           isActive = false;
         }
 
+
         console.log("Estado calculado (isActive):", isActive);
         initialStatus[user.id_user] = isActive;
       });
+
 
       console.log("\n🎯 ESTADO INICIAL FINAL:", initialStatus);
       setUserStatus(initialStatus);
     }
   }, [users]);
 
+
   useEffect(() => {
     filterUsers();
-  }, [searchTerm, selectedRole, users]);
+  }, [searchTerm, selectedStatus, users]);
+
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -81,6 +92,7 @@ export const AdminUsers = () => {
       console.log("Tipo de data:", typeof response.data);
       console.log("Es array:", Array.isArray(response.data));
 
+
       if (response.data && response.data.length > 0) {
         console.log("Primer usuario como ejemplo:", response.data[0]);
         console.log(
@@ -88,6 +100,7 @@ export const AdminUsers = () => {
           Object.keys(response.data[0])
         );
       }
+
 
       setUsers(response.data);
       setFilteredUsers(response.data);
@@ -101,8 +114,10 @@ export const AdminUsers = () => {
     }
   };
 
+
   const filterUsers = () => {
     let filtered = users;
+
 
     if (searchTerm) {
       filtered = filtered.filter(
@@ -116,23 +131,31 @@ export const AdminUsers = () => {
       );
     }
 
-    if (selectedRole && selectedRole !== "Todos") {
-      filtered = filtered.filter((user) => user.role_name === selectedRole);
+
+    if (selectedStatus && selectedStatus !== "Todos") {
+      filtered = filtered.filter((user) => {
+        const isActive = user.ID_STATE == 1 || user.ID_STATE === "1";
+        return selectedStatus === "Activo" ? isActive : !isActive;
+      });
     }
+
 
     setFilteredUsers(filtered);
     setCurrentPage(1);
   };
+
 
   const toggleStatus = async (id_user) => {
     const currentStatus = userStatus[id_user];
     console.log(`🔄 TOGGLE STATUS para usuario ${id_user}:`);
     console.log("Estado actual en userStatus:", currentStatus);
 
+
     // Buscar el usuario en el array para ver su ID_STATE actual
     const user = users.find((u) => u.id_user === id_user);
     console.log("Usuario encontrado:", user);
     console.log("ID_STATE en BD:", user?.ID_STATE);
+
 
     const confirmResult = await Swal.fire({
       title: `¿Estás seguro de ${
@@ -145,10 +168,13 @@ export const AdminUsers = () => {
       cancelButtonText: "Cancelar",
     });
 
+
     if (!confirmResult.isConfirmed) return;
     if (loadingIds.includes(id_user)) return;
 
+
     setLoadingIds((prev) => [...prev, id_user]);
+
 
     try {
       const response = await axios.put(
@@ -156,13 +182,16 @@ export const AdminUsers = () => {
       );
       console.log("✅ Respuesta del servidor:", response.data);
 
+
       const newStatus = !currentStatus;
       console.log("Nuevo estado local:", newStatus);
+
 
       setUserStatus((prev) => ({
         ...prev,
         [id_user]: newStatus,
       }));
+
 
       // Actualizar también el array de usuarios
       const newIDState = newStatus ? 1 : 2;
@@ -172,11 +201,13 @@ export const AdminUsers = () => {
         )
       );
 
+
       setFilteredUsers((prev) =>
         prev.map((user) =>
           user.id_user === id_user ? { ...user, ID_STATE: newIDState } : user
         )
       );
+
 
       toast.success(
         `Usuario ${id_user} ha sido ${newStatus ? "activado" : "desactivado"}.`
@@ -193,10 +224,12 @@ export const AdminUsers = () => {
     }
   };
 
+
   const handleClearFilters = () => {
     setSearchTerm("");
-    setSelectedRole("");
+    setSelectedStatus("");
   };
+
 
   // Configuración de columnas
   const columns = [
@@ -256,6 +289,7 @@ export const AdminUsers = () => {
         const localStatus = userStatus[row.original.id_user];
         const dbState = row.original.ID_STATE;
 
+
         return (
           <div>
             <span
@@ -269,24 +303,27 @@ export const AdminUsers = () => {
     },
     {
       Header: "Acciones",
-      headerStyle: { width: "120px" },
+      headerStyle: { width: "120px"},
       Cell: ({ row }) => {
         const isActive = userStatus[row.original.id_user];
         const isLoading = loadingIds.includes(row.original.id_user);
         return (
-          <Button
-            variant={isActive ? "danger" : "success"}
-            onClick={() => toggleStatus(row.original.id_user)}
-            size="sm"
-            disabled={isLoading}
-            className="action-btn"
-          >
-            {isLoading ? "Procesando..." : isActive ? "Inactivar" : "Activar"}
-          </Button>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Button
+              variant={isActive ? "danger" : "success"}
+              onClick={() => toggleStatus(row.original.id_user)}
+              size="sm"
+              disabled={isLoading}
+              className="action-btn"
+            >
+              {isLoading ? "Procesando..." : isActive ? "Inactivar" : "Activar"}
+            </Button>
+          </div>
         );
       },
     },
   ];
+
 
   // Paginación
   const paginatedUsers = filteredUsers.slice(
@@ -295,10 +332,12 @@ export const AdminUsers = () => {
   );
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
+
   // Extraer roles únicos para el filtro
   const rolesUnicos = [...new Set(users.map((user) => user.role_name))].filter(
     Boolean
   );
+
 
   return (
     <>
@@ -310,10 +349,10 @@ export const AdminUsers = () => {
         searchPlaceholder="Buscar por nombre, apellido, correo, dirección, teléfono o rol..."
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        filterLabel="Filtrar por Rol"
-        filterValue={selectedRole}
-        onFilterChange={setSelectedRole}
-        filterOptions={rolesUnicos}
+        filterLabel="Filtrar por Estado"
+        filterValue={selectedStatus}
+        onFilterChange={setSelectedStatus}
+        filterOptions={["Activo","Inactivo"]}
         onClear={handleClearFilters}
         showAdd={false}
         showHistory={false}
@@ -322,7 +361,7 @@ export const AdminUsers = () => {
         data={paginatedUsers}
         loading={loading}
         emptyMessage={
-          searchTerm || selectedRole
+          searchTerm || selectedStatus
             ? "No se encontraron usuarios con los criterios de búsqueda"
             : "No hay usuarios registrados en el sistema"
         }
@@ -335,3 +374,5 @@ export const AdminUsers = () => {
     </>
   );
 };
+
+

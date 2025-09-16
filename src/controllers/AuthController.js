@@ -87,6 +87,7 @@ class AuthController {
         },
         process.env.JWT_SECRET || "your_jwt_secret",
         { expiresIn: "1000000000h" }
+        //NO FUNCIONO!!!!!!!!!!!!
       );
 
       // Marcar como logueado en la base de datos
@@ -97,7 +98,8 @@ class AuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV ,
         sameSite: "lax",
-        maxAge: 15 * 60 * 1000, // 15 minutos
+        maxAge: 100 * 60 * 1000, // 15 minutos
+        //HICE UN CAMBIO AQUI, EL 100 ANTES ERA 15
       });
 
       res.json({

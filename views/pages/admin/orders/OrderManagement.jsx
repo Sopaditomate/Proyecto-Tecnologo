@@ -260,7 +260,6 @@ export const AdminOrders = () => {
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
 
   const filterOptions = [
-    { label: "Todos", value: "" },
     ...orderStatuses.map((status) => ({
       label: status.status_name,
       value: status.id_order_status.toString(),
