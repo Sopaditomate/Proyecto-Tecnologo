@@ -16,6 +16,16 @@ const ProductModals = ({
   editProd,
   tiposProducto,
 }) => {
+  
+  // Function to format price with a dot as a thousands separator
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'decimal',
+      minimumFractionDigits: 2,  // Keep 2 decimal places
+      maximumFractionDigits: 2,  // Keep 2 decimal places
+    }).format(price).replace(/,/g, '.');  // Replace commas with dots
+  };
+
   const renderFormFields = () => (
     <>
       <Row>
