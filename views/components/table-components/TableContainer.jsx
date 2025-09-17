@@ -100,6 +100,7 @@ const TableContainer = ({
         onClearFilters={onClear}
         searchTerm={searchTerm}
         selectedFilter={filterValue}
+        tableBorderStyle="2px solid #000"
       />
 
       {showPagination && totalPages > 1 && (
