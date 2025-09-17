@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 import MercadoPagoService from "../services/mercadoPagoService.js";
+import { sendOrderUpdateEmail } from "../services/orderEmailService.js";
 
 class PaymentController {
   /**
@@ -168,6 +169,8 @@ class PaymentController {
           totalAmount,
           message: "Pedido creado correctamente después del pago",
         });
+
+        await sendOrderUpdateEmail(orderId, 300001);
       } catch (error) {
         await connection.rollback();
         throw error;
@@ -333,93 +336,6 @@ class PaymentController {
     } catch (error) {
       console.error("Error en webhook Mercado Pago:", error);
       res.status(500).send("Error");
-    }
-  }
-
-  /**
-   * Crear un pedido antes del pago (método legacy)
-   */
-  async createOrder(req, res) {
-    try {
-      const clientId = req.user.clientId;
-      const { items, deliveryAddress, shippingCost = 5000 } = req.body;
-
-      if (!clientId) {
-        return res.status(400).json({
-          message: "ID de cliente no encontrado en el token",
-        });
-      }
-
-      if (!items || !Array.isArray(items) || items.length === 0) {
-        return res.status(400).json({
-          message: "Los items del pedido son requeridos",
-        });
-      }
-
-      if (!deliveryAddress) {
-        return res.status(400).json({
-          message: "La dirección de entrega es requerida",
-        });
-      }
-
-      const connection = await pool.getConnection();
-      try {
-        await connection.beginTransaction();
-
-        let subtotal = 0;
-        for (const item of items) {
-          subtotal += item.price * item.cantidad;
-        }
-        const tax = subtotal * 0.19; // IVA 19%
-        const totalAmount = subtotal + tax + shippingCost;
-
-        console.log(
-          `[Legacy] Order calculation - Subtotal: ${subtotal}, Tax: ${tax}, Shipping: ${shippingCost}, Total: ${totalAmount}`
-        );
-
-        // Crear pedido en order_header
-        const [orderResult] = await connection.query(
-          `INSERT INTO order_header 
-           (id_user, id_order_status, created_at, total_amount, id_state) 
-           VALUES (?, 300000, NOW(), ?, 1)`, // id_state = 1 (activo)
-          [clientId, totalAmount]
-        );
-
-        const orderId = orderResult.insertId;
-
-        // Crear detalles del pedido
-        for (const item of items) {
-          await connection.query(
-            `INSERT INTO order_detail 
-             (id_order, id_product, quantity, final_price, id_state) 
-             VALUES (?, ?, ?, ?, 1)`, // id_state = 1 (activo)
-            [orderResult.insertId, item.id, item.cantidad, item.price]
-          );
-        }
-
-        await connection.commit();
-
-        res.json({
-          success: true,
-          orderId,
-          subtotal,
-          tax,
-          shippingCost,
-          totalAmount,
-          message: "Pedido creado correctamente",
-        });
-      } catch (error) {
-        await connection.rollback();
-        throw error;
-      } finally {
-        connection.release();
-      }
-    } catch (error) {
-      console.error("Error al crear pedido:", error);
-      res.status(500).json({
-        message: "Error al crear el pedido",
-        error: error.message,
-      });
     }
   }
 

@@ -54,12 +54,21 @@ const AddressAutocomplete = ({
     if (!inputRef.current || !window.google?.maps?.places) return;
 
     // Ensure the Autocomplete is initialized after Google Maps is ready
+    const bogotaBounds = {
+      north: 4.864221,
+      south: 4.469911,
+      east: -73.987391,
+      west: -74.228165,
+    };
+
     autocompleteRef.current = new window.google.maps.places.Autocomplete(
       inputRef.current,
       {
         types: ["address"],
         componentRestrictions: { country: "co" },
         fields: ["formatted_address", "geometry"],
+        bounds: bogotaBounds,
+        strictBounds: true,
       }
     );
 

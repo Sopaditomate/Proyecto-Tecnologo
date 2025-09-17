@@ -58,14 +58,18 @@ class AuthController {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
-      // Verificar si el usuario ya tiene una sesión activa
-      const isAlreadyLoggedIn = await UserModel.isUserLoggedIn(user.ID_USUARIO);
+      // Solo verificar sesión activa para administradores
+      if (user.ID_ROL === 100000) {
+        const isAlreadyLoggedIn = await UserModel.isUserLoggedIn(
+          user.ID_USUARIO
+        );
 
-      if (isAlreadyLoggedIn) {
-        return res.status(401).json({
-          message: "Credenciales inválidas",
-          code: "ADMIN_SESSION_EXISTS",
-        });
+        if (isAlreadyLoggedIn) {
+          return res.status(401).json({
+            message: "Credenciales inválidas",
+            code: "ADMIN_SESSION_EXISTS",
+          });
+        }
       }
 
       // Obtener información completa del usuario
@@ -86,18 +90,20 @@ class AuthController {
           clientId,
         },
         process.env.JWT_SECRET || "your_jwt_secret",
-        { expiresIn: "15m" }
+        { expiresIn: "1h" }
       );
 
-      // Marcar como logueado en la base de datos
-      await UserModel.setLoggedIn(user.ID_USUARIO, true);
+      // Solo marcar como logueado en la BD si es administrador
+      if (user.ID_ROL === 100001) {
+        await UserModel.setLoggedIn(user.ID_USUARIO, true);
+      }
 
       // Enviar respuesta con token y cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV ,
+        secure: process.env.NODE_ENV,
         sameSite: "lax",
-        maxAge: 15 * 60 * 1000, // 15 minutos
+        maxAge: 60 * 60 * 1000, // 1 hora
       });
 
       res.json({

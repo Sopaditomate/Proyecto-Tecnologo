@@ -92,6 +92,32 @@ export function Header({
     if (event.target.classList.contains("overlay")) setToggle(false);
   };
 
+  // Función para generar iniciales del usuario
+  const getUserInitials = () => {
+    if (user?.nombres) {
+      const nombres = user.nombres.split(" ")[0] || "";
+      const apellidos = user.apellidos ? user.apellidos.split(" ")[0] : "";
+      return `${nombres.charAt(0)}${apellidos.charAt(0)}`.toUpperCase();
+    }
+    return "U";
+  };
+
+  // Función para obtener el nombre completo del usuario
+  const getFullName = () => {
+    if (user?.nombres && user?.apellidos) {
+      return `${user.nombres} ${user.apellidos}`;
+    } else if (user?.nombres) {
+      return user.nombres;
+    }
+    return "Usuario";
+  };
+
+  // Función para navegar directamente a una sección del perfil
+  const navigateToProfile = (section = "profile") => {
+    setProfileOpen(false);
+    navigate("/profile", { state: { activeTab: section } });
+  };
+
   // ====== RENDER PERFIL DE USUARIO ======
   const renderUserProfile = () => {
     if (!isAuthenticated) return null;
@@ -105,43 +131,119 @@ export function Header({
         onClick={() => !toggle && setProfileOpen((prev) => !prev)}
         style={{ marginLeft: "1rem" }}
       >
-        <img
-          src="/assets/profileiconwhite.svg"
-          alt="Perfil"
-          className="header-profile-avatar"
-        />
+        {/* Avatar con iniciales */}
+        <div className="header-profile-avatar-container">
+          <div className="header-profile-avatar-circle">
+            <span className="header-profile-initials">{getUserInitials()}</span>
+          </div>
+          <div className="header-profile-status-indicator"></div>
+        </div>
 
-        <span className="header-profile-name">
-          {isAdmin
-            ? `Administrador ${user?.nombres}`
-            : user?.nombres
-            ? `Cliente ${user.nombres}`
-            : "Usuario"}
-        </span>
+        {/* Información del usuario */}
+        <div className="header-profile-info">
+          <span className="header-profile-name">{getFullName()}</span>
+          <span className="header-profile-role">
+            {isAdmin ? "Administrador" : "Cliente"}
+          </span>
+        </div>
 
-        {/* Opciones del desplegable: mostrar para ambos (admin y usuario) */}
+        {/* Icono de dropdown */}
+        <div className={`header-profile-arrow ${profileOpen ? "rotated" : ""}`}>
+          <svg
+            width="25"
+            height="25"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <polyline points="6,9 12,15 18,9"></polyline>
+          </svg>
+        </div>
+
+        {/* Opciones del desplegable */}
         {isAuthenticated && (
           <div className="header-profile-dropdown">
             {!isAdmin && (
               <>
                 <div
                   className="header-profile-dropdown-item"
-                  onClick={() => navigate("/profile")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateToProfile("profile");
+                  }}
                 >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
                   Mi Perfil
                 </div>
                 <div
                   className="header-profile-dropdown-item"
-                  onClick={() => navigate("/profile")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateToProfile("orders");
+                  }}
                 >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"></path>
+                  </svg>
                   Mis Pedidos
+                </div>
+                <div
+                  className="header-profile-dropdown-item"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigateToProfile("verification");
+                  }}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Verificación
                 </div>
               </>
             )}
+            <div className="header-profile-dropdown-divider"></div>
             <div
-              className="header-profile-dropdown-item"
-              onClick={handleLogout}
+              className="header-profile-dropdown-item logout-item"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLogout();
+              }}
             >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"></path>
+              </svg>
               Cerrar Sesión
             </div>
           </div>
@@ -213,40 +315,39 @@ export function Header({
           >
             {isAuthenticated && renderUserProfile()}
             <div className={`cart-container ${toggle ? "disabled" : ""}`}>
-  {icon2 ? (
-    link2 ? (
-      <Link to={link2} className="cart-link">
-        {typeof icon2 === "string" ? (
-          <div className="cart-link">
-            {icon2 === "/assets/shoppingcar.svg" && (
-              <div className="cart-badge">{cartLength()}</div>
-            )}
-            <img
-              src={icon2}
-              className="shoppin-car-header"
-              onClick={
-                icon2 === "/assets/shoppingcar.svg" ? handleCartClick : null
-              }
-              id={toggle ? "disabled-logo" : ""}
-              alt="Icon"
-            />
-          </div>
-        ) : (
-          // icon2 como componente JSX
-          <div className="custom-icon">{icon2}</div>
-        )}
-      </Link>
-    ) : (
-      // Si no hay link2, solo renderiza el icono
-      typeof icon2 === "string" ? (
-        <img src={icon2} className="shoppin-car-header" alt="Icon" />
-      ) : (
-        <div className="custom-icon">{icon2}</div>
-      )
-    )
-  ) : null}
-</div>
-
+              {icon2 ? (
+                link2 ? (
+                  <Link to={link2} className="cart-link">
+                    {typeof icon2 === "string" ? (
+                      <div className="cart-link">
+                        {icon2 === "/assets/shoppingcar.svg" && (
+                          <div className="cart-badge">{cartLength()}</div>
+                        )}
+                        <img
+                          src={icon2}
+                          className="shoppin-car-header"
+                          onClick={
+                            icon2 === "/assets/shoppingcar.svg"
+                              ? handleCartClick
+                              : null
+                          }
+                          id={toggle ? "disabled-logo" : ""}
+                          alt="Icon"
+                        />
+                      </div>
+                    ) : (
+                      // icon2 como componente JSX
+                      <div className="custom-icon">{icon2}</div>
+                    )}
+                  </Link>
+                ) : // Si no hay link2, solo renderiza el icono
+                typeof icon2 === "string" ? (
+                  <img src={icon2} className="shoppin-car-header" alt="Icon" />
+                ) : (
+                  <div className="custom-icon">{icon2}</div>
+                )
+              ) : null}
+            </div>
           </div>
         </div>
       </div>

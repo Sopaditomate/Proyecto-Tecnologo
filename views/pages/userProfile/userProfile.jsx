@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 
 import ChangePasswordSection from "./ChangePasswordSection";
@@ -15,10 +16,15 @@ import { registerSchema } from "../../utils/validationSchema";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export default function Profile() {
-  const [activeTab, setActiveTab] = useState("profile");
+  const location = useLocation();
+
+  // Obtener activeTab del state de la navegación, con fallback a "profile"
+  const initialTab = location.state?.activeTab || "profile";
+
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [profile, setProfile] = useState({});
   const [form, setForm] = useState({});
-  const [originalForm, setOriginalForm] = useState({}); // Para comparar cambios
+  const [originalForm, setOriginalForm] = useState({});
   const [editing, setEditing] = useState(false);
   const [phoneCode, setPhoneCode] = useState("");
   const [emailStatus, setEmailStatus] = useState("");
@@ -37,9 +43,26 @@ export default function Profile() {
 
   // Configurar axios con el token y URL base
   useEffect(() => {
-    // Configurar URL base
     axios.defaults.baseURL = API_URL;
   }, []);
+
+  // Actualizar activeTab si cambia el state de la navegación
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      console.log("Cambiando a pestaña:", location.state.activeTab);
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
+
+  // Limpiar el state de navegación para evitar problemas futuros
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      const timer = setTimeout(() => {
+        window.history.replaceState(null, "", location.pathname);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     loadProfile();
@@ -51,15 +74,12 @@ export default function Profile() {
   const loadProfile = async () => {
     setProfileLoading(true);
     try {
-      //console.log("Loading profile...");
       const response = await axios.get("/user/profile", {
         withCredentials: true,
       });
-      //console.log("Profile response:", response.data);
 
       if (response.data.success) {
         const userData = response.data.data;
-        //console.log("User data received:", userData);
 
         // Normaliza los nombres de los campos
         const normalized = {
@@ -78,22 +98,15 @@ export default function Profile() {
         const phoneVerifiedStatus = userData.verified_phone === 1;
         const emailVerifiedStatus = userData.verified === 1;
 
-        /*console.log("Setting verification states:", {
-          phone: phoneVerifiedStatus,
-          email: emailVerifiedStatus,
-        });*/
-
         setPhoneVerified(phoneVerifiedStatus);
         setEmailVerified(emailVerifiedStatus);
       } else {
-        //////console.error("Error en respuesta:", response.data.message);
         showNotification(
           "Error al cargar el perfil: " + response.data.message,
           "error"
         );
       }
     } catch (error) {
-      //console.error("Error loading profile:", error);
       if (error.response?.status === 401) {
         localStorage.removeItem("token");
         document.cookie =
@@ -113,20 +126,15 @@ export default function Profile() {
   const loadOrders = async () => {
     setLoading(true);
     try {
-      //console.log("Loading orders...");
       const response = await axios.get("/user/orders", {
         withCredentials: true,
       });
-      //console.log("Orders response:", response.data);
 
       if (response.data.success) {
         setOrders(response.data.data);
         setFilteredOrders(response.data.data);
-      } else {
-        //console.error("Error en respuesta:", response.data.message);
       }
     } catch (error) {
-      //console.error("Error loading orders:", error);
       if (error.response?.status === 401) {
         localStorage.removeItem("token");
         document.cookie =
@@ -141,15 +149,11 @@ export default function Profile() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-
-    // Marcar el campo como tocado
     setTouchedFields((prev) => ({ ...prev, [name]: true }));
   };
 
-  // Función para detectar si hay cambios reales
   const hasChanges = () => {
     if (!originalForm || !form) return false;
-
     return (
       (form.nombres || "").trim() !== (originalForm.nombres || "").trim() ||
       (form.apellidos || "").trim() !== (originalForm.apellidos || "").trim() ||
@@ -164,7 +168,6 @@ export default function Profile() {
     notification.textContent =
       type === "success" ? "✓ " + message : "❌ " + message;
     document.body.appendChild(notification);
-
     setTimeout(() => {
       notification.remove();
     }, 3000);
@@ -172,7 +175,6 @@ export default function Profile() {
 
   const getFieldError = (fieldName, value) => {
     if (!touchedFields[fieldName]) return "";
-
     if (!value || !value.trim()) {
       switch (fieldName) {
         case "nombres":
@@ -193,13 +195,11 @@ export default function Profile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Verificar si hay cambios reales
     if (!hasChanges()) {
       showNotification("No hay cambios para guardar", "error");
       return;
     }
 
-    // Marcar todos los campos como tocados para mostrar errores
     setTouchedFields({
       nombres: true,
       apellidos: true,
@@ -207,7 +207,6 @@ export default function Profile() {
       direccion: true,
     });
 
-    // Validar campos requeridos
     if (
       !form.nombres?.trim() ||
       !form.apellidos?.trim() ||
@@ -220,7 +219,6 @@ export default function Profile() {
 
     setIsLoading(true);
     try {
-      //console.log("Updating profile with:", form);
       const response = await axios.put(
         "/user/profile",
         {
@@ -234,15 +232,12 @@ export default function Profile() {
         }
       );
 
-      //console.log("Update response:", response.data);
-
       if (response.data.success) {
         showNotification("Perfil actualizado exitosamente");
         setEditing(false);
         setProfile(form);
-        setOriginalForm(form); // Actualizar estado original
-        setTouchedFields({}); // Limpiar campos tocados
-        // Recargar perfil para obtener datos actualizados
+        setOriginalForm(form);
+        setTouchedFields({});
         await loadProfile();
       } else {
         showNotification(
@@ -251,7 +246,6 @@ export default function Profile() {
         );
       }
     } catch (error) {
-      //console.error("Error updating profile:", error);
       if (error.response?.data?.message) {
         showNotification(error.response.data.message, "error");
       } else {
@@ -270,7 +264,6 @@ export default function Profile() {
 
     setPhoneStatus("Enviando código...");
     try {
-      //console.log("Sending phone verification to:", form.telefono);
       const response = await axios.post(
         "/user/verify-phone/send",
         {
@@ -281,11 +274,8 @@ export default function Profile() {
         }
       );
 
-      //console.log("SMS response:", response.data);
-
       if (response.data.success) {
         setPhoneStatus(response.data.message);
-        // En desarrollo, mostrar el código
         if (response.data.code) {
           setPhoneStatus(
             `${response.data.message} - Código: ${response.data.code}`
@@ -295,7 +285,6 @@ export default function Profile() {
         setPhoneStatus(response.data.message || "Error al enviar código");
       }
     } catch (error) {
-      //console.error("Error sending phone code:", error);
       setPhoneStatus("Error al enviar código de verificación");
     }
   };
@@ -308,7 +297,6 @@ export default function Profile() {
 
     setPhoneStatus("Verificando código...");
     try {
-      //console.log("Confirming phone with code:", phoneCode);
       const response = await axios.post(
         "/user/verify-phone/confirm",
         {
@@ -319,23 +307,14 @@ export default function Profile() {
         }
       );
 
-      //console.log("Confirm phone response:", response.data);
-
       if (response.data.success) {
-        // Actualizar inmediatamente el estado local
         setPhoneVerified(true);
         setPhoneStatus("✅ " + response.data.message);
         setPhoneCode("");
-
-        // Actualizar el perfil local también
         setProfile((prev) => ({
           ...prev,
           verified_phone: 1,
         }));
-
-        //console.log("Phone verification successful, state updated");
-
-        // Opcional: recargar perfil después de un breve delay
         setTimeout(() => {
           loadProfile();
         }, 1000);
@@ -343,7 +322,6 @@ export default function Profile() {
         setPhoneStatus("❌ " + (response.data.message || "Código inválido"));
       }
     } catch (error) {
-      ////console.error("Error confirming phone:", error);
       setPhoneStatus("❌ Error al verificar código");
     }
   };
@@ -357,8 +335,6 @@ export default function Profile() {
         { withCredentials: true }
       );
 
-      //console.log("Email verification response:", response.data);
-
       if (response.data.success) {
         setEmailStatus(response.data.message);
         if (response.data.verificationLink) {
@@ -370,7 +346,6 @@ export default function Profile() {
         );
       }
     } catch (error) {
-      ////console.error("Error sending email verification:", error);
       setEmailStatus("❌ Error al enviar correo de verificación");
     }
   };
@@ -384,23 +359,14 @@ export default function Profile() {
         { withCredentials: true }
       );
 
-      //console.log("Email confirmation response:", response.data);
-
       if (response.data.success) {
-        // Actualizar inmediatamente el estado local
         setEmailVerified(true);
         setEmailStatus("✅ " + response.data.message);
-
-        // Actualizar el perfil local también
         setProfile((prev) => ({
           ...prev,
           verified: 1,
           VERIFIED: 1,
         }));
-
-        //console.log("Email verification successful, state updated");
-
-        // Opcional: recargar perfil después de un breve delay
         setTimeout(() => {
           loadProfile();
         }, 1000);
@@ -410,7 +376,6 @@ export default function Profile() {
         );
       }
     } catch (error) {
-      //console.error("Error confirming email:", error);
       setEmailStatus("❌ Error al verificar el correo");
     }
   };
@@ -485,19 +450,9 @@ export default function Profile() {
     const token = urlParams.get("token");
     if (token && activeTab === "verification") {
       confirmEmailVerification(token);
-      // Limpiar URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [activeTab]);
-
-  // Debug: mostrar estados actuales
-  useEffect(() => {
-    /* console.log("Current verification states:", {
-      phoneVerified,
-      emailVerified,
-      profile: profile,
-    });*/
-  }, [phoneVerified, emailVerified, profile]);
 
   if (profileLoading) {
     return (

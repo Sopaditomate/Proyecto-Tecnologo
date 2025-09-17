@@ -71,7 +71,7 @@ const TablePagination = ({
 
   return (
     <div
-      className={`d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 ${className}`}
+      className={`d-flex flex-column flex-md-row justify-content-between align-items-center mt-3 mb-3 ${className}`}
     >
       {showInfo && (
         <div className="mb-2 mb-md-0">

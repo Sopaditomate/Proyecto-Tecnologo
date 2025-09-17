@@ -23,6 +23,48 @@ export function CartProvider({ children }) {
   const isInitialLoad = useRef(true);
   const isCartFromUserAction = useRef(false);
 
+  // Función para calcular distancia y costo de envío
+  const calculateShippingForAddress = (address) => {
+    if (!window.google || !window.google.maps || !address?.trim()) {
+      return;
+    }
+
+    const service = new window.google.maps.DistanceMatrixService();
+    service.getDistanceMatrix(
+      {
+        origins: ["Cra. 129 #131-50, Suba, Bogotá"],
+        destinations: [address],
+        travelMode: "DRIVING",
+        unitSystem: window.google.maps.UnitSystem.METRIC,
+      },
+      (response, status) => {
+        if (status === "OK" && response.rows[0].elements[0].status === "OK") {
+          const distanceResult = response.rows[0].elements[0].distance;
+          const distanceInKm = distanceResult.value / 1000;
+          const calculatedShipping = Math.max(
+            5000,
+            Math.round(distanceInKm * 500)
+          );
+          setShippingCost(calculatedShipping);
+        } else {
+          // Si no se puede calcular, usar un valor por defecto
+          setShippingCost(8000);
+        }
+      }
+    );
+  };
+
+  // Función mejorada para actualizar dirección con recálculo automático
+  const updateDeliveryAddress = (address) => {
+    setDeliveryAddress(address);
+    // Calcular costo de envío automáticamente
+    if (address && address.trim()) {
+      calculateShippingForAddress(address);
+    } else {
+      setShippingCost(0);
+    }
+  };
+
   // Cargar carrito desde localStorage si no hay usuario
   useEffect(() => {
     if (!user && !loading) {
@@ -185,10 +227,22 @@ export function CartProvider({ children }) {
     showRemoveFromCartNotification(product);
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
     isCartFromUserAction.current = true;
     setCart([]);
     showClearCartNotification();
+    // Limpia el carrito en el backend si el usuario está autenticado
+    if (user && user.id) {
+      try {
+        await axios.post(
+          `${API_URL}/cart`,
+          { items: [] },
+          { withCredentials: true }
+        );
+      } catch (e) {
+        // Puedes mostrar un toast de error si quieres
+      }
+    }
   };
 
   const openCart = () => {
@@ -217,7 +271,7 @@ export function CartProvider({ children }) {
     return shippingCost;
   };
 
-  // Función para establecer el costo de envío
+  // Función para establecer el costo de envío (mantener compatibilidad)
   const setShippingCostValue = (cost) => {
     setShippingCost(cost);
   };
@@ -286,9 +340,10 @@ export function CartProvider({ children }) {
     cartLength,
     getRecommendedProducts,
     deliveryAddress,
-    setDeliveryAddress,
+    setDeliveryAddress: updateDeliveryAddress, // Usar la función mejorada
     paymentMethod,
     setPaymentMethod,
+    calculateShippingForAddress, // Exponer la función para uso directo
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

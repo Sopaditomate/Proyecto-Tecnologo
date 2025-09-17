@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -9,6 +10,30 @@ import { CheckoutModal } from "./CheckoutModal";
 import AddressAutocomplete from "../../components/maps/AddressAutocomplete";
 import "./slide-cart.css";
 import axios from "axios";
+
+// Función para formatear precios en pesos colombianos
+const formatCOP = (amount) => {
+  // Redondear a números más amigables
+  let roundedAmount;
+
+  if (amount >= 10000) {
+    // Para valores grandes, redondear a centenas
+    roundedAmount = Math.round(amount / 100) * 100;
+  } else if (amount >= 1000) {
+    // Para valores medianos, redondear a decenas
+    roundedAmount = Math.round(amount / 10) * 10;
+  } else {
+    // Para valores pequeños, redondear normalmente
+    roundedAmount = Math.round(amount);
+  }
+
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(roundedAmount);
+};
 
 // Componente para el botón de disminuir cantidad con hover
 function MinusButton({ disabled, onClick }) {
@@ -243,7 +268,7 @@ export function SlideCart() {
           const distanceInKm = distanceResult.value / 1000;
           const calculatedShipping = Math.max(
             5000,
-            Math.round(distanceInKm * 2000)
+            Math.round(distanceInKm * 500)
           );
           if (typeof setShippingCostValue === "function") {
             setShippingCostValue(calculatedShipping);
@@ -430,9 +455,13 @@ export function SlideCart() {
                 className="empty-cart-icon"
               />
               <p>Tu carrito está vacío</p>
-              <button className="browse-products-btn" onClick={closeCart}>
+              <Link
+                to="/catalogo"
+                className="browse-products-btn"
+                onClick={closeCart}
+              >
                 Explorar productos
-              </button>
+              </Link>
             </div>
           ) : (
             <div className="cart-items-container">
@@ -485,15 +514,15 @@ export function SlideCart() {
                       </p>
                       <div className="mini-price-row">
                         <span className="discounted-price mini">
-                          $
-                          {(discount > 0
-                            ? price * (1 - discount / 100) * item.cantidad
-                            : price * item.cantidad
-                          ).toFixed(3)}
+                          {formatCOP(
+                            discount > 0
+                              ? price * (1 - discount / 100) * item.cantidad
+                              : price * item.cantidad
+                          )}
                         </span>
                         {discount > 0 && (
                           <span className="original-price mini">
-                            ${(price * item.cantidad).toFixed(3)}
+                            {formatCOP(price * item.cantidad)}
                           </span>
                         )}
                       </div>
@@ -602,22 +631,12 @@ export function SlideCart() {
                   ) : (
                     <AddressAutocomplete
                       value={deliveryAddress}
-                      onAddressSelect={({ address }) => {
+                      onAddressSelect={({ address, coordinates }) => {
                         setDeliveryAddress(address);
                         if (addressError) setAddressError("");
-                      }}
-                      onDistanceCalculated={({
-                        distanceValue,
-                        durationValue,
-                        isValid,
-                      }) => {
-                        if (isValid) {
-                          const distanceInKm = distanceValue / 1000;
-                          const calculatedShipping = Math.max(
-                            5000,
-                            Math.round(distanceInKm * 2000)
-                          );
-                          setShippingCostValue(calculatedShipping);
+                        // Calcular distancia inmediatamente cuando se selecciona una dirección
+                        if (address && address.trim()) {
+                          calculateDistanceForAddress(address);
                         }
                       }}
                       warehouseAddress="Cra. 129 #131-50, Suba, Bogotá"
@@ -642,23 +661,23 @@ export function SlideCart() {
               <div className="cart-summary">
                 <div className="summary-row">
                   <span>Subtotal</span>
-                  <span>${getCartSubtotal().toFixed(3)}</span>
+                  <span>{formatCOP(Number(getCartSubtotal()) || 0)}</span>
                 </div>
                 <div className="summary-row">
                   <span>Envío</span>
                   <span>
                     {getShippingCost() === 0
                       ? "Gratis"
-                      : `$${getShippingCost().toFixed(3)}`}
+                      : formatCOP(Number(getShippingCost()) || 0)}
                   </span>
                 </div>
                 <div className="summary-row">
                   <span>IVA (19%)</span>
-                  <span>${getTaxes().toFixed(3)}</span>
+                  <span>{formatCOP(Number(getTaxes()) || 0)}</span>
                 </div>
                 <div className="summary-row total">
                   <span>Total</span>
-                  <span>${getCartTotal().toFixed(3)}</span>
+                  <span>{formatCOP(Number(getCartTotal()) || 0)}</span>
                 </div>
               </div>
 

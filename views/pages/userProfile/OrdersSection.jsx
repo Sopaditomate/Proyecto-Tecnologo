@@ -1,4 +1,7 @@
-import React from "react";
+// views/pages/userProfile/OrdersSection.jsx
+import React, { useState } from "react";
+import OrderDetailModal from "./OrderDetailModal.jsx";
+import { useCart } from "../../context/CartContext.jsx";
 
 export default function OrdersSection({
   loading,
@@ -9,6 +12,20 @@ export default function OrdersSection({
   formatPrice,
   getStatusClass,
 }) {
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const { cart } = useCart();
+
+  const handleViewDetails = (order) => {
+    setSelectedOrder(order);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedOrder(null);
+  };
+
   return (
     <div className="tab-content">
       <div className="orders-header">
@@ -28,6 +45,7 @@ export default function OrdersSection({
           </select>
         </div>
       </div>
+
       {loading ? (
         <div className="loading-state">
           <div className="spinner-large"></div>
@@ -56,6 +74,7 @@ export default function OrdersSection({
                     {order.estado}
                   </span>
                 </div>
+
                 <div className="order-items">
                   {order.items.map((item, itemIndex) => (
                     <div key={itemIndex} className="order-item">
@@ -82,16 +101,50 @@ export default function OrdersSection({
                     </div>
                   ))}
                 </div>
-                <div className="order-total">
-                  <span className="total-label">Total:</span>
-                  <span className="total-amount">
-                    {formatPrice(order.total)}
-                  </span>
+
+                <div className="order-actions">
+                  <div className="order-total">
+                    <span className="total-label">Total:</span>
+                    <span className="total-amount">
+                      {formatPrice(order.total)}
+                    </span>
+                  </div>
+
+                  <button
+                    className="btn-view-details"
+                    onClick={() => handleViewDetails(order)}
+                    style={{ background: "var(--color-amber-600)" }}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    Ver Detalles
+                  </button>
                 </div>
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* Modal de detalles del pedido */}
+      {showModal && selectedOrder && (
+        <OrderDetailModal
+          show={showModal}
+          onHide={closeModal}
+          order={selectedOrder}
+          formatDate={formatDate}
+          formatPrice={formatPrice}
+          getStatusClass={getStatusClass}
+        />
       )}
     </div>
   );

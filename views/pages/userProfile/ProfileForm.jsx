@@ -20,7 +20,7 @@ export default function ProfileForm({
   errors,
   setErrors,
 }) {
-  const { setDeliveryAddress, setShippingCost } = useCart();
+  const { setDeliveryAddress } = useCart();
 
   // Validación en tiempo real con Yup
   const handleFieldChange = async (e) => {
@@ -35,10 +35,14 @@ export default function ProfileForm({
     }
   };
 
-  // Para AddressAutocomplete
+  // Para AddressAutocomplete - actualización mejorada
   const handleAddressSelect = async ({ address }) => {
     setForm((f) => ({ ...f, direccion: address }));
     setTouchedFields((prev) => ({ ...prev, direccion: true }));
+
+    // Actualizar inmediatamente la dirección en el carrito con cálculo automático
+    setDeliveryAddress(address);
+
     try {
       await registerSchema.validateAt("direccion", {
         ...form,
@@ -50,18 +54,6 @@ export default function ProfileForm({
     }
   };
 
-  // Nuevo: callback para calcular envío
-  const handleDistanceCalculated = ({ distanceValue, isValid }) => {
-    if (isValid) {
-      const distanceInKm = distanceValue / 1000;
-      const calculatedShipping = Math.max(
-        5000,
-        Math.round(distanceInKm * 2000)
-      );
-      setShippingCost(calculatedShipping);
-    }
-  };
-
   const getInputClass = (field) => {
     if (!touchedFields[field]) return "";
     if (errors[field]) return "input-error";
@@ -69,11 +61,15 @@ export default function ProfileForm({
     return "";
   };
 
-  // Modifica el handleSubmit (o la función que uses para guardar)
+  // Modifica el handleSubmit para sincronizar después de guardar
   const handleSave = async (e) => {
     e.preventDefault();
     await handleSubmit(e); // tu lógica de guardado original
-    setDeliveryAddress(form.direccion); // <--- sincroniza con el SlideCart
+
+    // Sincronizar la dirección con el carrito después de guardar exitosamente
+    if (form.direccion && form.direccion.trim()) {
+      setDeliveryAddress(form.direccion);
+    }
   };
 
   return (
@@ -179,7 +175,6 @@ export default function ProfileForm({
             <AddressAutocomplete
               value={form.direccion || ""}
               onAddressSelect={handleAddressSelect}
-              onDistanceCalculated={handleDistanceCalculated} // <-- agrega esto
               warehouseAddress="Cra. 129 #131-50, Suba, Bogotá"
               disabled={!editing}
               className={getInputClass("direccion")}

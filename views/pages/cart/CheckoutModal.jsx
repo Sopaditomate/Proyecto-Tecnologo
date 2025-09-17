@@ -40,6 +40,25 @@ export function CheckoutModal({
   const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // Función para formatear precios en pesos colombianos
+  const formatCOP = (amount) => {
+    // Redondear a números más amigables
+    let roundedAmount;
+
+    if (amount >= 10000) {
+      // Para valores grandes, redondear a centenas
+      roundedAmount = Math.round(amount / 100) * 100;
+    } else if (amount >= 1000) {
+      // Para valores medianos, redondear a decenas
+      roundedAmount = Math.round(amount / 10) * 10;
+    } else {
+      // Para valores pequeños, redondear normalmente
+      roundedAmount = Math.round(amount);
+    }
+
+    return roundedAmount;
+  };
+
   useEffect(() => {
     if (publicKey) {
       initMercadoPago(publicKey, { locale: "es-CO" });
@@ -82,12 +101,12 @@ export function CheckoutModal({
       const pendingPaymentData = {
         items: cartItems.map((item) => ({
           id: item.id,
-          price: item.price,
+          price: formatCOP(item.price),
           cantidad: item.cantidad,
           nameProduct: item.nameProduct,
         })),
         deliveryAddress: addressData,
-        shippingCost: shippingCost,
+        shippingCost: formatCOP(shippingCost),
       };
 
       localStorage.setItem(
@@ -104,7 +123,7 @@ export function CheckoutModal({
         additionalItems.push({
           title: "IVA (19%)",
           quantity: 1,
-          unit_price: taxes,
+          unit_price: formatCOP(taxes),
           description: "Impuesto sobre las ventas",
         });
       }
@@ -114,7 +133,7 @@ export function CheckoutModal({
         additionalItems.push({
           title: "Envío",
           quantity: 1,
-          unit_price: shippingCost,
+          unit_price: formatCOP(shippingCost),
           description: "Costo de envío a domicilio",
         });
       }
@@ -123,11 +142,11 @@ export function CheckoutModal({
         items: cartItems.map((item) => ({
           title: item.nameProduct,
           quantity: item.cantidad,
-          unit_price: item.price,
+          unit_price: formatCOP(item.price),
           description: item.description || "",
         })),
         additionalItems: additionalItems,
-        amount: total,
+        amount: formatCOP(total),
         description: `Pedido LoveBites Bakery`,
         deliveryAddress: addressData,
       };
@@ -224,12 +243,12 @@ export function CheckoutModal({
       const orderData = {
         items: cartItems.map((item) => ({
           id: item.id,
-          price: item.price,
+          price: formatCOP(item.price),
           cantidad: item.cantidad,
           nameProduct: item.nameProduct,
         })),
         deliveryAddress: addressData,
-        shippingCost: shippingCost,
+        shippingCost: formatCOP(shippingCost),
         paymentId: paymentId,
       };
 
@@ -324,11 +343,6 @@ export function CheckoutModal({
           <div className="confirmation-step">
             <div className="step-header">
               <h2>Confirmar Pedido</h2>
-              <div className="step-indicator">
-                <span className="step active">1</span>
-                <span className="step">2</span>
-                <span className="step">3</span>
-              </div>
             </div>
 
             <div className="order-summary">
@@ -337,7 +351,12 @@ export function CheckoutModal({
                 {cartItems.map((item) => (
                   <div className="order-item" key={item.id}>
                     <div className="order-item-name">
-                      <span className="quantity">{item.cantidad}x</span>
+                      <span
+                        className="quantity"
+                        style={{ background: "var(--color-amber-600)" }}
+                      >
+                        {item.cantidad}x
+                      </span>
                       <div>
                         <div className="item-name">{item.nameProduct}</div>
                         <small className="item-description">
@@ -346,7 +365,10 @@ export function CheckoutModal({
                       </div>
                     </div>
                     <div className="order-item-price">
-                      ${(item.price * item.cantidad).toLocaleString("es-CO")}
+                      $
+                      {formatCOP(item.price * item.cantidad).toLocaleString(
+                        "es-CO"
+                      )}
                     </div>
                   </div>
                 ))}
@@ -355,23 +377,23 @@ export function CheckoutModal({
               <div className="order-totals">
                 <div className="order-total-row">
                   <span>Subtotal</span>
-                  <span>${subtotal.toLocaleString("es-CO")}</span>
+                  <span>${formatCOP(subtotal).toLocaleString("es-CO")}</span>
                 </div>
                 <div className="order-total-row">
                   <span>Envío</span>
                   <span>
                     {shippingCost === 0
                       ? "Gratis"
-                      : `$${shippingCost.toLocaleString("es-CO")}`}
+                      : `$${formatCOP(shippingCost).toLocaleString("es-CO")}`}
                   </span>
                 </div>
                 <div className="order-total-row">
                   <span>IVA (19%)</span>
-                  <span>${taxes.toLocaleString("es-CO")}</span>
+                  <span>${formatCOP(taxes).toLocaleString("es-CO")}</span>
                 </div>
                 <div className="order-total-row total">
                   <span>Total</span>
-                  <span>${total.toLocaleString("es-CO")}</span>
+                  <span>${formatCOP(total).toLocaleString("es-CO")}</span>
                 </div>
               </div>
             </div>
@@ -379,7 +401,6 @@ export function CheckoutModal({
             <div className="delivery-info">
               <h3>Información de entrega</h3>
               <div className="address-card">
-                <div className="address-icon">📍</div>
                 <div className="address-text">
                   <strong>Dirección de entrega:</strong>
                   <p>{addressData}</p>
@@ -403,22 +424,20 @@ export function CheckoutModal({
             </div>
 
             <div className="confirmation-actions">
-              <button className="cancel-order-btn" onClick={onClose}>
+              <button
+                className="confirm-order-btn"
+                onClick={onClose}
+                style={{ background: "rgb(230, 6, 6)" }}
+              >
                 Cancelar
               </button>
               <button
                 className="confirm-order-btn"
+                style={{ background: "var(--color-amber-600)" }}
                 onClick={handleConfirmOrder}
                 disabled={!isValidAddress || !addressData || isProcessing}
               >
-                {isProcessing ? (
-                  <div className="btn-loading">
-                    <div className="spinner"></div>
-                    Ir a pagar...
-                  </div>
-                ) : (
-                  "Ir a pagar"
-                )}
+                Ir a Pagar
               </button>
             </div>
 
@@ -469,7 +488,9 @@ export function CheckoutModal({
                   <div className="order-summary-mini">
                     <p>
                       Total a pagar:{" "}
-                      <strong>${total.toLocaleString("es-CO")} COP</strong>
+                      <strong>
+                        ${formatCOP(total).toLocaleString("es-CO")} COP
+                      </strong>
                     </p>
                   </div>
                 </div>
@@ -535,10 +556,6 @@ export function CheckoutModal({
             </div>
 
             <div className="success-content">
-              <div className="success-icon">
-                <div className="checkmark">✓</div>
-              </div>
-
               <div className="success-details">
                 <h3>Pedido #{orderId}</h3>
                 <p className="success-message">
@@ -548,15 +565,6 @@ export function CheckoutModal({
 
                 <div className="delivery-summary">
                   <div className="delivery-item">
-                    <span className="icon">🚚</span>
-                    <div>
-                      <strong>Entrega estimada:</strong>
-                      <p>{getEstimatedDelivery()}</p>
-                    </div>
-                  </div>
-
-                  <div className="delivery-item">
-                    <span className="icon">📍</span>
                     <div>
                       <strong>Dirección:</strong>
                       <p>{addressData}</p>
@@ -564,10 +572,9 @@ export function CheckoutModal({
                   </div>
 
                   <div className="delivery-item">
-                    <span className="icon">💰</span>
                     <div>
                       <strong>Total pagado:</strong>
-                      <p>${total.toLocaleString("es-CO")} COP</p>
+                      <p>${formatCOP(total).toLocaleString("es-CO")} COP</p>
                     </div>
                   </div>
                 </div>
@@ -575,7 +582,11 @@ export function CheckoutModal({
             </div>
 
             <div className="success-actions">
-              <button className="finish-btn" onClick={handleFinish}>
+              <button
+                className="finish-btn"
+                onClick={handleFinish}
+                style={{ background: "var(--color-amber-700)" }}
+              >
                 Finalizar
               </button>
             </div>

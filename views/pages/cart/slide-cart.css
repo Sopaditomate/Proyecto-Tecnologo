@@ -220,6 +220,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.2s ease;
+  text-decoration: none;
 }
 .browse-products-btn:hover {
   background-color: var(--color-amber-700);

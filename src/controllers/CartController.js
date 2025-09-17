@@ -4,14 +4,14 @@ class CartController {
   async getCart(req, res) {
     console.log("getCart para userId:", req.user.userId);
     //se definio con let para usarla en el bloque posterior e implementar manejo de errores
-    let cart
+    let cart;
     try {
       cart = await CartModel.getCartByUserId(req.user.userId);
     } catch (error) {
       console.error("Error al obtener el carrito:", error);
       return res.status(500).json({ error: "Error interno del servidor" });
     }
-    
+
     console.log(
       "Valor real de cart.items:",
       cart ? cart.items : "NO HAY CARRITO"
@@ -44,13 +44,17 @@ class CartController {
       return res.status(400).json({ error: "Los items deben ser un array" });
     }
     try {
+      if (items.length === 0) {
+        // Si el array está vacío, vacía el carrito
+        await CartModel.clearCart(userId);
+        return res.json({ success: true });
+      }
       await CartModel.saveCart(userId, items);
       res.json({ success: true });
     } catch (error) {
       console.error("Error al guardar el carrito:", error);
       return res.status(500).json({ error: "Error interno del servidor" });
     }
-    
   }
 
   async clearCart(req, res) {

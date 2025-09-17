@@ -12,8 +12,6 @@ router.post(
   PaymentController.createOrderAfterPayment
 );
 
-// Crear pedido antes del pago (método legacy)
-router.post("/create-order", verifyToken, PaymentController.createOrder);
 
 // =============== MERCADO PAGO ROUTES ===============
 // Crear preferencia de pago sin crear pedido (nuevo flujo)
