@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HeadProfile } from "../../../components/common/header/HeadProfile";
 import * as Yup from "yup";
 import axios from "axios";
@@ -24,6 +24,66 @@ export function ForgotPasswordPage() {
   const [serverMessage, setServerMessage] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
   const [confirmEmailTouched, setConfirmEmailTouched] = useState(false);
+
+  // Estados para el temporizador
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [resendDisabled, setResendDisabled] = useState(false);
+  const [waitingForResend, setWaitingForResend] = useState(false);
+
+  // Cargar el estado del temporizador desde localStorage al montar el componente
+  useEffect(() => {
+    const savedEndTime = localStorage.getItem("forgotPasswordEndTime");
+
+    if (savedEndTime) {
+      const endTime = parseInt(savedEndTime, 10);
+      const currentTime = Date.now();
+      const remainingTime = Math.max(
+        0,
+        Math.floor((endTime - currentTime) / 1000)
+      );
+
+      if (remainingTime > 0) {
+        setTimeRemaining(remainingTime);
+        setWaitingForResend(true);
+        setResendDisabled(true);
+      } else {
+        // El tiempo ya expiró, limpiar localStorage
+        localStorage.removeItem("forgotPasswordEndTime");
+        setTimeRemaining(0);
+        setWaitingForResend(false);
+        setResendDisabled(false);
+      }
+    }
+  }, []);
+
+  // Manejar el contador regresivo
+  useEffect(() => {
+    let timer;
+
+    if (waitingForResend && timeRemaining > 0) {
+      timer = setInterval(() => {
+        setTimeRemaining((prevTime) => {
+          const newTime = prevTime - 1;
+
+          if (newTime <= 0) {
+            // Tiempo agotado
+            setResendDisabled(false);
+            setWaitingForResend(false);
+            localStorage.removeItem("forgotPasswordEndTime");
+            return 0;
+          }
+
+          return newTime;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [waitingForResend, timeRemaining]);
 
   // Validar email con Yup
   const validateEmail = (value) => {
@@ -54,6 +114,13 @@ export function ForgotPasswordPage() {
     setEmailsMatch(validateEmail(email) && email === value);
   };
 
+  // Formatear el tiempo en "mm:ss"
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+  };
+
   // Manejar envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,6 +142,16 @@ export function ForgotPasswordPage() {
         { email }
       );
 
+      // Iniciar temporizador después del envío exitoso
+      const duration = 120; // 2 minutos en segundos
+      const endTime = Date.now() + duration * 1000;
+
+      localStorage.setItem("forgotPasswordEndTime", endTime.toString());
+
+      setTimeRemaining(duration);
+      setWaitingForResend(true);
+      setResendDisabled(true);
+
       setServerMessage(
         response.data.message ||
           "Se ha enviado un correo de recuperación a tu dirección de email."
@@ -83,6 +160,43 @@ export function ForgotPasswordPage() {
       setServerMessage(
         error.response?.data?.message ||
           "Ocurrió un error al intentar recuperar la contraseña."
+      );
+    } finally {
+      setSubmitted(false);
+    }
+  };
+
+  // Manejar reenvío
+  const handleResend = async () => {
+    if (!emailValid || !emailsMatch || resendDisabled) return;
+
+    setSubmitted(true);
+    setServerMessage("");
+
+    try {
+      const response = await axios.post(
+        `${VITE_API_URL}/auth/forgot-password`,
+        { email }
+      );
+
+      // Reiniciar temporizador
+      const duration = 120;
+      const endTime = Date.now() + duration * 1000;
+
+      localStorage.setItem("forgotPasswordEndTime", endTime.toString());
+
+      setTimeRemaining(duration);
+      setWaitingForResend(true);
+      setResendDisabled(true);
+
+      setServerMessage(
+        response.data.message ||
+          "Se ha reenviado el correo de recuperación a tu dirección de email."
+      );
+    } catch (error) {
+      setServerMessage(
+        error.response?.data?.message ||
+          "Ocurrió un error al intentar reenviar el correo."
       );
     } finally {
       setSubmitted(false);
@@ -131,6 +245,50 @@ export function ForgotPasswordPage() {
               >
                 <p>{serverMessage}</p>
               </div>
+
+              {/* Botón de reenvío con temporizador */}
+              {!isErrorMessage && (
+                <div className="resend-container" style={{ marginTop: "20px" }}>
+                  <button
+                    type="button"
+                    className={`resend-button ${
+                      resendDisabled ? "disabled" : ""
+                    }`}
+                    onClick={handleResend}
+                    disabled={resendDisabled || submitted}
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: resendDisabled ? "#ccc" : "#007bff",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: resendDisabled ? "not-allowed" : "pointer",
+                      marginBottom: "10px",
+                      background:
+                        "linear-gradient(135deg, rgb(217, 119, 6), rgb(234, 88, 12))",
+                    }}
+                  >
+                    {submitted
+                      ? "Enviando..."
+                      : resendDisabled
+                      ? `Reenviar en ${formatTime(timeRemaining)}`
+                      : "Reenviar Correo"}
+                  </button>
+                  {waitingForResend && (
+                    <p
+                      style={{
+                        fontSize: "0.9em",
+                        color: "#666",
+                        marginTop: "5px",
+                      }}
+                    >
+                      Puedes solicitar otro correo cuando termine el
+                      temporizador
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="button-group">
                 <Link to="/login" className="back-link">
                   <button type="button" className="back-button">

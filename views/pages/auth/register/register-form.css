@@ -8,6 +8,7 @@ body.register-body {
   height: auto;
   justify-content: center;
   align-items: center;
+  background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 50%, #fef3c7 100%);
 }
 
 .ml-wizard-label-2 {
@@ -458,4 +459,442 @@ body.register-body {
     margin: 10px auto;
     padding: 0;
   }
+}
+/* Animaciones principales */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes successBounce {
+  0% {
+    transform: translateY(20px) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-5px) scale(1.05);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes errorShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes checkMarkDraw {
+  0% {
+    stroke-dasharray: 0 50;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dasharray: 50 0;
+    opacity: 1;
+  }
+}
+
+@keyframes iconPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes buttonPress {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Clases para las animaciones de elementos */
+
+/* Wizard principal montado */
+.wizard-mounted {
+  animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estados de transición */
+.wizard-transitioning {
+  pointer-events: none;
+}
+
+/* Título animado */
+.animated-title {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pasos animados */
+.animated-step {
+  animation: fadeInLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transform: translateX(-50px);
+  opacity: 0;
+}
+
+.animated-step:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.animated-step:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.animated-step:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.animated-step:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+/* Iconos animados */
+.animated-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-step:hover .animated-icon {
+  animation: iconPulse 0.6s ease-in-out;
+}
+
+.animated-step.active .animated-icon {
+  animation: iconPulse 0.8s ease-in-out infinite;
+}
+
+/* Check mark animado */
+.animated-check {
+  animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-check svg path {
+  animation: checkMarkDraw 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Botones animados */
+.animated-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+}
+
+.animated-button:active {
+  animation: buttonPress 0.1s ease-in-out;
+}
+
+.animated-cancel-btn,
+.animated-form-cancel {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-cancel-btn:hover,
+.animated-form-cancel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
+}
+
+/* Links animados */
+.animated-link,
+.animated-form-link {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-link a,
+.animated-form-link a {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-link a:hover,
+.animated-form-link a:hover {
+  transform: translateY(-1px);
+}
+
+/* Formulario paso a paso */
+.step-form {
+  animation: fadeInScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Iconos del formulario */
+.animated-form-icon {
+  animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Títulos y descripciones del formulario */
+.animated-form-title {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
+}
+
+.animated-form-desc {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+}
+
+/* Inputs animados */
+.animated-input {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-input:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+}
+
+.animated-input.input-valid {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both,
+    successPulse 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.9s;
+}
+
+.animated-input.input-error {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both,
+    errorShake 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.9s;
+}
+
+/* Contenedores de contraseña */
+.animated-password-container {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both;
+}
+
+/* Iconos de toggle password */
+.animated-toggle-icon {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-toggle-icon:hover {
+  color: #d97706;
+  transform: scale(1.1);
+}
+
+/* Mensajes de error animados */
+.animated-error {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mensaje de éxito del paso */
+.animated-step-success {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Botón de submit animado */
+.animated-submit-btn {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-submit-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.3);
+}
+
+.animated-submit-btn:active:not(:disabled) {
+  animation: buttonPress 0.15s ease-in-out;
+}
+
+.animated-submit-btn:disabled {
+  animation: none;
+  transform: scale(0.98);
+}
+
+/* Mensaje de éxito final */
+.animated-success {
+  animation: fadeInScale 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mejoras en transiciones existentes */
+.ml-wizard-step-list {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ml-wizard-step-list:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.ml-wizard-step-list.active {
+  box-shadow: 0 6px 25px rgba(151, 240, 17, 0.3);
+  animation: iconPulse 0.6s ease-in-out;
+}
+
+.ml-wizard-step-list.done {
+  transform: scale(0.98);
+  opacity: 0.8;
+}
+
+/* Efectos de hover mejorados para inputs */
+.ml-wizard-input {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ml-wizard-input:hover:not(:focus) {
+  border-color: #d97706;
+  transform: translateY(-1px);
+}
+
+.ml-wizard-input:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.2);
+}
+
+/* Animación de loading en botones */
+@keyframes loadingPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.ml-wizard-btn-ml-2:disabled {
+  animation: loadingPulse 1.5s ease-in-out infinite;
+}
+
+/* Efectos de micro-interacciones */
+.ml-wizard-icon {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ml-wizard-step-list:hover .ml-wizard-icon {
+  transform: scale(1.1);
+}
+
+.ml-wizard-step-list.active .ml-wizard-icon {
+  animation: iconPulse 1.2s ease-in-out infinite;
+}
+
+/* Staggered animations para elementos de lista */
+.ml-wizard-steps-list .animated-step {
+  opacity: 0;
+  transform: translateX(-50px);
+  animation: fadeInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.ml-wizard-steps-list .animated-step:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.ml-wizard-steps-list .animated-step:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.ml-wizard-steps-list .animated-step:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.ml-wizard-steps-list .animated-step:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+/* Responsive animations */
+@media (max-width: 480px) {
+  .animated-step {
+    animation-duration: 0.4s;
+  }
+
+  .animated-title,
+  .animated-form-title {
+    animation-duration: 0.4s;
+  }
+
+  .animated-input {
+    animation-duration: 0.4s;
+  }
+}
+
+/* Animaciones para elementos que aparecen/desaparecen */
+.fade-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mejora de rendimiento para animaciones */
+.animated-step,
+.animated-input,
+.animated-button,
+.step-form {
+  will-change: transform, opacity;
+}
+
+.animated-step.done,
+.animated-input.input-valid,
+.animated-input.input-error {
+  will-change: auto;
 }

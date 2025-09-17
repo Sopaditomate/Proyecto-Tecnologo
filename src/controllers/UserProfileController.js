@@ -245,7 +245,6 @@ export const sendEmailVerification = async (req, res) => {
     if (process.env.NODE_ENV === "development") {
       return res.json({
         success: true,
-        message: "Enlace de verificación generado (revisa la consola)",
         verificationLink: `${
           process.env.CLIENT_URL || "http://localhost:3000"
         }/verify-email?token=${token}`,

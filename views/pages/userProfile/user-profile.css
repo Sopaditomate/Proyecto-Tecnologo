@@ -283,8 +283,8 @@
 }
 
 .nav-item:hover {
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
+  background: #ea5a0c1f;
+  color: #ea580c;
 }
 
 .nav-item.active {
@@ -307,7 +307,7 @@
 }
 
 #change-password-section {
-  width: 60%;
+  width: 100%;
 }
 
 @keyframes fadeIn {

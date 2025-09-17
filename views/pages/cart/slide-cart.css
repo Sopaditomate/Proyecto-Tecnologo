@@ -74,7 +74,7 @@
 }
 
 .btn-primary-inline {
-  background: var(--color-amber-600, #d97706);
+  background: var(--color-amber-600, #d97706) !important;
   color: #fff;
   border: none;
   border-radius: 6px;

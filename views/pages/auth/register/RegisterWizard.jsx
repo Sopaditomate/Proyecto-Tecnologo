@@ -86,7 +86,7 @@ const steps = [
 const STORAGE_KEY = "registerWizardData";
 
 export function RegisterWizard({ onStepChange }) {
-  // Cargar estado inicial desde localStorage si existe
+  // Estados principales
   const getInitialState = () => {
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -123,25 +123,31 @@ export function RegisterWizard({ onStepChange }) {
   const [completedSteps, setCompletedSteps] = useState(
     initialState.completedSteps
   );
-
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Estados para animaciones
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [animatingStep, setAnimatingStep] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
   const navigate = useNavigate();
+
+  // Montaje inicial con animación
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (onStepChange) onStepChange(step);
   }, [step, onStepChange]);
 
-  // Guardar en localStorage cada vez que cambia algo importante
+  // Guardar en localStorage
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ step, completedSteps }) // <-- sin formData
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, completedSteps }));
   }, [step, completedSteps]);
 
   // Limpiar localStorage al finalizar registro
@@ -151,30 +157,60 @@ export function RegisterWizard({ onStepChange }) {
     }
   }, [success]);
 
-  // Función para cancelar y limpiar todo (debe ir antes de cualquier uso)
-  const handleCancel = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    setStep(-1);
-    setFormData({
-      email: "",
-      nombres: "",
-      apellidos: "",
-      password: "",
-      confirmPassword: "",
-    });
-    setCompletedSteps([]);
-    setErrors({});
-    setShowSuccess(false);
-    navigate("/login"); // O "/" si prefieres ir al home
+  // Función para transiciones suaves entre pasos
+  const transitionToStep = (nextStep) => {
+    setIsTransitioning(true);
+    setAnimatingStep(nextStep);
+
+    setTimeout(() => {
+      setStep(nextStep);
+      setIsTransitioning(false);
+      setAnimatingStep(null);
+    }, 300);
   };
 
-  // Pantalla de pasos
+  // Función para cancelar y limpiar todo
+  const handleCancel = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      localStorage.removeItem(STORAGE_KEY);
+      setStep(-1);
+      setFormData({
+        email: "",
+        nombres: "",
+        apellidos: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setCompletedSteps([]);
+      setErrors({});
+      setShowSuccess(false);
+      navigate("/login");
+    }, 300);
+  };
+
+  // Pantalla de pasos principal
   if (step === -1) {
     return (
-      <section className="register-page-wizard">
+      <section
+        className={`register-page-wizard ${mounted ? "wizard-mounted" : ""} ${
+          isTransitioning ? "wizard-transitioning" : ""
+        }`}
+        style={{
+          opacity: isTransitioning ? 0 : 1,
+          transform: isTransitioning ? "translateY(20px)" : "translateY(0)",
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
         <h2
-          className="ml-wizard-title"
-          style={{ marginBottom: 24, textAlign: "center" }}
+          className="ml-wizard-title animated-title"
+          style={{
+            marginBottom: 24,
+            textAlign: "center",
+            transform: mounted ? "translateY(0)" : "translateY(-20px)",
+            opacity: mounted ? 1 : 0,
+            transition: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
         >
           Completa los datos para crear tu cuenta
         </h2>
@@ -182,18 +218,26 @@ export function RegisterWizard({ onStepChange }) {
           {steps.map((s, idx) => (
             <div
               key={s.name}
-              className={`ml-wizard-step-list${
+              className={`ml-wizard-step-list animated-step${
                 completedSteps.includes(idx) ? " done" : ""
               }${completedSteps.length === idx ? " active" : ""}`}
+              style={{
+                transform: mounted ? "translateX(0)" : "translateX(-50px)",
+                opacity: mounted ? 1 : 0,
+                transition: `all 0.5s cubic-bezier(0.4, 0, 0.2, 1) ${
+                  idx * 0.1
+                }s`,
+                animationDelay: `${idx * 0.1}s`,
+              }}
             >
-              <span className="ml-wizard-icon">{s.icon}</span>
+              <span className="ml-wizard-icon animated-icon">{s.icon}</span>
               <div className="ml-wizard-step-content">
                 <div className="ml-wizard-label-2">{s.label}</div>
                 <div className="ml-wizard-desc-2">{s.description}</div>
               </div>
               {completedSteps.includes(idx) && (
                 <span
-                  className="ml-wizard-check"
+                  className="ml-wizard-check animated-check"
                   style={{ marginLeft: "auto" }}
                 >
                   <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
@@ -210,9 +254,9 @@ export function RegisterWizard({ onStepChange }) {
               )}
               {completedSteps.length === idx && (
                 <button
-                  className="ml-wizard-btn-ml"
+                  className="ml-wizard-btn-ml animated-button"
                   style={{ minWidth: 90, marginLeft: "auto" }}
-                  onClick={() => setStep(idx)}
+                  onClick={() => transitionToStep(idx)}
                   type="button"
                 >
                   {s.button}
@@ -221,13 +265,29 @@ export function RegisterWizard({ onStepChange }) {
             </div>
           ))}
         </div>
-        <div className="ml-wizard-login-link" style={{ marginTop: 24 }}>
+        <div
+          className="ml-wizard-login-link animated-link"
+          style={{
+            marginTop: 24,
+            transform: mounted ? "translateY(0)" : "translateY(20px)",
+            opacity: mounted ? 1 : 0,
+            transition: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s",
+          }}
+        >
           <Link to="/login">¿Ya tienes cuenta? Iniciar sesión</Link>
         </div>
-        <div style={{ marginTop: 12, textAlign: "center" }}>
+        <div
+          style={{
+            marginTop: 12,
+            textAlign: "center",
+            transform: mounted ? "translateY(0)" : "translateY(20px)",
+            opacity: mounted ? 1 : 0,
+            transition: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s",
+          }}
+        >
           <button
             type="button"
-            className="ml-wizard-btn-cancel"
+            className="ml-wizard-btn-cancel animated-cancel-btn"
             onClick={handleCancel}
           >
             Cancelar registro
@@ -246,7 +306,6 @@ export function RegisterWizard({ onStepChange }) {
     setFormData(newFormData);
 
     try {
-      // Valida solo el campo que cambió
       await registerSchema.validateAt(name, newFormData);
       setErrors((prevErrors) => {
         const { [name]: _, ...rest } = prevErrors;
@@ -264,7 +323,6 @@ export function RegisterWizard({ onStepChange }) {
     e.preventDefault();
     try {
       if (current.name === "password") {
-        // Validar ambos campos en el paso de contraseña
         await registerSchema.validateAt("password", formData);
         await registerSchema.validateAt("confirmPassword", formData);
       } else {
@@ -274,11 +332,11 @@ export function RegisterWizard({ onStepChange }) {
       setErrors({});
       setCompletedSteps((prev) => [...prev, step]);
       setShowSuccess(true);
+
       setTimeout(() => {
         setShowSuccess(false);
-        // Volver al panel de pasos
-        setStep(-1);
-      }, 900);
+        transitionToStep(-1);
+      }, 1200);
     } catch (err) {
       setErrors({ [err.path]: err.message });
     }
@@ -321,8 +379,13 @@ export function RegisterWizard({ onStepChange }) {
   if (success) {
     return (
       <div
-        className="success-message-register"
-        style={{ textAlign: "center", marginTop: "2rem" }}
+        className="success-message-register animated-success"
+        style={{
+          textAlign: "center",
+          marginTop: "2rem",
+          transform: "scale(1)",
+          animation: "successPulse 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
       >
         ¡Registro exitoso! Redirigiendo...
       </div>
@@ -330,41 +393,101 @@ export function RegisterWizard({ onStepChange }) {
   }
 
   return (
-    <section className="ml-wizard-card">
+    <section
+      className="ml-wizard-card step-form"
+      style={{
+        opacity: isTransitioning ? 0 : 1,
+        transform: isTransitioning
+          ? "scale(0.95) translateY(10px)"
+          : "scale(1) translateY(0)",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      }}
+    >
       <form
         className="ml-wizard-form-ml"
         onSubmit={step === steps.length - 1 ? handleSubmit : handleNext}
         autoComplete="off"
       >
-        <div className="ml-wizard-icon-big">{current.icon}</div>
-        <h2 className="ml-wizard-title">{current.label}</h2>
-        <div className="ml-wizard-desc">{current.description}</div>
+        <div
+          className="ml-wizard-icon-big animated-form-icon"
+          style={{
+            transform: showSuccess ? "scale(1.2)" : "scale(1)",
+            transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        >
+          {current.icon}
+        </div>
+
+        <h2
+          className="ml-wizard-title animated-form-title"
+          style={{
+            transform: "translateY(0)",
+            opacity: 1,
+            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s",
+          }}
+        >
+          {current.label}
+        </h2>
+
+        <div
+          className="ml-wizard-desc animated-form-desc"
+          style={{
+            transform: "translateY(0)",
+            opacity: 1,
+            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s",
+          }}
+        >
+          {current.description}
+        </div>
+
+        {/* Campo regular */}
         {current.name !== "password" && (
-          <input
-            type={current.type}
-            name={current.name}
-            placeholder={current.label}
-            value={formData[current.name]}
-            onChange={handleChange}
-            className={`ml-wizard-input${
-              errors[current.name]
-                ? " input-error"
-                : formData[current.name]
-                ? " input-valid"
-                : ""
-            }`}
-            required
-            autoFocus
-          />
-        )}
-        {current.name !== "password" && errors[current.name] && (
-          <div className="error-message">{errors[current.name]}</div>
+          <div
+            style={{
+              transform: "translateY(0)",
+              opacity: 1,
+              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s",
+            }}
+          >
+            <input
+              type={current.type}
+              name={current.name}
+              placeholder={current.label}
+              value={formData[current.name]}
+              onChange={handleChange}
+              className={`ml-wizard-input animated-input${
+                errors[current.name]
+                  ? " input-error"
+                  : formData[current.name]
+                  ? " input-valid"
+                  : ""
+              }`}
+              required
+              autoFocus
+            />
+            {errors[current.name] && (
+              <div
+                className="error-message animated-error"
+                style={{
+                  animation: "errorShake 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              >
+                {errors[current.name]}
+              </div>
+            )}
+          </div>
         )}
 
+        {/* Campos de contraseña */}
         {current.name === "password" && (
-          <>
-            {/* Campo contraseña */}
-            <div className="input-password-container">
+          <div
+            style={{
+              transform: "translateY(0)",
+              opacity: 1,
+              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.3s",
+            }}
+          >
+            <div className="input-password-container animated-password-container">
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
@@ -383,21 +506,35 @@ export function RegisterWizard({ onStepChange }) {
               <span
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="toggle-password-icon"
+                className="toggle-password-icon animated-toggle-icon"
+                style={{
+                  transform: showPassword ? "scale(1.1)" : "scale(1)",
+                  transition: "transform 0.2s ease",
+                }}
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
-            {current.name === "password" && (
-              <>
-                {errors.password && (
-                  <div className="error-message">{errors.password}</div>
-                )}
-              </>
+            {errors.password && (
+              <div
+                className="error-message animated-error"
+                style={{
+                  animation: "errorShake 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              >
+                {errors.password}
+              </div>
             )}
 
-            {/* Campo confirmar contraseña */}
-            <div className="input-password-container">
+            <div
+              className="input-password-container animated-password-container"
+              style={{
+                marginTop: "1rem",
+                transform: "translateY(0)",
+                opacity: 1,
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.4s",
+              }}
+            >
               <input
                 type={showPassword ? "text" : "password"}
                 name="confirmPassword"
@@ -416,42 +553,91 @@ export function RegisterWizard({ onStepChange }) {
               <span
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="toggle-password-icon"
+                className="toggle-password-icon animated-toggle-icon"
+                style={{
+                  transform: showPassword ? "scale(1.1)" : "scale(1)",
+                  transition: "transform 0.2s ease",
+                }}
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
             {errors.confirmPassword && (
-              <div className="error-message">{errors.confirmPassword}</div>
+              <div
+                className="error-message animated-error"
+                style={{
+                  animation: "errorShake 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              >
+                {errors.confirmPassword}
+              </div>
             )}
-          </>
+          </div>
         )}
 
         {errors.general && (
-          <div className="error-message" style={{ textAlign: "center" }}>
+          <div
+            className="error-message animated-error"
+            style={{
+              textAlign: "center",
+              animation: "errorShake 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
             {errors.general}
           </div>
         )}
+
         {showSuccess && (
-          <div className="success-message">
+          <div
+            className="success-message animated-step-success"
+            style={{
+              animation: "successBounce 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
             ¡{current.label} agregado correctamente!
           </div>
         )}
-        <button type="submit" className="ml-wizard-btn-ml-2" disabled={loading}>
+
+        <button
+          type="submit"
+          className="ml-wizard-btn-ml-2 animated-submit-btn"
+          disabled={loading}
+          style={{
+            transform: loading ? "scale(0.98)" : "scale(1)",
+            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        >
           {loading
             ? "Procesando..."
             : step === steps.length - 1
             ? "Crear cuenta"
             : current.button}
         </button>
-        <div className="ml-wizard-login-link">
+
+        <div
+          className="ml-wizard-login-link animated-form-link"
+          style={{
+            transform: "translateY(0)",
+            opacity: 1,
+            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.6s",
+          }}
+        >
           <Link to="/login">¿Ya tienes cuenta? Iniciar sesión</Link>
         </div>
-        <div style={{ marginTop: 12, textAlign: "center" }}>
+
+        <div
+          style={{
+            marginTop: 12,
+            textAlign: "center",
+            transform: "translateY(0)",
+            opacity: 1,
+            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.7s",
+          }}
+        >
           <button
             type="button"
-            className="ml-wizard-btn-cancel-2"
-            onClick={handleCancel}
+            className="ml-wizard-btn-cancel-2 animated-form-cancel"
+            onClick={() => transitionToStep(-1)}
           >
             Cancelar registro
           </button>
