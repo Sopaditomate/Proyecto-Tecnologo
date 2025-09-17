@@ -1534,6 +1534,7 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS sp_insert_product_admin;
 DELIMITER $$
+
 CREATE PROCEDURE sp_insert_product_admin(
   IN p_id_product_type INT,
   IN p_name VARCHAR(30),
@@ -1541,15 +1542,30 @@ CREATE PROCEDURE sp_insert_product_admin(
   IN p_description VARCHAR(200),
   IN p_image_url VARCHAR(254),
   IN p_rating DECIMAL(3,1),
-  IN p_warning VARCHAR(254)
+  IN p_warning VARCHAR(254),
+  IN p_id_catalog INT
 )
 BEGIN
+  DECLARE new_product_id INT;
+
+  -- Insert into product
   INSERT INTO product (
     id_product_type, name, price, description, image_url, rating, warning
   ) VALUES (
     p_id_product_type, p_name, p_price, p_description, p_image_url, p_rating, p_warning
   );
+
+  -- Get the last inserted product ID
+  SET new_product_id = LAST_INSERT_ID();
+
+  -- Insert into catalog with the new product ID, without discount
+  INSERT INTO catalog (
+    id_catalog, id_product
+  ) VALUES (
+    p_id_catalog, new_product_id
+  );
 END $$
+
 DELIMITER ;
 
 

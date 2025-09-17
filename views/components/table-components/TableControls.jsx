@@ -14,18 +14,22 @@ const TableControls = ({
   onAdd,
   onHistory,
   onUpload,
+  onGoBack,
   addLabel = "Nuevo Producto",
   historyLabel = "Historial",
   uploadLabel = "Cargar CSV",
+  backLabel = "Volver",
   showAdd = true,
   showHistory = false,
   showUpload = false,
+  showGoBack = false,
   customActions,
   exportOptions = [],
   loading = false,
 }) => {
   const hasQuickActions =
     (showAdd && onAdd) ||
+    (showGoBack && onGoBack) ||
     (showHistory && onHistory) ||
     (showUpload && onUpload) ||
     (customActions && React.Children.count(customActions) > 0);
@@ -123,6 +127,23 @@ const TableControls = ({
                   >
                     <span className="me-1"></span>
                     {addLabel}
+                  </Button>
+                )}
+                {showGoBack && onGoBack && (
+                  <Button
+                    variant="secondary"
+                    onClick={onGoBack}
+                    disabled={loading}
+                    className="btn-secondary ver-historial"
+                    size="sm"
+                    style={{
+                      background: "linear-gradient(135deg, #9e9e9e 0%, #bdbdbd 100%)",
+                      border: "none",
+                      color: "#fff",
+                    }}
+                  >
+                    <span className="me-1"></span>
+                    {backLabel}
                   </Button>
                 )}
                 {showHistory && onHistory && (

@@ -38,6 +38,10 @@ export function AdminOrderDetails() {
   }
 };
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   const columns = [
     { Header: "ID Detalle", accessor: "id_order_detail" },
     { Header: "ID Pedido", accessor: "id_order" },
@@ -93,9 +97,6 @@ export function AdminOrderDetails() {
   return (
     <>
       <ToastContainer position="top-right" autoClose={3000} />
-      <Button variant="secondary" onClick={() => navigate(-1)} className="mb-3">
-        ← Volver
-      </Button>
 
       <TableContainer
         title={`Detalles del Pedido #${orderId}`}
@@ -118,10 +119,13 @@ export function AdminOrderDetails() {
         onFilterChange={() => {}}
         filterOptions={[]}
         onClear={() => {}}
+        onGoBack={handleGoBack}
         showAdd={false}
         showUpload={false}
         showHistory={false}
         showPagination={false}
+        backLabel = "Volver"
+        showGoBack = {true}
       />
     </>
   );

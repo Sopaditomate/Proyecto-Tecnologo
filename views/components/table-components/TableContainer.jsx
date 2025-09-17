@@ -23,12 +23,15 @@ const TableContainer = ({
   onAdd,
   onHistory,
   onUpload,
+  onGoBack,
   addLabel = "Agregar",
   historyLabel = "Historial",
   uploadLabel = "Cargar CSV",
+  backLabel = "Volver",
   showAdd = true,
   showHistory = false,
   showUpload = false,
+  showGoBack = false,
   customActions,
   exportOptions = [],
   // Table props
@@ -81,12 +84,15 @@ const TableContainer = ({
         onAdd={onAdd}
         onHistory={onHistory}
         onUpload={onUpload}
+        onGoBack={onGoBack}
         addLabel={addLabel}
         historyLabel={historyLabel}
         uploadLabel={uploadLabel}
+        backLabel={backLabel}
         showAdd={showAdd}
         showHistory={showHistory}
         showUpload={showUpload}
+        showGoBack={showGoBack}
         customActions={customActions}
         exportOptions={exportOptions}
         loading={loading}

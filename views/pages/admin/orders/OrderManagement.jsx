@@ -150,11 +150,11 @@ export const AdminOrders = () => {
 
   const viewDetails = (orderId) => {
     // Implementa la lógica para mostrar detalles del pedido
-    Swal.fire({
-      title: `Detalles del Pedido #${orderId}`,
-      text: "Aquí puedes mostrar los detalles del pedido.",
-      icon: "info",
-    });
+    // Swal.fire({
+    //   title: `Detalles del Pedido #${orderId}`,
+    //   text: "Aquí puedes mostrar los detalles del pedido.",
+    //   icon: "info",
+    // });
     navigate(`/orders/${orderId}`);
 
 
