@@ -226,7 +226,7 @@ export function Header({
                 </div>
               </>
             )}
-            <div className="header-profile-dropdown-divider"></div>
+            
             <div
               className="header-profile-dropdown-item logout-item"
               onClick={(e) => {

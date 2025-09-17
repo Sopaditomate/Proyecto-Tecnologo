@@ -24,13 +24,13 @@ const verifyToken = async (req, res, next) => {
     );
 
     // Verificar si el usuario sigue logueado en la base de datos
-    const isLoggedIn = await UserModel.isUserLoggedIn(decoded.userId);
-    if (!isLoggedIn) {
-      return res.status(401).json({
-        message: "Sesión cerrada desde otro dispositivo",
-        code: "SESSION_CLOSED_ELSEWHERE",
-      });
-    }
+    // const isLoggedIn = await UserModel.isUserLoggedIn(decoded.userId);
+    // if (!isLoggedIn) {
+    //   return res.status(401).json({
+    //     message: "Sesión cerrada desde otro dispositivo",
+    //     code: "SESSION_CLOSED_ELSEWHERE",
+    //   });
+    // }
 
     // información del usuario al objeto request
     req.user = {
