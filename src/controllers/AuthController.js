@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
+import { sendEmail } from "../services/sendEmail.js";
 import UserModel from "../models/UserModel.js";
 
 class AuthController {
@@ -211,32 +211,23 @@ class AuthController {
       // 3. Guardar el token en la base de datos (o en memoria para pruebas)
       await UserModel.saveResetToken(user.ID_USUARIO, resetToken);
 
-      // 4. Configurar nodemailer
-      const transporter = nodemailer.createTransport({
-        service: "gmail", // O el servicio que uses
-        auth: {
-          user: process.env.EMAIL_USER, // Tu correo
-          pass: process.env.EMAIL_PASS, // Tu contraseña o app password
-        },
-      });
-
       // 5. Crear enlace de recuperación
       const resetUrl = `${
         process.env.CLIENT_URL || `${VITE_API_URL}:5173`
       }/reset-password?token=${resetToken}`;
 
-      // 6. Enviar correo
-      await transporter.sendMail({
-        from: `"Soporte" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: "Recuperación de contraseña",
-        html: `
-          <h3>Recuperación de contraseña</h3>
-          <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
-          <a href="${resetUrl}">${resetUrl}</a>
-          <p>Este enlace expirará en 1 hora.</p>
-        `,
-      });
+      // 6. Enviar correo usando el helper OAuth2
+      await sendEmail(
+        email,
+        "Recuperación de contraseña",
+        `Haz clic en el siguiente enlace para restablecer tu contraseña: ${resetUrl}`,
+        `
+    <h3>Recuperación de contraseña</h3>
+    <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+    <a href="${resetUrl}">${resetUrl}</a>
+    <p>Este enlace expirará en 1 hora.</p>
+  `
+      );
 
       res.json({
         message:
