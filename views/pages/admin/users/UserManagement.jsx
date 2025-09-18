@@ -14,9 +14,10 @@ export const AdminUsers = () => {
   const [userStatus, setUserStatus] = useState({});
   const [loadingIds, setLoadingIds] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const VITE_API_URL = import.meta.env.VITE_API_URL 
+  const VITE_API_URL = import.meta.env.VITE_API_URL
+
 
   // Estados para paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,9 +67,11 @@ export const AdminUsers = () => {
     }
   }, [users]);
 
+
   useEffect(() => {
     filterUsers();
-  }, [searchTerm, selectedRole, users]);
+  }, [searchTerm, selectedStatus, users]);
+
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -116,9 +119,14 @@ export const AdminUsers = () => {
       );
     }
 
-    if (selectedRole && selectedRole !== "Todos") {
-      filtered = filtered.filter((user) => user.role_name === selectedRole);
+
+    if (selectedStatus && selectedStatus !== "Todos") {
+      filtered = filtered.filter((user) => {
+        const isActive = user.ID_STATE == 1 || user.ID_STATE === "1";
+        return selectedStatus === "Activo" ? isActive : !isActive;
+      });
     }
+
 
     setFilteredUsers(filtered);
     setCurrentPage(1);
@@ -193,10 +201,12 @@ export const AdminUsers = () => {
     }
   };
 
+
   const handleClearFilters = () => {
     setSearchTerm("");
-    setSelectedRole("");
+    setSelectedStatus("");
   };
+
 
   // Configuración de columnas
   const columns = [
@@ -274,15 +284,17 @@ export const AdminUsers = () => {
         const isActive = userStatus[row.original.id_user];
         const isLoading = loadingIds.includes(row.original.id_user);
         return (
-          <Button
-            variant={isActive ? "danger" : "success"}
-            onClick={() => toggleStatus(row.original.id_user)}
-            size="sm"
-            disabled={isLoading}
-            className="action-btn"
-          >
-            {isLoading ? "Procesando..." : isActive ? "Inactivar" : "Activar"}
-          </Button>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Button
+              variant={isActive ? "danger" : "success"}
+              onClick={() => toggleStatus(row.original.id_user)}
+              size="sm"
+              disabled={isLoading}
+              className="action-btn"
+            >
+              {isLoading ? "Procesando..." : isActive ? "Inactivar" : "Activar"}
+            </Button>
+          </div>
         );
       },
     },
@@ -310,31 +322,19 @@ export const AdminUsers = () => {
         searchPlaceholder="Buscar por nombre, apellido, correo, dirección, teléfono o rol..."
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        filterLabel="Filtrar por Rol"
-        filterValue={selectedRole}
-        onFilterChange={setSelectedRole}
-        filterOptions={rolesUnicos}
+        filterLabel="Filtrar por Estado"
+        filterValue={selectedStatus}
+        onFilterChange={setSelectedStatus}
+        filterOptions={["Activo","Inactivo"]}
         onClear={handleClearFilters}
         showAdd={false}
         showHistory={false}
         showUpload={false}
-        exportOptions={[
-          {
-            label: "PDF",
-            onClick: () => console.log("Exportar PDF"),
-            variant: "outline-danger",
-          },
-          {
-            label: "Excel",
-            onClick: () => console.log("Exportar Excel"),
-            variant: "outline-success",
-          },
-        ]}
         columns={columns}
         data={paginatedUsers}
         loading={loading}
         emptyMessage={
-          searchTerm || selectedRole
+          searchTerm || selectedStatus
             ? "No se encontraron usuarios con los criterios de búsqueda"
             : "No hay usuarios registrados en el sistema"
         }
@@ -347,3 +347,5 @@ export const AdminUsers = () => {
     </>
   );
 };
+
+

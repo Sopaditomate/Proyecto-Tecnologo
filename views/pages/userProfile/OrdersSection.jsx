@@ -45,7 +45,6 @@ export default function OrdersSection({
           </select>
         </div>
       </div>
-
       {loading ? (
         <div className="loading-state">
           <div className="spinner-large"></div>
@@ -74,7 +73,6 @@ export default function OrdersSection({
                     {order.estado}
                   </span>
                 </div>
-
                 <div className="order-items">
                   {order.items.map((item, itemIndex) => (
                     <div key={itemIndex} className="order-item">

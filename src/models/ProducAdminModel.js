@@ -147,14 +147,15 @@ class ProductAdminModel {
           DESCRIPCION,
           IMAGEN_URL,
           NOTA_ACTUAL,
-          ADVERTENCIA
+          ADVERTENCIA,
+          ID_CATALOGO
         } = row;
 
-        if (!NOMBRE || !ID_TIPO_PRO || !PRECIO || !IMAGEN_URL || !NOTA_ACTUAL || !ADVERTENCIA) continue;
+        if (!NOMBRE || !ID_TIPO_PRO || !PRECIO || !IMAGEN_URL || !NOTA_ACTUAL || !ADVERTENCIA || !ID_CATALOGO) continue;
 
         await conn.query(
-          `CALL sp_insert_massive_product_admin(?, ?, ?, ?, ?, ?, ?)`,
-          [ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA]
+          `CALL sp_insert_massive_product_admin(?, ?, ?, ?, ?, ?, ?,?)`,
+          [ID_TIPO_PRO, NOMBRE, PRECIO, DESCRIPCION, IMAGEN_URL, NOTA_ACTUAL, ADVERTENCIA, ID_CATALOGO]
         );
       }
 

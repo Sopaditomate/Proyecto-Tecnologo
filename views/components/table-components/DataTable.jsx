@@ -10,12 +10,13 @@ const DataTable = ({
   searchTerm = "",
   selectedFilter = "",
   striped = true,
-  bordered = true,
+  //bordered = true,
   hover = true,
   responsive = true,
   className = "",
   rowClassName = () => "",
   onRowClick,
+  tableBorderStyle = 'none', // Propiedad adicional para estilo de borde
 }) => {
   const renderEmptyState = () => (
     <tr>
@@ -77,11 +78,17 @@ const DataTable = ({
   const tableContent = (
     <Table
       striped={striped}
-      bordered={bordered}
+      //bordered={bordered}
       hover={hover}
       className={`table ${className}`}
+      style={{
+        border: tableBorderStyle, // Aplica el estilo de borde que recibimos como propiedad
+        borderRadius: "10px",
+        borderCollapse: 'collapse', // Para que los bordes no se dupliquen
+        overflow: 'hidden', // Para asegurarte de que el contenido no sobresalga
+      }}
     >
-      <thead className="thead-dark">
+      <thead className="">
         <tr>
           {columns.map((column, index) => (
             <th

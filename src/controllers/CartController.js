@@ -11,7 +11,6 @@ class CartController {
       console.error("Error al obtener el carrito:", error);
       return res.status(500).json({ error: "Error interno del servidor" });
     }
-
     console.log(
       "Valor real de cart.items:",
       cart ? cart.items : "NO HAY CARRITO"
