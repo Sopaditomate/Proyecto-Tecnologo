@@ -1,47 +1,40 @@
-import nodemailer from "nodemailer";
-import { google } from "googleapis";
-
-const OAuth2 = google.auth.OAuth2;
-
-const oauth2Client = new OAuth2(
-  process.env.OAUTH_CLIENT_ID,
-  process.env.OAUTH_CLIENT_SECRET,
-  "https://developers.google.com/oauthplayground" // redirect_uri
-);
-
-oauth2Client.setCredentials({
-  refresh_token: process.env.OAUTH_REFRESH_TOKEN,
-});
-
+// Resend - Usando el dominio de prueba gratuito
 export async function sendEmail(to, subject, text, html) {
   try {
-    // 🚀 Obtener un accessToken fresco
-    const { token } = await oauth2Client.getAccessToken();
+    console.log("🔄 Enviando email con Resend a:", to);
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        type: "OAuth2",
-        user: process.env.EMAIL_USER,
-        clientId: process.env.OAUTH_CLIENT_ID,
-        clientSecret: process.env.OAUTH_CLIENT_SECRET,
-        refreshToken: process.env.OAUTH_REFRESH_TOKEN,
-        accessToken: token, // 👈 Aquí lo pasamos
+    const emailData = {
+      // Usar el dominio de prueba de Resend (no requiere verificación)
+      from: "Lovebites 🍰 <onboarding@resend.dev>",
+      to: [to],
+      subject: subject,
+      text: text,
+      html: html,
+    };
+
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(emailData),
     });
 
-    const info = await transporter.sendMail({
-      from: `Lovebites 🍰 <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      text,
-      html,
-    });
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("❌ Error response from Resend:", errorData);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-    console.log("✅ Correo enviado:", info.messageId);
-    return info;
+    const result = await response.json();
+    console.log("✅ Correo enviado exitosamente con Resend:", result.id);
+    return result;
   } catch (error) {
-    console.error("❌ Error enviando correo:", error);
+    console.error("❌ Error enviando correo con Resend:", {
+      message: error.message,
+      stack: error.stack,
+    });
     throw new Error("No se pudo enviar el correo.");
   }
 }
