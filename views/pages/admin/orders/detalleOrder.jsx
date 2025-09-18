@@ -6,7 +6,6 @@ import axios from "axios";
 import TableContainer from "../../../components/table-components/TableContainer";
 import "../../../components/table-components/table-components.css";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "react-bootstrap";
 
 export function AdminOrderDetails() {
   const { orderId } = useParams();

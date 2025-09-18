@@ -1,5 +1,4 @@
-POST `${VITE_API_URL}/api/recetas_crud/1200001/1400003
-GET `${VITE_API_URL}/pedidos/orders/1100000
+GET http://localhost:5001/api/productos_crud/
 
 
 

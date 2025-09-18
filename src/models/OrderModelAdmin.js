@@ -58,7 +58,7 @@ class OrderModelAdmin {
             );
 
             // En procedimientos, rows[0] suele ser el primer result set.
-            // No puedes usar affectedRows directamente, así que asumimos éxito si no hay error.
+            // No puedo usar affectedRows directamente, así que asumo éxito si no hay error.
             return true;
         } catch (error) {
             throw error;

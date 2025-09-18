@@ -792,7 +792,7 @@ WHERE
     p.id_state = 1;
 
 
-CREATE VIEW vw_get_order_details_by_order_id AS
+CREATE OR REPLACE VIEW vw_get_order_details_by_order_id AS
 SELECT 
     oh.id_order,
     oh.id_user,
@@ -805,17 +805,20 @@ SELECT
     od.quantity,
     od.final_price,
     p.name AS product_name,
-    p.price AS product_price
+    p.price AS product_price,
+    c.discount AS product_discount
 FROM 
     order_header oh
 JOIN 
     order_detail od ON oh.id_order = od.id_order
 JOIN 
     product p ON od.id_product = p.id_product
+LEFT JOIN 
+    catalog c ON p.id_product = c.id_product AND c.id_state = 1
 WHERE 
-    oh.id_state = 1 AND
-    od.id_state = 1 AND
-    p.id_state = 1;
+    oh.id_state = 1 
+    AND od.id_state = 1 
+    AND p.id_state = 1;
 
 
 CREATE VIEW vw_order_status AS

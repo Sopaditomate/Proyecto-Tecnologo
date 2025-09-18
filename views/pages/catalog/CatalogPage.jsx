@@ -72,7 +72,7 @@ export function CatalogPage() {
     async function fetchCategories() {
       try {
         const categoryRes = await axios.get(`${import.meta.env.VITE_API_URL}/products/categories`)
-        setCategories(["Todos", ...categoryRes.data])
+        setCategories([ ...categoryRes.data])
       } catch (err) {
         setCategories(["Todos"])
       }

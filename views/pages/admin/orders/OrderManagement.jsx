@@ -309,7 +309,7 @@ export const AdminOrders = () => {
               value={selectedStatusId}
               onChange={(e) => setSelectedStatusId(e.target.value)}
             >
-              <option value="">-- Selecciona --</option>
+              <option value="">Estados</option>
               {orderStatuses.map((status) => (
                 <option key={status.id_order_status} value={status.id_order_status}>
                   {status.status_name}
