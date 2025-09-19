@@ -69,8 +69,8 @@ const ProductModals = ({
               value={formProd.PRECIO ?? ""}
               onChange={handleChange}
               placeholder="Ej: 15000"
-              min="0"
-              step="0.01"
+              min="1"
+              step="1"
             />
           </Form.Group>
         </Col>
