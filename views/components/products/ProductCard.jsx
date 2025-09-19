@@ -8,13 +8,27 @@ export function ProductCard({ product }) {
   const { addProductToCart, showAddToCartNotification } = useCart();
   const [showFullDesc, setShowFullDesc] = useState(false);
 
-  // Función para truncar la descripción
+  // 👉 Función para formatear precios en pesos colombianos
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+    }).format(price);
+  };
+
+  // Descripción corta
   const maxDesc = 60;
-  const isLongDesc = 
+  const isLongDesc =
     product.description && product.description.length > maxDesc;
   const shortDesc = isLongDesc
     ? product.description.slice(0, maxDesc) + "..."
     : product.description;
+
+  // Cálculo de precios
+  const price = Number(product.price) || 0;
+  const discount = Number(product.discount) || 0;
+  const finalPrice = discount > 0 ? price * (1 - discount / 100) : price;
 
   return (
     <article key={product.id} id="product">
@@ -22,7 +36,6 @@ export function ProductCard({ product }) {
       <div id="center-product">
         <div className="img-container">
           <img
-            //Se agrega interpolacion a la ruta para referenciar las imagenes correctamente
             src={product.image}
             alt={product.nameProduct}
             className="img-product"
@@ -48,8 +61,8 @@ export function ProductCard({ product }) {
                   : "N/A"}
               </span>
             </div>
-            {Number(product.discount) > 0 && (
-              <span className="discount-badge">-{product.discount}%</span>
+            {discount > 0 && (
+              <span className="discount-badge">-{discount}%</span>
             )}
           </div>
 
@@ -73,23 +86,10 @@ export function ProductCard({ product }) {
           <div className="product-price-row">
             <div className="price-group">
               <span className="discounted-price">
-                $
-                {Number(product.price) && Number(product.discount)
-                  ? (
-                      Number(product.price) *
-                      (1 - Number(product.discount) / 100)
-                    ).toFixed(3)
-                  : Number(product.price)
-                  ? Number(product.price).toFixed(3)
-                  : "0.000"}
+                {formatPrice(finalPrice)}
               </span>
-              {Number(product.discount) > 0 && (
-                <span className="original-price">
-                  $
-                  {Number(product.price)
-                    ? Number(product.price).toFixed(3)
-                    : "0.000"}
-                </span>
+              {discount > 0 && (
+                <span className="original-price">{formatPrice(price)}</span>
               )}
             </div>
             <button
