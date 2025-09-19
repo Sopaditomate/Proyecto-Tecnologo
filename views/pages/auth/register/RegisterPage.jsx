@@ -1,23 +1,21 @@
-import { useState, useEffect } from "react";
-import { RegisterWizard } from "./RegisterWizard.jsx";
+import { useEffect } from "react";
+import { RegisterForm } from "./RegisterForm.jsx";
+import "./register-form.css";
 
 export function RegisterPage() {
-  const [step, setStep] = useState(-1);
-
   useEffect(() => {
+    // Agregar clase al body para estilos específicos de la página
     document.body.classList.add("register-body");
+
+    // Limpiar al desmontar el componente
     return () => {
       document.body.classList.remove("register-body");
     };
   }, []);
 
   return (
-    <section
-      id="section-login"
-      className={`register-page ${step !== -1 ? "in-step" : ""}`}
-      style={{ minHeight: step !== -1 ? "auto" : "600px" }}
-    >
-      <RegisterWizard onStepChange={setStep} />
-    </section>
+    <div className="register-page">
+      <RegisterForm />
+    </div>
   );
 }

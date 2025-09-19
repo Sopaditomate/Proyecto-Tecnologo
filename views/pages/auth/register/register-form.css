@@ -1,466 +1,223 @@
-/* Reset y estilos base */
-* {
-  box-sizing: border-box;
-}
-
-body.register-body {
-  display: flex;
-  height: auto;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 50%, #fef3c7 100%);
-}
-
-.ml-wizard-label-2 {
-  color: #666;
-  font-weight: 600;
-}
-
 /* Container principal */
-.register-form-container {
-  width: 100%;
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 50%, #fef3c7 100%);
+  padding: 20px;
 }
 
-/* Sección principal del formulario */
-.register-page {
-  max-width: 400px;
-  height: auto;
-  /* animation: fadeIn 0.5s ease; */ /* Animación opcional tal vez lo ponga */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* Card principal */
-.ml-wizard-card {
-  border-radius: 6px;
-  max-width: 350px;
+/* Card del formulario */
+.register-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   width: 100%;
+  max-width: 440px;
+  padding: 40px;
+  animation: fadeInUp 0.6s ease;
 }
 
-/* Título principal */
-.ml-wizard-title {
-  font-family: "Roboto", sans-serif;
-  font-size: 1.5rem;
-  color: #5c3317;
+/* Header del formulario */
+.register-header {
   text-align: center;
+  margin-bottom: 32px;
 }
 
-/* Lista de pasos */
-.ml-wizard-steps-list {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  margin: 0 auto;
+.register-icon {
+  margin-bottom: 16px;
 }
 
-.ml-wizard-step-list {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border: 1px solid #e6e6e6;
-  border-radius: 6px;
-  padding: 16px 20px;
-  gap: 14px;
-  width: 100%;
-  height: auto;
-  min-height: auto;
-  position: relative;
-  transition: all 0.2s ease;
-  cursor: default;
-  opacity: 0.9;
+.register-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
 }
 
-.ml-wizard-step-list.active {
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.13);
-  opacity: 1;
-  border: 2px solid rgb(151, 240, 17);
-}
-
-.ml-wizard-step-list.done {
-  opacity: 0.7;
-  background: #f5f5f5;
-}
-
-/* Iconos de los pasos */
-.ml-wizard-icon {
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-}
-
-.ml-wizard-icon svg {
-  width: 32px;
-  height: 32px;
-}
-
-/* Contenido del paso */
-.ml-wizard-step-content {
-  flex: 1;
-  width: 10px;
-}
-
-.ml-wizard-label {
+.register-subtitle {
   font-size: 16px;
-  font-weight: 400;
-  color: #333;
-  margin: 0 0 4px 0;
-  line-height: 1.2;
-}
-
-.ml-wizard-desc,
-.ml-wizard-desc-2 {
-  font-size: 14px;
-  color: #666;
+  color: #6b7280;
   margin: 0;
-  line-height: 1.3;
-  text-align: center;
 }
 
-.ml-wizard-desc-2 {
-  text-align: start;
-}
-
-/* Botones de los pasos */
-.ml-wizard-btn-ml {
-  background: #d97706;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-left: auto;
-  width: 100px;
-}
-
-.ml-wizard-btn-ml:hover {
-  background: #b45309;
-}
-
-.ml-wizard-btn-ml:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Check de completado */
-.ml-wizard-check {
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.ml-wizard-check svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* Formulario de paso individual */
-.ml-wizard-form-ml {
-  width: 100%;
-  min-width: 350px;
+/* Formulario */
+.register-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  border: none;
-  border-radius: 20px;
+  gap: 20px;
 }
 
-.ml-wizard-icon-big {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 8px;
-}
-
-.ml-wizard-icon-big svg {
-  width: 48px;
-  height: 48px;
-}
-
-/* Inputs de password */
-.input-password-container {
+/* Grupos de campos */
+.form-group {
   position: relative;
-  display: flex;
-  align-items: center;
 }
 
-.input-password-container input {
+/* Inputs */
+.form-input {
   width: 100%;
-  padding-right: 40px;
-}
-
-.toggle-password-icon {
-  position: absolute;
-  right: 12px;
-  cursor: pointer;
-  color: #555;
-  font-size: 1.2rem;
-  transition: all 0.2s ease;
-}
-
-.toggle-password-icon:hover {
-  color: #d97706;
-}
-
-/* Inputs del formulario */
-.ml-wizard-input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #e6e6e6;
-  border-radius: 6px;
+  padding: 14px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
   font-size: 16px;
-  color: #333;
-  background: #fff;
+  color: #1f2937;
+  background: #ffffff;
   transition: all 0.2s ease;
   outline: none;
-  margin: 0;
 }
 
-.ml-wizard-input:focus {
+.form-input:focus {
   border-color: #d97706;
   box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
 }
 
-.ml-wizard-input.input-error {
-  border-color: #f23d4f;
+.form-input.valid {
+  border-color: #10b981;
+  background: #f0fdf4;
 }
 
-.ml-wizard-input.input-valid {
-  border-color: #00a650;
+.form-input.error {
+  border-color: #ef4444;
+  background: #fef2f2;
 }
 
-.ml-wizard-input::placeholder {
-  color: #999;
+.form-input::placeholder {
+  color: #9ca3af;
 }
 
-/* Botón principal del formulario */
-.ml-wizard-btn-ml-2 {
-  background: #d97706;
-  color: #fff;
+/* Container para inputs de contraseña */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-container .form-input {
+  padding-right: 50px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
   border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-toggle:hover {
+  color: #d97706;
+  background: rgba(217, 119, 6, 0.1);
+}
+
+/* Mensajes de error */
+.error-message {
+  color: #ef4444;
+  font-size: 14px;
+  margin-top: 6px;
+  animation: shake 0.3s ease;
+}
+
+.general-error {
+  text-align: center;
+  padding: 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
   border-radius: 6px;
-  padding: 12px 24px;
+  margin-top: -4px;
+}
+
+/* Botón de registro */
+.register-button {
+  width: 100%;
+  padding: 16px;
+  background: #d97706;
+  color: white;
+  border: none;
+  border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 100%;
-  height: 48px;
   margin-top: 8px;
 }
 
-.ml-wizard-btn-ml-2:hover:not(:disabled) {
+.register-button:hover:not(:disabled) {
   background: #b45309;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
 }
 
-.ml-wizard-btn-ml-2:disabled {
-  opacity: 0.6;
+.register-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.register-button:disabled {
+  background: #d1d5db;
   cursor: not-allowed;
-  background: #ccc;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Botón cancelar */
-.ml-wizard-btn-cancel,
-.ml-wizard-btn-cancel-2 {
-  background: #e53935;
-  color: #fff;
-  border-radius: 6px;
-  padding: 12px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.ml-wizard-btn-cancel:hover,
-.ml-wizard-btn-cancel-2:hover {
-  background: #c62828;
-}
-
-/* Enlaces */
-.ml-wizard-login-link {
+/* Link para ir al login */
+.login-link {
   text-align: center;
-  margin: 16px 0 0 0;
-  font-size: 14px;
+  margin-top: 8px;
 }
 
-.ml-wizard-login-link a {
-  color: #3483fa;
+.login-link a {
+  color: #3b82f6;
   text-decoration: none;
-  font-weight: 400;
-  transition: all 0.2s ease;
+  font-weight: 500;
+  transition: color 0.2s ease;
 }
 
-.ml-wizard-login-link a:hover {
+.login-link a:hover {
+  color: #1d4ed8;
   text-decoration: underline;
-  color: #1976d2;
 }
 
-/* Mensajes de error y éxito */
-.error-message {
-  color: #f23d4f;
-  font-size: 12px;
-  margin: 4px 0 0 0;
-  line-height: 1.3;
-}
-
-.success-message,
-.success-message-register {
-  color: #00a650;
-  font-size: 14px;
-  font-weight: 600;
+/* Mensaje de éxito */
+.success-message-large {
   text-align: center;
-  margin: 8px 0;
-  padding: 8px;
-  background-color: rgba(76, 175, 80, 0.1);
-  border-radius: 4px;
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  padding: 40px 20px;
 }
 
-.success-message-register {
-  font-size: 20px;
-}
-
-/* Términos y condiciones */
-.ml-wizard-terms {
-  font-size: 12px;
-  color: #666;
-  margin: 16px 0 0 0;
-  line-height: 1.4;
-}
-
-.ml-wizard-terms label {
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #10b981;
+  border-radius: 50%;
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 40px;
+  font-weight: bold;
+  margin: 0 auto 24px;
+  animation: successPulse 1s ease;
 }
 
-.ml-wizard-terms input[type="checkbox"] {
-  margin: 0;
-  flex-shrink: 0;
+.success-message-large h2 {
+  color: #065f46;
+  margin: 0 0 12px 0;
+  font-size: 24px;
 }
 
-.ml-wizard-terms a {
-  color: #3483fa;
-  text-decoration: none;
+.success-message-large p {
+  color: #6b7280;
+  margin: 8px 0;
+  font-size: 16px;
 }
 
-.ml-wizard-terms a:hover {
-  text-decoration: underline;
-}
-
-/* FadeIn animación simple */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 480px) {
-  .register-form-container {
-    padding: 16px 8px;
-  }
-
-  .register-page {
-    margin: 20px auto;
-  }
-
-  .ml-wizard-form-ml {
-    padding: 20px;
-  }
-
-  .ml-wizard-card {
-    margin: 0;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .ml-wizard-step-content {
-    width: 100%;
-  }
-
-  .ml-wizard-step-list {
-    padding: 10px;
-    gap: 10px;
-    width: 90%;
-    margin-left: 20px;
-  }
-
-  .ml-wizard-btn-cancel {
-    width: 90%;
-  }
-
-  .ml-wizard-title {
-    font-size: 20px;
-  }
-
-  .ml-wizard-step-list {
-    padding: 12px;
-    min-height: 64px;
-  }
-
-  .ml-wizard-label {
-    font-size: 15px;
-  }
-
-  .ml-wizard-desc {
-    font-size: 13px;
-  }
-
-  .ml-wizard-input {
-    padding: 10px 12px;
-    font-size: 16px; /* Evita zoom en iOS */
-  }
-
-  #section-login.register-page {
-    max-width: 360px;
-    min-height: 600px;
-    padding: 0;
-    margin: 10px auto;
-    transition: min-height 0.3s ease;
-  }
-
-  #section-login.register-page.wizard-step-active {
-    min-height: auto;
-  }
-}
-
-@media (max-width: 370px) {
-  .ml-wizard-step-list {
-    padding: 10px;
-    gap: 10px;
-    width: 95%;
-    margin-left: 10px;
-  }
-
-  .ml-wizard-btn-cancel {
-    width: 95%;
-  }
-
-  .ml-wizard-icon {
-    width: 28px;
-    height: 28px;
-  }
-
-  .ml-wizard-icon svg {
-    width: 28px;
-    height: 28px;
-  }
-
-  #section-login.register-page {
-    max-width: 520px;
-    height: auto;
-    margin: 10px auto;
-    padding: 0;
-  }
-}
-/* Animaciones principales */
+/* Animaciones */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -472,57 +229,7 @@ body.register-body {
   }
 }
 
-@keyframes fadeInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes successPulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes successBounce {
-  0% {
-    transform: translateY(20px) scale(0.8);
-    opacity: 0;
-  }
-  50% {
-    transform: translateY(-5px) scale(1.05);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes errorShake {
+@keyframes shake {
   0%,
   100% {
     transform: translateX(0);
@@ -535,366 +242,138 @@ body.register-body {
   }
 }
 
-@keyframes checkMarkDraw {
+@keyframes successPulse {
   0% {
-    stroke-dasharray: 0 50;
+    transform: scale(0);
     opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    stroke-dasharray: 50 0;
-    opacity: 1;
-  }
-}
-
-@keyframes iconPulse {
-  0% {
-    transform: scale(1);
   }
   50% {
     transform: scale(1.1);
   }
   100% {
     transform: scale(1);
-  }
-}
-
-@keyframes buttonPress {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(0.98);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* Clases para las animaciones de elementos */
-
-/* Wizard principal montado */
-.wizard-mounted {
-  animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Estados de transición */
-.wizard-transitioning {
-  pointer-events: none;
-}
-
-/* Título animado */
-.animated-title {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Pasos animados */
-.animated-step {
-  animation: fadeInLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  transform: translateX(-50px);
-  opacity: 0;
-}
-
-.animated-step:nth-child(1) {
-  animation-delay: 0.1s;
-}
-.animated-step:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.animated-step:nth-child(3) {
-  animation-delay: 0.3s;
-}
-.animated-step:nth-child(4) {
-  animation-delay: 0.4s;
-}
-
-/* Iconos animados */
-.animated-icon {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animated-step:hover .animated-icon {
-  animation: iconPulse 0.6s ease-in-out;
-}
-
-.animated-step.active .animated-icon {
-  animation: iconPulse 0.8s ease-in-out infinite;
-}
-
-/* Check mark animado */
-.animated-check {
-  animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animated-check svg path {
-  animation: checkMarkDraw 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Botones animados */
-.animated-button {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animated-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
-}
-
-.animated-button:active {
-  animation: buttonPress 0.1s ease-in-out;
-}
-
-.animated-cancel-btn,
-.animated-form-cancel {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animated-cancel-btn:hover,
-.animated-form-cancel:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(229, 57, 53, 0.3);
-}
-
-/* Links animados */
-.animated-link,
-.animated-form-link {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animated-link a,
-.animated-form-link a {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animated-link a:hover,
-.animated-form-link a:hover {
-  transform: translateY(-1px);
-}
-
-/* Formulario paso a paso */
-.step-form {
-  animation: fadeInScale 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Iconos del formulario */
-.animated-form-icon {
-  animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Títulos y descripciones del formulario */
-.animated-form-title {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.1s both;
-}
-
-.animated-form-desc {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
-}
-
-/* Inputs animados */
-.animated-input {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animated-input:focus {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
-}
-
-.animated-input.input-valid {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both,
-    successPulse 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.9s;
-}
-
-.animated-input.input-error {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both,
-    errorShake 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.9s;
-}
-
-/* Contenedores de contraseña */
-.animated-password-container {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both;
-}
-
-/* Iconos de toggle password */
-.animated-toggle-icon {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animated-toggle-icon:hover {
-  color: #d97706;
-  transform: scale(1.1);
-}
-
-/* Mensajes de error animados */
-.animated-error {
-  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Mensaje de éxito del paso */
-.animated-step-success {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Botón de submit animado */
-.animated-submit-btn {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animated-submit-btn:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.3);
-}
-
-.animated-submit-btn:active:not(:disabled) {
-  animation: buttonPress 0.15s ease-in-out;
-}
-
-.animated-submit-btn:disabled {
-  animation: none;
-  transform: scale(0.98);
-}
-
-/* Mensaje de éxito final */
-.animated-success {
-  animation: fadeInScale 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Mejoras en transiciones existentes */
-.ml-wizard-step-list {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.ml-wizard-step-list:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.ml-wizard-step-list.active {
-  box-shadow: 0 6px 25px rgba(151, 240, 17, 0.3);
-  animation: iconPulse 0.6s ease-in-out;
-}
-
-.ml-wizard-step-list.done {
-  transform: scale(0.98);
-  opacity: 0.8;
-}
-
-/* Efectos de hover mejorados para inputs */
-.ml-wizard-input {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.ml-wizard-input:hover:not(:focus) {
-  border-color: #d97706;
-  transform: translateY(-1px);
-}
-
-.ml-wizard-input:focus {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.2);
-}
-
-/* Animación de loading en botones */
-@keyframes loadingPulse {
-  0%,
-  100% {
     opacity: 1;
   }
-  50% {
-    opacity: 0.7;
-  }
 }
 
-.ml-wizard-btn-ml-2:disabled {
-  animation: loadingPulse 1.5s ease-in-out infinite;
+/* Estados de hover y focus mejorados */
+.form-input:hover:not(:focus) {
+  border-color: #d1d5db;
 }
 
-/* Efectos de micro-interacciones */
-.ml-wizard-icon {
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+.form-input:focus:valid {
+  border-color: #10b981;
 }
 
-.ml-wizard-step-list:hover .ml-wizard-icon {
-  transform: scale(1.1);
+.form-input:focus:invalid {
+  border-color: #ef4444;
 }
 
-.ml-wizard-step-list.active .ml-wizard-icon {
-  animation: iconPulse 1.2s ease-in-out infinite;
-}
-
-/* Staggered animations para elementos de lista */
-.ml-wizard-steps-list .animated-step {
-  opacity: 0;
-  transform: translateX(-50px);
-  animation: fadeInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.ml-wizard-steps-list .animated-step:nth-child(1) {
-  animation-delay: 0.1s;
-}
-.ml-wizard-steps-list .animated-step:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.ml-wizard-steps-list .animated-step:nth-child(3) {
-  animation-delay: 0.3s;
-}
-.ml-wizard-steps-list .animated-step:nth-child(4) {
-  animation-delay: 0.4s;
-}
-
-/* Responsive animations */
+/* Responsive Design */
 @media (max-width: 480px) {
-  .animated-step {
-    animation-duration: 0.4s;
+  .register-container {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 40px;
   }
 
-  .animated-title,
-  .animated-form-title {
-    animation-duration: 0.4s;
+  .register-card {
+    padding: 32px 24px;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
   }
 
-  .animated-input {
-    animation-duration: 0.4s;
+  .register-title {
+    font-size: 24px;
+  }
+
+  .register-subtitle {
+    font-size: 14px;
+  }
+
+  .form-input {
+    padding: 12px 14px;
+    font-size: 16px; /* Evita zoom en iOS */
+  }
+
+  .password-input-container .form-input {
+    padding-right: 45px;
+  }
+
+  .password-toggle {
+    right: 10px;
+    padding: 6px;
+  }
+
+  .register-button {
+    padding: 14px;
+    font-size: 16px;
+  }
+
+  .success-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 30px;
+  }
+
+  .success-message-large h2 {
+    font-size: 20px;
   }
 }
 
-/* Animaciones para elementos que aparecen/desaparecen */
-.fade-enter {
-  opacity: 0;
-  transform: translateY(20px);
+@media (max-width: 320px) {
+  .register-card {
+    padding: 24px 16px;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+  }
+
+  .password-input-container .form-input {
+    padding-right: 40px;
+  }
 }
 
-.fade-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* Estados de loading */
+.register-button:disabled {
+  position: relative;
 }
 
-.fade-exit {
-  opacity: 1;
-  transform: translateY(0);
+.register-button:disabled::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.fade-exit-active {
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
-/* Mejora de rendimiento para animaciones */
-.animated-step,
-.animated-input,
-.animated-button,
-.step-form {
-  will-change: transform, opacity;
+/* Mejoras de accesibilidad */
+.form-input:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
 
-.animated-step.done,
-.animated-input.input-valid,
-.animated-input.input-error {
-  will-change: auto;
+.password-toggle:focus {
+  outline: 2px solid #d97706;
+  outline-offset: 2px;
+}
+
+.register-button:focus {
+  outline: 2px solid #d97706;
+  outline-offset: 2px;
 }

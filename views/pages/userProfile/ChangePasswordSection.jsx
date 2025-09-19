@@ -21,59 +21,90 @@ function ChangePasswordSection({ showNotification }) {
     if (!currentPassword || !newPassword || !confirmPassword) {
       return "Todos los campos son obligatorios.";
     }
+
     if (currentPassword.length < 8) {
       return "La contraseña actual debe tener al menos 8 caracteres.";
     }
+
     if (newPassword.length < 8) {
       return "La nueva contraseña debe tener al menos 8 caracteres.";
     }
+
+    if (!/(?=.*[a-z])/.test(newPassword)) {
+      return "La nueva contraseña debe contener al menos una letra minúscula.";
+    }
+
+    if (!/(?=.*[A-Z])/.test(newPassword)) {
+      return "La nueva contraseña debe contener al menos una letra mayúscula.";
+    }
+
+    if (!/(?=.*\d)/.test(newPassword)) {
+      return "La nueva contraseña debe contener al menos un número.";
+    }
+
+    if (!/(?=.*[@$!%*?&])/.test(newPassword)) {
+      return "La nueva contraseña debe contener al menos un carácter especial (@$!%*?&).";
+    }
+
     if (newPassword !== confirmPassword) {
       return "Las contraseñas nuevas no coinciden.";
     }
+
     if (currentPassword === newPassword) {
       return "La nueva contraseña debe ser diferente a la actual.";
     }
+
     return "";
   }
 
   const getInputError = (field) => {
     if (!touched[field]) return "";
-    if (
-      (field === "currentPassword" ||
-        field === "newPassword" ||
-        field === "confirmPassword") &&
-      !eval(field)
-    ) {
-      return "Este campo es obligatorio.";
+
+    // Validaciones para contraseña actual
+    if (field === "currentPassword") {
+      if (!currentPassword) {
+        return "Este campo es obligatorio.";
+      }
+      if (currentPassword.length > 0 && currentPassword.length < 8) {
+        return "Debe tener al menos 8 caracteres.";
+      }
     }
-    if (
-      field === "currentPassword" &&
-      currentPassword.length > 0 &&
-      currentPassword.length < 8
-    ) {
-      return "Debe tener al menos 8 caracteres.";
+
+    // Validaciones para nueva contraseña
+    if (field === "newPassword") {
+      if (!newPassword) {
+        return "Este campo es obligatorio.";
+      }
+      if (newPassword.length > 0 && newPassword.length < 8) {
+        return "Debe tener al menos 8 caracteres.";
+      }
+      if (newPassword.length >= 8 && !/(?=.*[a-z])/.test(newPassword)) {
+        return "Debe contener al menos una letra minúscula.";
+      }
+      if (newPassword.length >= 8 && !/(?=.*[A-Z])/.test(newPassword)) {
+        return "Debe contener al menos una letra mayúscula.";
+      }
+      if (newPassword.length >= 8 && !/(?=.*\d)/.test(newPassword)) {
+        return "Debe contener al menos un número.";
+      }
+      if (newPassword.length >= 8 && !/(?=.*[@$!%*?&])/.test(newPassword)) {
+        return "Debe contener al menos un carácter especial (@$!%*?&).";
+      }
+      if (currentPassword && newPassword === currentPassword) {
+        return "Debe ser diferente a la contraseña actual.";
+      }
     }
-    if (
-      field === "newPassword" &&
-      newPassword.length > 0 &&
-      newPassword.length < 8
-    ) {
-      return "Debe tener al menos 8 caracteres.";
+
+    // Validaciones para confirmar contraseña
+    if (field === "confirmPassword") {
+      if (!confirmPassword) {
+        return "Este campo es obligatorio.";
+      }
+      if (confirmPassword && newPassword !== confirmPassword) {
+        return "Las contraseñas no coinciden.";
+      }
     }
-    if (
-      field === "confirmPassword" &&
-      confirmPassword &&
-      newPassword !== confirmPassword
-    ) {
-      return "Las contraseñas no coinciden.";
-    }
-    if (
-      field === "newPassword" &&
-      currentPassword &&
-      newPassword === currentPassword
-    ) {
-      return "Debe ser diferente a la actual.";
-    }
+
     return "";
   };
 
