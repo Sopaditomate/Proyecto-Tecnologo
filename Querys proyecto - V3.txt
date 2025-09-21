@@ -1100,6 +1100,23 @@ WHERE mt.id_state = 1
   AND pr.id_state = 1
 ORDER BY h.movement_datetime DESC;
 
+CREATE OR REPLACE VIEW vw_active_inventory_report AS
+SELECT 
+  inv.id_inventory,
+  inv.quantity,
+  mat.name AS raw_material,
+  uni.name AS unit,
+  typ.name AS type,
+  mat.description
+FROM inventory inv
+JOIN raw_material mat ON inv.id_material = mat.id_material
+JOIN unit uni ON mat.id_unit = uni.id_unit
+JOIN material_type typ ON mat.id_material_type = typ.id_type_material
+WHERE inv.id_state = 1
+  AND mat.id_state = 1
+  AND uni.id_state = 1
+  AND typ.id_state = 1;
+
 
 -------------------------------------PROCEDURES----------------------------------
 

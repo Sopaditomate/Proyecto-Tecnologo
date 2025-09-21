@@ -132,7 +132,7 @@ const InventoryManagement = () => {
   // Configuración de columnas para inventario
   const inventoryColumns = [
     {
-      Header: "Materia Prima",
+      Header: "Marca / Insumo",
       accessor: "MATERIA_PRIMA",
       headerStyle: { width: "100px" },
       Cell: ({ value }) => <strong>{value}</strong>,
@@ -446,62 +446,66 @@ const InventoryManagement = () => {
 
   return (
     <>
-      <ToastContainer />
+    <ToastContainer />
 
-      <TableContainer
-        title="Gestión de Inventario"
-        subtitle="Administra las materias primas y suministros de la panadería"
-        // Search and filter props
-        searchLabel="Buscar en Inventario"
-        searchPlaceholder="Buscar por materia prima, unidad, tipo o descripción..."
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        filterLabel="Filtrar por Tipo"
-        filterValue={selectedType}
-        onFilterChange={setSelectedType}
-        filterOptions={tiposUnicos}
-        // Actions
-        onClear={handleClearFilters}
-        onAdd={handleShowModal}
-        onHistory={handleShowHistorialModal}
-        onUpload={handleShowUploadModal}
-        addLabel="Agregar Insumo"
-        historyLabel="Ver Historial"
-        uploadLabel="Cargar CSV"
-        showHistory={true}
-        showUpload={true}
-        // Export options
-        exportOptions={[
-          {
-            label: "PDF",
-            onClick: () =>
-              window.open(
-                `${VITE_API_URL}/export/pdfinventario`,
-                "_blank"
-              ),
-            variant: "outline-danger",
-          },
-          {
-            label: "Excel",
-            onClick: () =>
-              window.open(
-                `${VITE_API_URL}/export/excelinventario`,
-                "_blank"
-              ),
-            variant: "outline-success",
-          },
-        ]}
-        // Table props
-        columns={inventoryColumns}
-        data={paginatedInventory}
-        loading={loading}
-        emptyMessage={
-          searchTerm || selectedType
-            ? "No se encontraron insumos con los criterios de búsqueda"
-            : "No hay insumos en el inventario"
-        }
-        // Pagination props
+    <TableContainer
+      title="Gestión de Inventario"
+      subtitle="Administra las materias primas y suministros de la panadería"
+      // Search and filter props
+      searchLabel="Buscar en Inventario"
+      searchPlaceholder="Buscar por marca, unidad, tipo o descripción..."
+      searchTerm={searchTerm}
+      onSearchChange={setSearchTerm}
+      filterLabel="Filtrar por Tipo"
+      filterValue={selectedType}
+      onFilterChange={setSelectedType}
+      filterOptions={tiposUnicos}
+      // Actions
+      onClear={handleClearFilters}
+      onAdd={handleShowModal}
+      onHistory={handleShowHistorialModal}
+      onUpload={handleShowUploadModal}
+      addLabel="Agregar Insumo"
+      historyLabel="Ver Historial"
+      uploadLabel="Cargar CSV"
+      showHistory={true}
+      showUpload={true}
+      // Export options
+      exportOptions={[
+        {
+          label: "PDF",
+          onClick: () =>
+            window.open(`${VITE_API_URL}/export/pdfinventario`, "_blank"),
+          variant: "outline-danger",
+        },
+        {
+          label: "Excel",
+          onClick: () =>
+            window.open(`${VITE_API_URL}/export/excelinventario`, "_blank"),
+          variant: "outline-success",
+        },
+      ]}
+      // Table props
+      columns={inventoryColumns}
+      data={paginatedInventory}
+      loading={loading}
+      emptyMessage={
+        searchTerm || selectedType
+          ? "No se encontraron insumos con los criterios de búsqueda"
+          : "No hay insumos en el inventario"
+      }
+    />
+
+
+    {totalPages > 1 && (
+      <TablePagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={filteredInventory.length}
+        itemsPerPage={itemsPerPage}
       />
+    )}
 
       {/* Modal para agregar/editar insumo */}
       <Modal show={showModal} onHide={handleCloseModal}>
@@ -513,7 +517,7 @@ const InventoryManagement = () => {
         <Modal.Body>
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label>Materia Prima</Form.Label>
+              <Form.Label>Marca / Insumo</Form.Label>
               <Form.Control
                 type="text"
                 name="MATERIA_PRIMA"
@@ -620,11 +624,11 @@ const InventoryManagement = () => {
           />
             {historialTotalPages > 1 && (
                       <TablePagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                        totalItems={filteredInventory.length}
-                        itemsPerPage={itemsPerPage}
+                        currentPage={historialCurrentPage}
+                        totalPages={historialTotalPages}
+                        onPageChange={setHistorialCurrentPage}
+                        totalItems={filteredHistorial.length}
+                        itemsPerPage={historialItemsPerPage}
                       />
                     )}
         </Modal.Body>
