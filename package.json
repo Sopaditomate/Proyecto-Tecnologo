@@ -41,6 +41,7 @@
     "nodemailer": "^7.0.3",
     "npm": "^11.4.2",
     "pdfkit": "^0.17.1",
+    "pdfkit-table": "^0.1.99",
     "prop-types": "15.8.1",
     "react": "18.3.1",
     "react-bootstrap": "^2.10.10",
