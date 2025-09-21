@@ -25,6 +25,8 @@ const allowedOrigins = [
   "https://proyecto-tecnologo-lovebites.up.railway",
   "https://proyecto-tecnologo-lovebites.up.railway.app",
   "https://proyecto-tecnologo-bakingdata.up.railway.app",
+  "https://proyecto-tecnologo.onrender.com",
+  "https://proyecto-tecnologo-1.onrender.com",
 ];
 
 // Configuración de CORS
