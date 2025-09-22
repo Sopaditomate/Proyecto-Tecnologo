@@ -4,33 +4,71 @@ import { sendEmail } from "../services/sendEmail.js";
 import UserModel from "../models/UserModel.js";
 
 class AuthController {
-  // Registro de usuario
+  // Almacenamiento temporal en memoria para datos de registro pendientes
+  static pendingRegistrations = new Map();
+
+  // Limpiar registros expirados cada 5 minutos
+  static {
+    setInterval(() => {
+      const now = Date.now();
+      for (const [email, data] of this.pendingRegistrations.entries()) {
+        if (now > data.expiresAt) {
+          this.pendingRegistrations.delete(email);
+        }
+      }
+    }, 5 * 60 * 1000);
+  }
+
+  // Registro de usuario - SOLO guardar temporalmente
   async register(req, res) {
     try {
       console.log("Datos recibidos en registro:", req.body);
-      const { email, password, nombres, apellidos, direccion, telefono } =
-        req.body;
+      const { email, password, nombres, apellidos } = req.body;
 
       // Verificar si el usuario ya existe
-      const existingUser = await UserModel.findByEmail(req.body.email);
+      const existingUser = await UserModel.findByEmail(email);
       if (existingUser) {
         return res.status(400).json({ message: "El usuario ya existe" });
       }
 
-      const userId = await UserModel.create({
+      // Generar código de verificación de 6 dígitos
+      const verificationCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+
+      // Guardar datos temporalmente en memoria (10 minutos)
+      AuthController.pendingRegistrations.set(email, {
         email,
-        password, // texto plano, el modelo la hashea
-        rolId: 100000,
+        password,
         nombres,
         apellidos,
-        direccion,
-        telefono,
+        verificationCode,
+        expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutos
       });
+
+      // Enviar email con el código
+      await sendEmail(
+        email,
+        "Verificación de cuenta",
+        `Tu código de verificación es: ${verificationCode}`,
+        `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #d97706;">¡Bienvenido a nuestra plataforma!</h2>
+            <p>Gracias por registrarte. Para completar tu registro, ingresa el siguiente código de verificación:</p>
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+              <h1 style="color: #d97706; font-size: 32px; letter-spacing: 5px; margin: 0;">${verificationCode}</h1>
+            </div>
+            <p>Este código expirará en 10 minutos.</p>
+            <p>Si no verificas tu email, los datos no se guardarán y deberás registrarte nuevamente.</p>
+          </div>
+        `
+      );
 
       res.status(201).json({
         success: true,
-        message: "Usuario registrado correctamente",
-        userId,
+        message:
+          "Se ha enviado un código de verificación a tu email. Debes verificarlo para completar el registro.",
+        requiresVerification: true,
       });
     } catch (error) {
       console.error("Error en el registro:", error);
@@ -40,7 +78,159 @@ class AuthController {
     }
   }
 
-  // Login de usuario
+  // Verificar código y CREAR la cuenta real
+  async verifyEmailCode(req, res) {
+    try {
+      const { email, code } = req.body;
+
+      if (!email || !code) {
+        return res.status(400).json({
+          message: "Email y código son requeridos",
+        });
+      }
+
+      if (code.length !== 6) {
+        return res.status(400).json({
+          message: "El código debe tener 6 dígitos",
+        });
+      }
+
+      // Verificar si ya existe un usuario real con ese email
+      const existingUser = await UserModel.findByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Ya existe una cuenta con este email",
+        });
+      }
+
+      // Obtener datos temporales
+      const pendingData = AuthController.pendingRegistrations.get(email);
+
+      if (!pendingData) {
+        return res.status(400).json({
+          message: "No hay registro pendiente. Debes registrarte nuevamente.",
+        });
+      }
+
+      // Verificar si expiró
+      if (Date.now() > pendingData.expiresAt) {
+        AuthController.pendingRegistrations.delete(email);
+        return res.status(400).json({
+          message: "El código ha expirado. Debes registrarte nuevamente.",
+        });
+      }
+
+      // Verificar código
+      if (pendingData.verificationCode !== code) {
+        return res.status(400).json({
+          message: "Código inválido",
+        });
+      }
+
+      // CREAR el usuario real AHORA
+      const userId = await UserModel.create({
+        email: pendingData.email,
+        password: pendingData.password, // será hasheada en el modelo
+        rolId: 100000,
+        nombres: pendingData.nombres,
+        apellidos: pendingData.apellidos,
+        direccion: "",
+        telefono: "",
+      });
+
+      // Marcar como verificado inmediatamente
+      await UserModel.markEmailAsVerified(userId);
+
+      // Limpiar datos temporales
+      AuthController.pendingRegistrations.delete(email);
+
+      res.json({
+        success: true,
+        message:
+          "Email verificado y cuenta creada exitosamente. Ya puedes iniciar sesión.",
+      });
+    } catch (error) {
+      console.error("Error en verificación de email:", error);
+      res.status(500).json({
+        message: "Error al verificar el código",
+      });
+    }
+  }
+
+  // Reenviar código de verificación
+  async resendVerificationCode(req, res) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({
+          message: "Email es requerido",
+        });
+      }
+
+      // Verificar si ya existe un usuario real
+      const existingUser = await UserModel.findByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Ya existe una cuenta con este email",
+        });
+      }
+
+      // Obtener datos temporales
+      const pendingData = AuthController.pendingRegistrations.get(email);
+      if (!pendingData) {
+        return res.status(404).json({
+          message: "No hay registro pendiente. Debes registrarte nuevamente.",
+        });
+      }
+
+      // Verificar si expiró
+      if (Date.now() > pendingData.expiresAt) {
+        AuthController.pendingRegistrations.delete(email);
+        return res.status(400).json({
+          message: "El registro ha expirado. Debes registrarte nuevamente.",
+        });
+      }
+
+      // Generar nuevo código
+      const verificationCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+
+      // Actualizar datos temporales
+      pendingData.verificationCode = verificationCode;
+      pendingData.expiresAt = Date.now() + 10 * 60 * 1000; // Renovar tiempo
+
+      // Enviar email
+      await sendEmail(
+        email,
+        "Nuevo código de verificación",
+        `Tu nuevo código de verificación es: ${verificationCode}`,
+        `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #d97706;">Nuevo código de verificación</h2>
+            <p>Has solicitado un nuevo código de verificación:</p>
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+              <h1 style="color: #d97706; font-size: 32px; letter-spacing: 5px; margin: 0;">${verificationCode}</h1>
+            </div>
+            <p>Este código expirará en 10 minutos.</p>
+          </div>
+        `
+      );
+
+      res.json({
+        success: true,
+        message: "Nuevo código de verificación enviado a tu email",
+      });
+    } catch (error) {
+      console.error("Error al reenviar código:", error);
+      res.status(500).json({
+        message: "Error al enviar el código",
+      });
+    }
+  }
+
+  // Login de usuario (verificar que el email esté verificado)
   async login(req, res) {
     try {
       const { email, password } = req.body;
@@ -58,15 +248,29 @@ class AuthController {
         return res.status(401).json({ message: "Credenciales inválidas" });
       }
 
-      // Verificar si el usuario ya tiene una sesión activa
-      // const isAlreadyLoggedIn = await UserModel.isUserLoggedIn(user.ID_USUARIO);
+      // Verificar si el email está verificado
+      // IMPORTANTE: Solo pedir verificación si el usuario NO está verificado
+      if (user.VERIFIED !== 1) {
+        // Verificar si hay datos pendientes en memoria
+        const pendingData = AuthController.pendingRegistrations.get(email);
 
-      // if (isAlreadyLoggedIn) {
-      //   return res.status(401).json({
-      //     message: "Credenciales inválidas",
-      //     code: "ADMIN_SESSION_EXISTS",
-      //   });
-      // }
+        if (pendingData && Date.now() <= pendingData.expiresAt) {
+          // Hay un registro pendiente válido, pedir código
+          return res.status(401).json({
+            message: "Debes verificar tu email antes de iniciar sesión",
+            requiresVerification: true,
+            email: email,
+          });
+        } else {
+          // No hay registro pendiente, pero el usuario existe sin verificar
+          // Esto significa que es un usuario antiguo sin verificación
+          // Lo marcamos como verificado automáticamente
+          await UserModel.markEmailAsVerified(user.ID_USUARIO);
+          console.log(
+            `Usuario ${email} marcado como verificado automáticamente (usuario existente)`
+          );
+        }
+      }
 
       // Obtener información completa del usuario
       const userInfo = await UserModel.getUserInfo(user.ID_USUARIO);
@@ -77,7 +281,7 @@ class AuthController {
         clientId = await UserModel.getClientId(user.ID_USUARIO);
       }
 
-      // Generar token JWT con expiración de 24 horas
+      // Generar token JWT con expiración de 1 hora
       const token = jwt.sign(
         {
           userId: user.ID_USUARIO,
@@ -95,7 +299,7 @@ class AuthController {
       // Enviar respuesta con token y cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV,
+        secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         maxAge: 60 * 60 * 1000, // 1 hora
       });
@@ -183,12 +387,6 @@ class AuthController {
     }
   }
 
-  // Validar email (método estático para usar en el frontend)
-  static validateEmail(email) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  }
-
   // Recuperar contraseña
   async forgotPassword(req, res) {
     const { email } = req.body;
@@ -208,7 +406,7 @@ class AuthController {
         { expiresIn: "1h" }
       );
 
-      // 3. Guardar el token en la base de datos (o en memoria para pruebas)
+      // 3. Guardar el token en la base de datos
       await UserModel.saveResetToken(user.ID_USUARIO, resetToken);
 
       // 5. Crear enlace de recuperación

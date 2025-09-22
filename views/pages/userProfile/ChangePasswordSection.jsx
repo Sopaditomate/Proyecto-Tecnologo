@@ -12,10 +12,28 @@ function ChangePasswordSection({ showNotification }) {
   const [editing, setEditing] = useState(false);
   const [touched, setTouched] = useState({});
 
-  // Password visibility states
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+  });
+
+  const checkPasswordRequirements = (password) => {
+    const requirements = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?@$!%*?&]/.test(password),
+    };
+    setPasswordRequirements(requirements);
+  };
 
   function validate() {
     if (!currentPassword || !newPassword || !confirmPassword) {
@@ -60,7 +78,6 @@ function ChangePasswordSection({ showNotification }) {
   const getInputError = (field) => {
     if (!touched[field]) return "";
 
-    // Validaciones para contraseña actual
     if (field === "currentPassword") {
       if (!currentPassword) {
         return "Este campo es obligatorio.";
@@ -70,7 +87,6 @@ function ChangePasswordSection({ showNotification }) {
       }
     }
 
-    // Validaciones para nueva contraseña
     if (field === "newPassword") {
       if (!newPassword) {
         return "Este campo es obligatorio.";
@@ -95,7 +111,6 @@ function ChangePasswordSection({ showNotification }) {
       }
     }
 
-    // Validaciones para confirmar contraseña
     if (field === "confirmPassword") {
       if (!confirmPassword) {
         return "Este campo es obligatorio.";
@@ -139,6 +154,13 @@ function ChangePasswordSection({ showNotification }) {
       setConfirmPassword("");
       setEditing(false);
       setTouched({});
+      setPasswordRequirements({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        special: false,
+      });
     } catch (err) {
       showNotification(
         err.response?.data?.message ||
@@ -249,7 +271,9 @@ function ChangePasswordSection({ showNotification }) {
                 type={showNewPassword ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => {
-                  setNewPassword(e.target.value);
+                  const value = e.target.value;
+                  setNewPassword(value);
+                  checkPasswordRequirements(value);
                   setTouched((t) => ({ ...t, newPassword: true }));
                 }}
                 minLength={8}
@@ -268,6 +292,7 @@ function ChangePasswordSection({ showNotification }) {
                 }
                 onBlur={() => setTouched((t) => ({ ...t, newPassword: true }))}
               />
+
               {editing && (
                 <button
                   type="button"
@@ -303,11 +328,73 @@ function ChangePasswordSection({ showNotification }) {
                 </button>
               )}
             </div>
+
             {getInputError("newPassword") && (
               <div className="input-error-text">
                 {getInputError("newPassword")}
               </div>
             )}
+            <div className="security-info" style={{ marginTop: "1rem" }}>
+              <h4 className="security-title">Requisitos de seguridad:</h4>
+              <ul className="security-list">
+                <li
+                  className={`requirement-item ${
+                    passwordRequirements.length ? "met" : "unmet"
+                  }`}
+                >
+                  <span className="requirement-icon">
+                    {passwordRequirements.length ? "✓" : "•"}
+                  </span>
+                  <span className="requirement-text">Mínimo 8 caracteres</span>
+                </li>
+                <li
+                  className={`requirement-item ${
+                    passwordRequirements.uppercase ? "met" : "unmet"
+                  }`}
+                >
+                  <span className="requirement-icon">
+                    {passwordRequirements.uppercase ? "✓" : "•"}
+                  </span>
+                  <span className="requirement-text">
+                    Al menos una letra mayúscula
+                  </span>
+                </li>
+                <li
+                  className={`requirement-item ${
+                    passwordRequirements.lowercase ? "met" : "unmet"
+                  }`}
+                >
+                  <span className="requirement-icon">
+                    {passwordRequirements.lowercase ? "✓" : "•"}
+                  </span>
+                  <span className="requirement-text">
+                    Al menos una letra minúscula
+                  </span>
+                </li>
+                <li
+                  className={`requirement-item ${
+                    passwordRequirements.number ? "met" : "unmet"
+                  }`}
+                >
+                  <span className="requirement-icon">
+                    {passwordRequirements.number ? "✓" : "•"}
+                  </span>
+                  <span className="requirement-text">Al menos un número</span>
+                </li>
+                <li
+                  className={`requirement-item ${
+                    passwordRequirements.special ? "met" : "unmet"
+                  }`}
+                >
+                  <span className="requirement-icon">
+                    {passwordRequirements.special ? "✓" : "•"}
+                  </span>
+                  <span className="requirement-text">
+                    Al menos un carácter especial
+                  </span>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div className="form-group">
@@ -419,6 +506,13 @@ function ChangePasswordSection({ showNotification }) {
                     setShowCurrentPassword(false);
                     setShowNewPassword(false);
                     setShowConfirmPassword(false);
+                    setPasswordRequirements({
+                      length: false,
+                      uppercase: false,
+                      lowercase: false,
+                      number: false,
+                      special: false,
+                    });
                   }}
                 >
                   Cancelar

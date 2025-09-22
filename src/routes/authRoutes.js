@@ -5,6 +5,8 @@ import { verifyToken } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.post("/register", AuthController.register);
+router.post("/verify-email", AuthController.verifyEmailCode);
+router.post("/resend-verification", AuthController.resendVerificationCode);
 router.post("/login", AuthController.login);
 router.post("/logout", verifyToken, AuthController.logout);
 router.get("/check", verifyToken, AuthController.checkAuth);

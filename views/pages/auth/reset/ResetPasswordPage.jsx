@@ -19,10 +19,28 @@ export function ResetPasswordPage() {
   const [tokenValid, setTokenValid] = useState(true);
   const [checkingToken, setCheckingToken] = useState(true);
 
-  // Obtiene el token de la URL
+  const [passwordRequirements, setPasswordRequirements] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+  });
+
   const searchParams = useSearchParams();
   const token = searchParams[0].get("token");
   const navigate = useNavigate();
+
+  const checkPasswordRequirements = (password) => {
+    const requirements = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+    };
+    setPasswordRequirements(requirements);
+  };
 
   useEffect(() => {
     if (!token) {
@@ -39,7 +57,7 @@ export function ResetPasswordPage() {
         setTokenValid(true);
       })
       .catch((err) => {
-        console.error("Error validando token:", err); // <-- AGREGA ESTO
+        console.error("Error validando token:", err);
         setTokenValid(false);
         navigate("/forgot-password", { replace: true });
       })
@@ -60,9 +78,10 @@ export function ResetPasswordPage() {
   };
 
   const handleNewPasswordChange = (e) => {
-    setNewPassword(e.target.value);
-    validateField("newPassword", e.target.value);
-    // También valida confirm para mantener la sincronía
+    const value = e.target.value;
+    setNewPassword(value);
+    checkPasswordRequirements(value);
+    validateField("newPassword", value);
     if (confirm) validateField("confirm", confirm);
   };
 
@@ -95,6 +114,15 @@ export function ResetPasswordPage() {
       setServerMessage(
         response.data.message || "Contraseña restablecida correctamente."
       );
+
+      // Resetear requisitos de contraseña
+      setPasswordRequirements({
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        number: false,
+        special: false,
+      });
     } catch (err) {
       if (err.name === "ValidationError" && err.inner) {
         const formErrors = {};
@@ -118,20 +146,8 @@ export function ResetPasswordPage() {
   return (
     <section className="reset-password-section">
       <div className="reset-password-container">
-        {/* Logo y encabezado */}
-        {/* <div className="reset-password-header">
-          <div className="logo-container">
-            <Wheat className="logo-icon" />
-          </div>
-          <h1 className="bakery-title">Panadería Artesanal</h1>
-          <p className="bakery-subtitle">El sabor de la tradición</p>
-        </div> */}
-
         <div className="reset-password-card">
           <div className="card-header">
-            {/* <div className="security-icon-container">
-              <Shield className="security-icon" />
-            </div> */}
             <HeadProfile
               titleHead={"Restablecer Contraseña"}
               subtittleHead={""}
@@ -144,7 +160,6 @@ export function ResetPasswordPage() {
           </div>
 
           {serverMessage ? (
-            // Pantalla de confirmación
             <div className="success-container">
               <div className="success-icon-container">
                 <CheckCircle className="success-icon" />
@@ -162,10 +177,8 @@ export function ResetPasswordPage() {
               </div>
             </div>
           ) : (
-            // Formulario de restablecimiento
             <form onSubmit={handleSubmit} className="reset-password-form">
               <div className="form-fields">
-                {/* Campo Nueva Contraseña */}
                 <div className="field-group">
                   <label htmlFor="newPassword" className="field-label">
                     Nueva Contraseña
@@ -202,7 +215,6 @@ export function ResetPasswordPage() {
                   )}
                 </div>
 
-                {/* Campo Confirmar Contraseña */}
                 <div className="field-group">
                   <label htmlFor="confirmPassword" className="field-label">
                     Confirmar Nueva Contraseña
@@ -239,26 +251,76 @@ export function ResetPasswordPage() {
                 </div>
               </div>
 
-              {/* Información de seguridad */}
               <div className="security-info">
                 <h4 className="security-title">Requisitos de seguridad:</h4>
                 <ul className="security-list">
-                  <li>Mínimo 8 caracteres</li>
-                  <li>Al menos una letra mayúscula</li>
-                  <li>Al menos una letra minúscula</li>
-                  <li>Al menos un número</li>
-                  <li>Al menos un carácter especial</li>
+                  <li
+                    className={`requirement-item ${
+                      passwordRequirements.length ? "met" : "unmet"
+                    }`}
+                  >
+                    <span className="requirement-icon">
+                      {passwordRequirements.length ? "✓" : "○"}
+                    </span>
+                    <span className="requirement-text">
+                      Mínimo 8 caracteres
+                    </span>
+                  </li>
+                  <li
+                    className={`requirement-item ${
+                      passwordRequirements.uppercase ? "met" : "unmet"
+                    }`}
+                  >
+                    <span className="requirement-icon">
+                      {passwordRequirements.uppercase ? "✓" : "○"}
+                    </span>
+                    <span className="requirement-text">
+                      Al menos una letra mayúscula
+                    </span>
+                  </li>
+                  <li
+                    className={`requirement-item ${
+                      passwordRequirements.lowercase ? "met" : "unmet"
+                    }`}
+                  >
+                    <span className="requirement-icon">
+                      {passwordRequirements.lowercase ? "✓" : "○"}
+                    </span>
+                    <span className="requirement-text">
+                      Al menos una letra minúscula
+                    </span>
+                  </li>
+                  <li
+                    className={`requirement-item ${
+                      passwordRequirements.number ? "met" : "unmet"
+                    }`}
+                  >
+                    <span className="requirement-icon">
+                      {passwordRequirements.number ? "✓" : "○"}
+                    </span>
+                    <span className="requirement-text">Al menos un número</span>
+                  </li>
+                  <li
+                    className={`requirement-item ${
+                      passwordRequirements.special ? "met" : "unmet"
+                    }`}
+                  >
+                    <span className="requirement-icon">
+                      {passwordRequirements.special ? "✓" : "○"}
+                    </span>
+                    <span className="requirement-text">
+                      Al menos un carácter especial
+                    </span>
+                  </li>
                 </ul>
               </div>
 
-              {/* Error general */}
               {errors.general && (
                 <div className="general-error">
                   <p>{errors.general}</p>
                 </div>
               )}
 
-              {/* Botones */}
               <div className="button-group">
                 <button
                   type="submit"
@@ -279,7 +341,6 @@ export function ResetPasswordPage() {
           )}
         </div>
 
-        {/* Footer */}
         <div className="reset-password-footer">
           <p>© 2024 Panadería Artesanal. Todos los derechos reservados.</p>
         </div>

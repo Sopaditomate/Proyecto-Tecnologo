@@ -120,29 +120,25 @@ const Footer = forwardRef((props, ref) => {
           <ul className="footer-links">
             <li>
               <Link to="/catalogo" state={{ scrollTo: "products" }}>
-                Panes Artesanales
+                Pan de Ajo y Romero
               </Link>
             </li>
             <li>
               <Link to="/catalogo" state={{ scrollTo: "products" }}>
-                Pasteles y Tortas
+                Pan de Canela
               </Link>
             </li>
             <li>
               <Link to="/catalogo" state={{ scrollTo: "products" }}>
-                Galletas Caseras
+                Pan Frutos Secos
               </Link>
             </li>
             <li>
               <Link to="/catalogo" state={{ scrollTo: "products" }}>
-                Croissants
+                Focaccia de Masa Madre
               </Link>
             </li>
-            <li>
-              <Link to="/catalogo" state={{ scrollTo: "products" }}>
-                Especialidades
-              </Link>
-            </li>
+            
           </ul>
         </div>
 

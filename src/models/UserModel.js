@@ -24,6 +24,13 @@ class UserModel {
     return rows[0]?.userId;
   }
 
+  // Marcar email como verificado
+  async markEmailAsVerified(userId) {
+    await pool.query("UPDATE user_account SET verified = 1 WHERE id_user = ?", [
+      userId,
+    ]);
+  }
+
   async getUserInfo(userId) {
     const [[rows]] = await pool.query("CALL sp_get_user_info(?)", [userId]);
     return rows[0] || null;
