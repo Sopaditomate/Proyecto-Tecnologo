@@ -44,8 +44,7 @@ export const AdminOrders = () => {
   }, [orders, searchTerm, filterValue]);
 
   const applyFilters = () => {
-    let filtered = [...orders]; // Asegúrate de copiar los pedidos originales
-
+    let filtered = [...orders];
     const term = searchTerm.trim().toLowerCase();
 
     if (term) {
@@ -61,13 +60,17 @@ export const AdminOrders = () => {
           .toLowerCase();
 
         const totalAmount = order.total_amount?.toString().toLowerCase();
+        const customerName = order.customer_name?.toLowerCase();
+        const email = order.email?.toLowerCase();
 
         return (
           orderId?.includes(term) ||
           userId?.includes(term) ||
           statusName?.includes(term) ||
           createdAt?.includes(term) ||
-          totalAmount?.includes(term)
+          totalAmount?.includes(term) ||
+          customerName?.includes(term) ||
+          email?.includes(term)
         );
       });
     }
@@ -150,11 +153,20 @@ export const AdminOrders = () => {
       return;
     }
 
-    // Aquí lanzamos la alerta con Swal
+    let alertText = "Se enviará un correo al usuario notificándole el cambio de estado.";
+    let alertTitle = "¿Estás seguro?";
+    let alertIcon = "warning";
+
+    if (selectedStatusId === "300005") {
+      alertTitle = "¿Deseas cancelar este pedido?";
+      alertText = "Esta acción no se puede deshacer. La devolución del dinero debe realizarse manualmente al cliente.";
+      alertIcon = "error";
+    }
+
     const result = await Swal.fire({
-      title: "¿Estás seguro?",
-      text: "Se enviará un correo al usuario notificándole el cambio de estado.",
-      icon: "warning",
+      title: alertTitle,
+      text: alertText,
+      icon: alertIcon,
       showCancelButton: true,
       confirmButtonText: "Sí, actualizar",
       cancelButtonText: "Cancelar",
@@ -260,14 +272,16 @@ export const AdminOrders = () => {
       Cell: ({ row }) => (
         <>
         <div className="d-flex gap-2" style={{ justifyContent: "center" }}>
-          <Button
-            variant="warning"
-            className="action-btn"
-            onClick={() => updateOrder(row.original.id_order)}
-            size="sm"
-          >
-            Actualizar
-          </Button>
+          {row.original.id_order_status !== 300004 && (
+            <Button
+              variant="warning"
+              className="action-btn"
+              onClick={() => updateOrder(row.original.id_order)}
+              size="sm"
+            >
+              Actualizar
+            </Button>
+          )}
           <Button
             variant="info"
              className="action-btn"
@@ -303,7 +317,7 @@ export const AdminOrders = () => {
         title="Gestión de Pedidos"
         subtitle="Administra los pedidos del sistema y sus estados"
         searchLabel="Buscar Pedidos"
-        searchPlaceholder="Buscar por ID de usuario o ID de pedido..."
+        searchPlaceholder="Buscar por cliente, correo, estado o fecha...."
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         filterLabel="Estado del Pedido"
@@ -319,7 +333,7 @@ export const AdminOrders = () => {
         columns={columns}
         data={paginatedOrders}
         loading={loading}
-        emptyMessage="No hay pedidos registrados en el sistema"
+        emptyMessage="No hay pedidos registrados con ese estado."
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
@@ -329,9 +343,33 @@ export const AdminOrders = () => {
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Actualizar Estado del Pedido #{selectedOrderId}</Modal.Title>
+          <Modal.Title>
+            <div className="w-100">
+              <small className="text-muted">Actualizar Estado Actual del Pedido:</small><br />
+              <strong className="text-primary">
+                {orderStatuses.find(status => status.id_order_status === currentOrderStatus)?.status_name || "Desconocido"}
+              </strong>
+            </div>
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {/* Flujo explicativo dentro del modal */}
+          <div className="mb-3 p-2 border rounded bg-light">
+            <h6 className="mb-2">Flujo de Estados</h6>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.5rem" }}>
+              <span className="badge bg-warning text-dark">Recepción</span>
+              <span>→</span>
+              <span className="badge bg-primary text-light">Preparando</span>
+              <span>→</span>
+              <span className="badge bg-info text-dark">Empaquetado</span>
+              <span>→</span>
+              <span className="badge bg-secondary text-light">Envío</span>
+              <span>→</span>
+              <span className="badge bg-success text-light">Entregado</span>
+              <span className="ms-3">/</span>
+              <span className="badge bg-dark text-light">Cancelado</span>
+            </div>
+          </div>
           <Form.Group>
             <Form.Label>Selecciona el nuevo estado:</Form.Label>
             <Form.Control
