@@ -1147,9 +1147,12 @@ BEGIN
 END $$
 
 
+
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_clear_cart;
 
-CREATE PROCEDURE sp_clear_cart(IN p_user_id INT)
+CREATE  PROCEDURE sp_clear_cart(IN p_user_id INT)
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
@@ -1172,7 +1175,8 @@ END;
 
 
 
-DELIMITER //
+
+
 
 CREATE PROCEDURE sp_get_inventory()
 BEGIN

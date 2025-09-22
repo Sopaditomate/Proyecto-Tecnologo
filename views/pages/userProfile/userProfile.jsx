@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import axios from "axios";
 
 import ChangePasswordSection from "./ChangePasswordSection";
@@ -15,9 +15,11 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export default function Profile() {
   const location = useLocation();
-
+  const [searchParams] = useSearchParams();
+  // Leer el tab de query param
+  const tabFromQuery = searchParams.get("tab");
   // Obtener activeTab del state de la navegación, con fallback a "profile"
-  const initialTab = location.state?.activeTab || "profile";
+  const initialTab = location.state?.activeTab || "orders";
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [profile, setProfile] = useState({});
@@ -54,13 +56,12 @@ export default function Profile() {
 
   // Limpiar el state de navegación para evitar problemas futuros
   useEffect(() => {
-    if (location.state?.activeTab) {
-      const timer = setTimeout(() => {
-        window.history.replaceState(null, "", location.pathname);
-      }, 500);
-      return () => clearTimeout(timer);
+    if (tabFromQuery) {
+      const url = new URL(window.location);
+      url.searchParams.delete("tab");
+      window.history.replaceState(null, "", url.pathname);
     }
-  }, [activeTab]);
+  }, [tabFromQuery]);
 
   useEffect(() => {
     loadProfile();
@@ -505,7 +506,7 @@ export default function Profile() {
                 getStatusClass={getStatusClass}
               />
             )}
-           
+
             {activeTab === "password" && (
               <ChangePasswordSection
                 email={profile.USUARIO || profile.email || ""}

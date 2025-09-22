@@ -1,6 +1,6 @@
 import pool from "../config/db.js";
 import MercadoPagoService from "../services/mercadoPagoService.js";
-import { sendOrderUpdateEmail } from "../services/orderEmailService.js";
+import { sendOrderConfirmedEmail } from "../services/orderEmailService.js";
 
 class PaymentController {
   /**
@@ -191,7 +191,7 @@ class PaymentController {
         // Enviar email de confirmación (no bloquear respuesta)
         setTimeout(async () => {
           try {
-            await sendOrderUpdateEmail(orderId, 300001);
+            await sendOrderConfirmedEmail(orderId);
           } catch (emailError) {
             console.error(
               `Error enviando email para pedido ${orderId}:`,
