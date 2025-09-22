@@ -10,6 +10,15 @@ import { Modal, Form, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 export const AdminOrders = () => {
+
+  const statusFlow = {
+    300000: [300001, 300005], // Recepción
+    300001: [300002, 300005], // Preparando
+    300002: [300003, 300005], // Empaquetado
+    300003: [300004, 300005], // Envio
+    300004: [],               // Entregado
+    300005: [],               // Cancelado
+  };
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -23,6 +32,7 @@ export const AdminOrders = () => {
   const [selectedStatusId, setSelectedStatusId] = useState("");
   const navigate = useNavigate();
   const VITE_API_URL = import.meta.env.VITE_API_URL 
+  const [currentOrderStatus, setCurrentOrderStatus] = useState(null);
 
   useEffect(() => {
     fetchOrders();
@@ -120,6 +130,12 @@ export const AdminOrders = () => {
 
   const updateOrder = (orderId) => {
     setSelectedOrderId(orderId);
+
+    // Buscar el pedido para saber su estado actual
+    const order = orders.find(o => o.id_order === orderId);
+    setCurrentOrderStatus(order?.id_order_status || null);
+
+    setSelectedStatusId("");
     setShowModal(true);
   };
 
@@ -129,51 +145,63 @@ export const AdminOrders = () => {
       return;
     }
 
-    try {
-      const response = await axios.put(`${VITE_API_URL}/pedidos/orders/update-status`, {
-        orderId: selectedOrderId,
-        statusId: selectedStatusId,
-      });
+    if (!statusFlow[currentOrderStatus]?.includes(parseInt(selectedStatusId))) {
+      toast.error("No puedes actualizar a ese estado desde el estado actual.");
+      return;
+    }
 
-      toast.success(response.data.message || "Estado actualizado con éxito");
+    // Aquí lanzamos la alerta con Swal
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Se enviará un correo al usuario notificándole el cambio de estado.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, actualizar",
+      cancelButtonText: "Cancelar",
+    });
 
-      // Recarga los pedidos
-      fetchOrders();
-      setShowModal(false);
-      setSelectedOrderId(null);
-      setSelectedStatusId("");
-    } catch (error) {
-      console.error("❌ Error al actualizar el estado:", error.response?.data || error.message);
-      toast.error("Error al actualizar el estado del pedido");
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.put(`${VITE_API_URL}/pedidos/orders/update-status`, {
+          orderId: selectedOrderId,
+          statusId: selectedStatusId,
+        });
+
+        toast.success(response.data.message || "Estado actualizado con éxito");
+
+        fetchOrders();
+        setShowModal(false);
+        setSelectedOrderId(null);
+        setSelectedStatusId("");
+        setCurrentOrderStatus(null);
+      } catch (error) {
+        console.error("❌ Error al actualizar el estado:", error.response?.data || error.message);
+        toast.error("Error al actualizar el estado del pedido");
+      }
+    } else {
+      // Si cancela, no hacemos nada
+      toast.info("Actualización cancelada");
     }
   };
 
   const viewDetails = (orderId) => {
-    // Implementa la lógica para mostrar detalles del pedido
-    // Swal.fire({
-    //   title: `Detalles del Pedido #${orderId}`,
-    //   text: "Aquí puedes mostrar los detalles del pedido.",
-    //   icon: "info",
-    // });
     navigate(`/orders/${orderId}`);
-
-
 
   };
 
   // Configuración de columnas
   const columns = [
     {
-      Header: "ID Pedido",
-      accessor: "id_order",
-      headerStyle: { width: "80px" },
-      Cell: ({ value }) => <strong>#{value}</strong>,
+      Header: "Nombre del Cliente",
+      accessor: "customer_name",
+      headerStyle: { width: "200px" },
+      Cell: ({ value }) => <span>{value || "Sin nombre"}</span>,
     },
     {
-      Header: "ID Usuario",
-      accessor: "id_user",
-      headerStyle: { width: "100px" },
-      Cell: ({ value }) => <span>{value || "Sin ID"}</span>,
+      Header: "Correo",
+      accessor: "email",
+      headerStyle: { width: "250px" },
+      Cell: ({ value }) => <span>{value || "Sin correo"}</span>,
     },
     {
       Header: "Estado del Pedido",
@@ -215,7 +243,7 @@ export const AdminOrders = () => {
       accessor: "total_discount",
       headerStyle: { width: "120px" },
       Cell: ({ value }) => (
-        <span>${!isNaN(value) ? parseFloat(value).toFixed(2) : "0.00"}</span>
+        <span>${!isNaN(value) ? value.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : "0"}</span>
       ),
     },
     {
@@ -223,7 +251,7 @@ export const AdminOrders = () => {
       accessor: "total_amount",
       headerStyle: { width: "120px" },
       Cell: ({ value }) => (
-        <span>${!isNaN(value) ? parseFloat(value).toFixed(2) : "0.00"}</span>
+        <span>${!isNaN(value) ? value.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) : "0"}</span>
       ),
     },
     {
@@ -231,8 +259,10 @@ export const AdminOrders = () => {
       headerStyle: { width: "200px" },
       Cell: ({ row }) => (
         <>
+        <div className="d-flex gap-2" style={{ justifyContent: "center" }}>
           <Button
-            variant="primary"
+            variant="warning"
+            className="action-btn"
             onClick={() => updateOrder(row.original.id_order)}
             size="sm"
           >
@@ -240,13 +270,13 @@ export const AdminOrders = () => {
           </Button>
           <Button
             variant="info"
+             className="action-btn"
             onClick={() => viewDetails(row.original.id_order)}
             size="sm"
-            style={{ marginLeft: '5px' }}
-
           >
             Detalles
           </Button>
+        </div>
         </>
       ),
     },
@@ -310,11 +340,19 @@ export const AdminOrders = () => {
               onChange={(e) => setSelectedStatusId(e.target.value)}
             >
               <option value="">Estados</option>
-              {orderStatuses.map((status) => (
-                <option key={status.id_order_status} value={status.id_order_status}>
-                  {status.status_name}
-                </option>
-              ))}
+              {orderStatuses
+                .filter(status => {
+                  // Si no tenemos estado actual, mostramos todos (por seguridad)
+                  if (!currentOrderStatus) return true;
+
+                  // Solo mostrar estados permitidos para avanzar (y Cancelado)
+                  return statusFlow[currentOrderStatus]?.includes(status.id_order_status);
+                })
+                .map((status) => (
+                  <option key={status.id_order_status} value={status.id_order_status}>
+                    {status.status_name}
+                  </option>
+                ))}
             </Form.Control>
           </Form.Group>
         </Modal.Body>
