@@ -205,9 +205,10 @@ export function Header({
                   </svg>
                   Mis Pedidos
                 </div>
+               
               </>
             )}
-
+            
             <div
               className="header-profile-dropdown-item logout-item"
               onClick={(e) => {

@@ -1147,16 +1147,29 @@ BEGIN
 END $$
 
 
-DELIMITER $$
+DROP PROCEDURE IF EXISTS sp_clear_cart;
 
-CREATE PROCEDURE sp_clear_cart(IN userId INT)
+CREATE PROCEDURE sp_clear_cart(IN p_user_id INT)
 BEGIN
-    UPDATE cart 
-    SET id_state = 3  -- Asumiendo que 3 es el estado de "eliminado"
-    WHERE id_user = userId;
-END $$
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
 
-DELIMITER ;
+    START TRANSACTION;
+
+    -- En vez de eliminar el registro, vaciar el contenido del carrito
+    UPDATE cart
+    SET items = '[]' -- vacía el carrito
+    WHERE id_user = p_user_id;
+
+    COMMIT;
+
+    -- Retornar confirmación
+    SELECT 'Cart cleared successfully' as message, p_user_id as user_id;
+END;
+
 
 
 DELIMITER //
@@ -3150,6 +3163,16 @@ BEGIN
     END IF;
 END;
 //
+
+
+
+
+--------------------new
+SELECT id_user, email, verified
+FROM user_account 
+WHERE verified IS NULL OR verified = 0;
+
+
 
 
 

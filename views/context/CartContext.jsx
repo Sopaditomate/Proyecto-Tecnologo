@@ -231,16 +231,17 @@ export function CartProvider({ children }) {
     isCartFromUserAction.current = true;
     setCart([]);
     showClearCartNotification();
-    // Limpia el carrito en el backend si el usuario está autenticado
+
+    // 🔥 Limpiar localStorage
+    localStorage.removeItem("cart");
+    localStorage.removeItem("cartItems");
+
+    // ✅ BORRAR desde el BACKEND con DELETE
     if (user && user.id) {
       try {
-        await axios.post(
-          `${API_URL}/cart`,
-          { items: [] },
-          { withCredentials: true }
-        );
+        await axios.delete(`${API_URL}/cart`, { withCredentials: true });
       } catch (e) {
-        // Puedes mostrar un toast de error si quieres
+        console.error("Error al limpiar carrito del backend:", e);
       }
     }
   };

@@ -8,6 +8,7 @@ import { HomePage } from "../pages/home/HomePage.jsx";
 import { CatalogPage } from "../pages/catalog/CatalogPage";
 import { LoginRoutePage } from "./LoginRoutePage.jsx";
 import { RegisterRouterPage } from "./RegisterRouterPage.jsx";
+import { PaymentSuccessPage } from "../pages/cart/PaymentSuccessPage.jsx";
 import { ForgotPasswordPage } from "../pages/auth/forgot/ForgotPasswordPage.jsx";
 import { ResetPasswordPage } from "../pages/auth/reset/ResetPasswordPage.jsx";
 import { SlideCart } from "../pages/cart/SlideCart";
@@ -24,10 +25,10 @@ import { AdminDashboard } from "../pages/admin/AdminDashboard";
 import InventoryManagement from "../pages/admin/inventory/InventoryManagement.jsx";
 import { AdminOrders } from "../pages/admin/orders/OrderManagement.jsx";
 import { AdminProductions } from "../pages/admin/production/ProductionManagement.jsx";
-import  AdminProductionDetails  from "../pages/admin/production/AdminProductionDetails.jsx";
+import AdminProductionDetails from "../pages/admin/production/AdminProductionDetails.jsx";
 import { AdminProducts } from "../pages/admin/products/ProductManagement.jsx";
 import { AdminUsers } from "../pages/admin/users/UserManagement.jsx";
-import {AdminOrderDetails} from "../pages/admin/orders/detalleOrder.jsx"
+import { AdminOrderDetails } from "../pages/admin/orders/detalleOrder.jsx";
 
 //importaciones de los crud de recetas y productos
 import { Recetasform } from "../pages/admin/receta/crud_rece.jsx";
@@ -77,8 +78,8 @@ const PageLayout = ({ children, config }) => {
         />
       )}
       {children}
-      <SlideCart />
-      <Footer ref={footerRef} />
+      {!hideHeader && <SlideCart />}
+      {!hideHeader && <Footer ref={footerRef} />}
     </Fragment>
   );
 };
@@ -188,6 +189,23 @@ export function AppRoutes() {
           </PageLayout>
         }
       />
+
+      {/* Nueva ruta para procesamiento de pagos de MercadoPago */}
+      <Route
+        path="/payment-success"
+        element={
+          <PageLayout
+            config={{
+              iconMenu: defaultIcons.iconMenu,
+              icon1: defaultIcons.icon1,
+              link: "/",
+            }}
+          >
+            <PaymentSuccessPage />
+          </PageLayout>
+        }
+      />
+
       <Route
         path="/admin"
         element={
@@ -263,7 +281,7 @@ export function AppRoutes() {
         }
       />
 
-       <Route
+      <Route
         path="/orders/:orderId"
         element={
           <ProtectedRoute requireAdmin={true}>
@@ -276,12 +294,11 @@ export function AppRoutes() {
                 link: "/",
               }}
             >
-              <AdminOrderDetails/>
+              <AdminOrderDetails />
             </PageLayout>
           </ProtectedRoute>
         }
       />
-
 
       {/* ruta para la gestion del inventario o existencias*/}
       <Route
@@ -339,9 +356,6 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-
-
 
       {/* ruta para el crud de recetas */}
       <Route

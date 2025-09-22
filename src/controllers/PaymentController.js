@@ -62,7 +62,7 @@ class PaymentController {
   }
 
   /**
-   * Crear pedido después de que el pago sea exitoso
+   * Crear pedido SOLO después de pago exitoso - CON PREVENCIÓN DE DUPLICADOS
    */
   async createOrderAfterPayment(req, res) {
     try {
@@ -104,13 +104,29 @@ class PaymentController {
       );
       if (!paymentStatus.success || paymentStatus.status !== "approved") {
         return res.status(400).json({
-          message: "El pago no está aprobado",
+          message: `El pago no está aprobado. Estado actual: ${paymentStatus.status}`,
         });
       }
 
       const connection = await pool.getConnection();
       try {
         await connection.beginTransaction();
+
+        // CRÍTICO: Verificar si ya existe un pedido para este paymentId
+        const [existingOrder] = await connection.query(
+          `SELECT id_order FROM payment_transaction WHERE id_transaction = ?`,
+          [paymentId]
+        );
+
+        if (existingOrder.length > 0) {
+          await connection.rollback();
+          return res.json({
+            success: true,
+            orderId: existingOrder[0].id_order,
+            message: "El pedido ya existe para este pago",
+            duplicate: true,
+          });
+        }
 
         let subtotal = 0;
         for (const item of items) {
@@ -120,7 +136,7 @@ class PaymentController {
         const totalAmount = subtotal + tax + shippingCost;
 
         console.log(
-          `Creando pedido después del pago - Subtotal: ${subtotal}, Tax: ${tax}, Shipping: ${shippingCost}, Total: ${totalAmount}`
+          `[${paymentId}] Creando pedido después del pago - Subtotal: ${subtotal}, Tax: ${tax}, Shipping: ${shippingCost}, Total: ${totalAmount}`
         );
 
         // Crear pedido en order_header con estado "Preparando" (300001)
@@ -160,6 +176,8 @@ class PaymentController {
 
         await connection.commit();
 
+        console.log(`[${paymentId}] Pedido ${orderId} creado exitosamente`);
+
         res.json({
           success: true,
           orderId,
@@ -170,7 +188,17 @@ class PaymentController {
           message: "Pedido creado correctamente después del pago",
         });
 
-        await sendOrderUpdateEmail(orderId, 300001);
+        // Enviar email de confirmación (no bloquear respuesta)
+        setTimeout(async () => {
+          try {
+            await sendOrderUpdateEmail(orderId, 300001);
+          } catch (emailError) {
+            console.error(
+              `Error enviando email para pedido ${orderId}:`,
+              emailError
+            );
+          }
+        }, 100);
       } catch (error) {
         await connection.rollback();
         throw error;
@@ -187,42 +215,37 @@ class PaymentController {
   }
 
   /**
-   * Webhook de Mercado Pago - Recibe notificaciones IPN
+   * Webhook de Mercado Pago - SOLO registra notificaciones, NO crea pedidos
    */
   async handleMercadoPagoWebhook(req, res) {
     try {
       console.log(
-        "Notificación Mercado Pago:",
-        JSON.stringify(req.body, null, 2)
+        "Webhook MercadoPago recibido:",
+        JSON.stringify(req.body, null, 2),
+        "Query params:",
+        req.query
       );
-      console.log("Query params:", req.query);
 
       let paymentId = null;
       let notificationType = null;
 
-      // Handle new webhook format (from logs)
+      // Handle different webhook formats
       if (req.body.action && req.body.data && req.body.data.id) {
         paymentId = req.body.data.id;
         notificationType = req.body.action;
-      }
-      // Handle query parameter format (from logs)
-      else if (req.query.id && req.query.topic) {
+      } else if (req.query.id && req.query.topic) {
         paymentId = req.query.id;
         notificationType = req.query.topic;
-      }
-      // Handle data.id format (from logs)
-      else if (req.query["data.id"]) {
+      } else if (req.query["data.id"]) {
         paymentId = req.query["data.id"];
         notificationType = req.query.type;
-      }
-      // Handle resource URL format
-      else if (req.body.resource && req.body.topic === "payment") {
+      } else if (req.body.resource && req.body.topic === "payment") {
         paymentId = req.body.resource;
         notificationType = "payment";
       }
 
       console.log(
-        `[v1] Processing notification - Type: ${notificationType}, Payment ID: ${paymentId}`
+        `Webhook procesando - Tipo: ${notificationType}, Payment ID: ${paymentId}`
       );
 
       if (
@@ -234,250 +257,20 @@ class PaymentController {
         const statusResult = await MercadoPagoService.getPaymentStatus(
           paymentId
         );
+        console.log(`Estado del pago ${paymentId}:`, statusResult.status);
 
-        console.log(`[v1] Payment status result:`, statusResult);
-
-        if (statusResult.success) {
-          const connection = await pool.getConnection();
-          try {
-            await connection.beginTransaction();
-
-            if (
-              statusResult.status === "approved" &&
-              statusResult.externalReference
-            ) {
-              const orderId = statusResult.externalReference;
-              console.log(
-                `[v1] Processing approved payment for order: ${orderId}`
-              );
-
-              // Solo actualizar si el orderId no es temporal
-              if (!orderId.startsWith("TEMP-")) {
-                // Update order status to "Preparando" (300001)
-                const [orderUpdateResult] = await connection.query(
-                  "UPDATE order_header SET id_order_status = 300001 WHERE id_order = ?",
-                  [orderId]
-                );
-                console.log(
-                  `[v1] Updated order ${orderId} status. Affected rows: ${orderUpdateResult.affectedRows}`
-                );
-
-                if (orderUpdateResult.affectedRows > 0) {
-                  const [orderData] = await connection.query(
-                    "SELECT id_user FROM order_header WHERE id_order = ?",
-                    [orderId]
-                  );
-
-                  if (orderData.length > 0) {
-                    await connection.query(
-                      `INSERT INTO order_history (id_user, id_order, history_datetime, id_state) 
-                       VALUES (?, ?, NOW(), 1)`,
-                      [orderData[0].id_user, orderId]
-                    );
-                    console.log(
-                      `[v1] Inserted order history record for order ${orderId}`
-                    );
-                  }
-                }
-
-                const [existingTransaction] = await connection.query(
-                  "SELECT id_payment_transaction FROM payment_transaction WHERE id_order = ?",
-                  [orderId]
-                );
-
-                if (existingTransaction.length > 0) {
-                  // Update existing transaction with payment ID and approved status
-                  const [updateResult] = await connection.query(
-                    `UPDATE payment_transaction
-                     SET id_transaction = ?, state = 'APPROVED', update_date = NOW()
-                     WHERE id_order = ?`,
-                    [paymentId, orderId]
-                  );
-                  console.log(
-                    `[v1] Updated payment transaction. Affected rows: ${updateResult.affectedRows}`
-                  );
-                } else {
-                  console.log(
-                    `[v1] No payment transaction found for order ${orderId}`
-                  );
-                }
-              } else {
-                console.log(
-                  `[v1] Skipping webhook processing for temporary order ID: ${orderId}`
-                );
-              }
-            } else {
-              console.log(
-                `[v1] Payment not approved or missing external reference. Status: ${statusResult.status}`
-              );
-            }
-
-            await connection.commit();
-          } catch (err) {
-            await connection.rollback();
-            console.error(`[v1] Database error in webhook:`, err);
-            throw err;
-          } finally {
-            connection.release();
-          }
-        } else {
-          console.error(
-            `[v1] Failed to get payment status:`,
-            statusResult.error
+        // WEBHOOK NO CREA PEDIDOS - solo loguea para monitoreo
+        if (statusResult.success && statusResult.status === "approved") {
+          console.log(
+            `✅ Pago ${paymentId} aprobado - Pedido debe ser creado por el frontend`
           );
         }
-      } else {
-        console.log(
-          `[v1] Ignoring notification - Type: ${notificationType}, Payment ID: ${paymentId}`
-        );
       }
 
       res.status(200).send("OK");
     } catch (error) {
       console.error("Error en webhook Mercado Pago:", error);
       res.status(500).send("Error");
-    }
-  }
-
-  /**
-   * Inicia un pago con Mercado Pago (método legacy)
-   */
-  async initiateMercadoPagoPayment(req, res) {
-    try {
-      const { orderId } = req.body;
-      const clientId = req.user.clientId;
-
-      if (!clientId) {
-        return res
-          .status(400)
-          .json({ message: "ID de cliente no encontrado en el token" });
-      }
-
-      if (!orderId) {
-        return res.status(400).json({
-          message: "ID de pedido requerido",
-        });
-      }
-
-      // Obtener detalles del pedido desde la base de datos
-      const connection = await pool.getConnection();
-      let orderDetails;
-
-      try {
-        const [orderRows] = await connection.query(
-          `SELECT oh.*, up.first_name, up.last_name 
-           FROM order_header oh 
-           LEFT JOIN user_profile up ON oh.id_user = up.id_user 
-           WHERE oh.id_order = ?`,
-          [orderId]
-        );
-
-        if (orderRows.length === 0) {
-          return res.status(404).json({ message: "Pedido no encontrado" });
-        }
-
-        const [detailRows] = await connection.query(
-          `SELECT od.*, p.name as product_name, p.description 
-           FROM order_detail od 
-           LEFT JOIN product p ON od.id_product = p.id_product
-           WHERE od.id_order = ?`,
-          [orderId]
-        );
-
-        orderDetails = {
-          order: orderRows[0],
-          items: detailRows,
-        };
-      } finally {
-        connection.release();
-      }
-
-      // Verificar que el pedido pertenezca al usuario autenticado
-      if (orderDetails.order.id_user !== req.user.userId) {
-        return res
-          .status(403)
-          .json({ message: "No tienes permisos para pagar este pedido" });
-      }
-
-      const subtotal = orderDetails.items.reduce(
-        (sum, item) => sum + item.final_price * item.quantity,
-        0
-      );
-      const tax = subtotal * 0.19;
-      const shipping = 5000;
-
-      const paymentData = {
-        amount: orderDetails.order.total_amount,
-        orderId,
-        description: `Pedido #${orderId} - LoveBites Bakery`,
-        items: orderDetails.items.map((item) => ({
-          title: item.product_name || `Producto ${item.id_product}`,
-          quantity: item.quantity,
-          unit_price: Number.parseFloat(item.final_price),
-          description: item.description || "",
-        })),
-        additionalItems: [
-          {
-            title: "IVA (19%)",
-            quantity: 1,
-            unit_price: tax,
-            description: "Impuesto sobre las ventas",
-          },
-          {
-            title: "Envío",
-            quantity: 1,
-            unit_price: shipping,
-            description: "Costo de envío a domicilio",
-          },
-        ],
-      };
-
-      const paymentResult = await MercadoPagoService.createPayment(paymentData);
-
-      if (!paymentResult.success) {
-        return res.status(400).json({
-          message: "Error al iniciar pago con Mercado Pago",
-          error: paymentResult.error,
-        });
-      }
-
-      const conn = await pool.getConnection();
-      try {
-        await conn.beginTransaction();
-
-        await conn.query(
-          `INSERT INTO payment_transaction
-           (id_order, payment_method, amount, reference, id_transaction, state, creation_date)
-           VALUES (?, 'MERCADOPAGO', ?, ?, ?, 'PENDING', NOW())`,
-          [
-            orderId,
-            orderDetails.order.total_amount,
-            `ORD-${orderId}`,
-            paymentResult.preferenceId,
-          ]
-        );
-
-        await conn.commit();
-      } catch (dbError) {
-        await conn.rollback();
-        throw dbError;
-      } finally {
-        conn.release();
-      }
-
-      res.json({
-        success: true,
-        message: "Pago iniciado correctamente con Mercado Pago",
-        init_point: paymentResult.initPoint,
-        sandbox_init_point: paymentResult.sandboxInitPoint,
-        preferenceId: paymentResult.preferenceId,
-      });
-    } catch (error) {
-      console.error("Error al iniciar pago con Mercado Pago:", error);
-      res.status(500).json({
-        message: "Error interno al procesar el pago con Mercado Pago",
-        error: error.message,
-      });
     }
   }
 
@@ -507,6 +300,7 @@ class PaymentController {
         statusDetail: statusResult.statusDetail,
         amount: statusResult.amount,
         currency: statusResult.currency,
+        externalReference: statusResult.externalReference,
       });
     } catch (error) {
       console.error("Error al verificar estado del pago:", error);

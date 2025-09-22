@@ -4,30 +4,22 @@ import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// =============== RUTAS GENERALES ===============
-// Crear pedido después del pago (nuevo flujo)
-router.post(
-  "/create-order-after-payment",
-  verifyToken,
-  PaymentController.createOrderAfterPayment
-);
-
-
-// =============== MERCADO PAGO ROUTES ===============
-// Crear preferencia de pago sin crear pedido (nuevo flujo)
+// =============== RUTAS PRINCIPALES ===============
+// Crear solo preferencia de MercadoPago (sin pedido)
 router.post(
   "/mercado-pago/create-preference",
   verifyToken,
   PaymentController.createMercadoPagoPreference
 );
 
-// Iniciar pago con Mercado Pago (método legacy)
+// Crear pedido SOLO después del pago exitoso
 router.post(
-  "/mercado-pago/initiate",
+  "/create-order-after-payment",
   verifyToken,
-  PaymentController.initiateMercadoPagoPayment
+  PaymentController.createOrderAfterPayment
 );
 
+// =============== MERCADO PAGO ROUTES ===============
 // Verificar estado de pago Mercado Pago
 router.get(
   "/mercado-pago/status/:paymentId",
@@ -41,7 +33,7 @@ router.post(
   PaymentController.handleMercadoPagoWebhook
 );
 
-// Rutas de retorno de Mercado Pago (success, failure, pending)
+// Rutas de retorno de Mercado Pago
 router.get("/mercado-pago/success", (req, res) => {
   const collectionId = req.query.collection_id || req.query.payment_id;
   const status = req.query.collection_status || req.query.status || "approved";
@@ -52,67 +44,25 @@ router.get("/mercado-pago/success", (req, res) => {
     return res.status(400).send("collection_id is required");
   }
 
-  // Redirige al frontend con los parámetros necesarios
-  const frontendUrl = process.env.CLIENT_URL ;
+  // Redirige a la página específica de procesamiento de pago
+  const frontendUrl = process.env.CLIENT_URL;
   res.redirect(
-    `${frontendUrl}?collection_id=${collectionId}&collection_status=${status}&payment_return=true`
+    `${frontendUrl}/payment-success?collection_id=${collectionId}&collection_status=${status}`
   );
 });
 
 router.get("/mercado-pago/failure", (req, res) => {
   console.log("MercadoPago failure return:", req.query);
   const frontendUrl = process.env.CLIENT_URL;
-  res.redirect(`${frontendUrl}?collection_status=rejected&payment_return=true`);
+  res.redirect(`${frontendUrl}/payment-success?collection_status=rejected`);
 });
 
 router.get("/mercado-pago/pending", (req, res) => {
   console.log("MercadoPago pending return:", req.query);
   const collectionId = req.query.collection_id || req.query.payment_id;
-  const frontendUrl = process.env.CLIENT_URL ;
+  const frontendUrl = process.env.CLIENT_URL;
   res.redirect(
-    `${frontendUrl}?collection_id=${collectionId}&collection_status=pending&payment_return=true`
-  );
-
-  /**
-   * Buscar pagos por external reference
-   */
-  app.get(
-    "/payments/mercado-pago/search-by-external-reference/:externalReference",
-    async (req, res) => {
-      try {
-        const { externalReference } = req.params;
-
-        console.log(
-          "Searching payments for external reference:",
-          externalReference
-        );
-
-        // Usar el servicio de MercadoPago para buscar pagos
-        const searchResult =
-          await mercadoPagoService.searchPaymentsByExternalReference(
-            externalReference
-          );
-
-        if (searchResult.success) {
-          res.json({
-            success: true,
-            payments: searchResult.payments,
-          });
-        } else {
-          res.json({
-            success: false,
-            error: searchResult.error,
-          });
-        }
-      } catch (error) {
-        console.error("Error searching payments by external reference:", error);
-        res.status(500).json({
-          success: false,
-          error: "Error interno del servidor",
-          details: error.message,
-        });
-      }
-    }
+    `${frontendUrl}/payment-success?collection_id=${collectionId}&collection_status=pending`
   );
 });
 
