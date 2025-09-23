@@ -1,13 +1,11 @@
-// AdminProductionDetails.jsx
-
 "use client";
 import { useEffect, useState } from "react";
-import { useParams,} from "react-router-dom";
+import { useParams } from "react-router-dom";
 import axios from "axios";
-import TableContainer from "../../../components/table-components/TableContainer";
-import { Button } from "react-bootstrap";
+import TableDetails from "../../../components/table-components/TableDetails";
 import Swal from "sweetalert2";
-import "./Productions.css"
+import { Button } from "react-bootstrap"; // Importar el botón
+import "./Productions.css";
 
 const AdminProductionDetails = () => {
   const { ProductionId } = useParams();
@@ -20,7 +18,7 @@ const AdminProductionDetails = () => {
     fetchProductionDetails();
   }, [ProductionId]);
 
-  // === Obtener detalles de la producción ===
+  // Obtener detalles de la producción
   const fetchProductionDetails = async () => {
     setLoading(true);
     try {
@@ -40,7 +38,7 @@ const AdminProductionDetails = () => {
     }
   };
 
-  // === Eliminar un detalle de producción ===
+  // Eliminar un detalle de producción
   const handleDeleteDetail = async (productionId, productId) => {
     const result = await Swal.fire({
       title: "¿Estás seguro?",
@@ -70,7 +68,7 @@ const AdminProductionDetails = () => {
           showConfirmButton: false,
         });
 
-        // 🔄 Actualizar lista sin recargar
+        // Actualizar lista sin recargar
         setProductionDetails((prev) =>
           prev.filter((detail) => detail.id_product !== productId)
         );
@@ -84,7 +82,7 @@ const AdminProductionDetails = () => {
     }
   };
 
-  // === Columnas para la tabla ===
+  // Columnas para la tabla
   const columns = [
     {
       Header: "ID Producción",
@@ -117,7 +115,7 @@ const AdminProductionDetails = () => {
           variant="danger"
           size="sm"
           onClick={() =>
-            handleDeleteDetail(row.original.id_production, row.original.id_product)
+            handleDeleteDetail(row.id_production, row.id_product) // Cambié aquí para acceder directamente a row
           }
         >
           Eliminar
@@ -127,18 +125,18 @@ const AdminProductionDetails = () => {
   ];
 
   return (
-    <div>
-      
-      <TableContainer
-      
-        title={`Detalles de Producción #${ProductionId}`}
-        btnBack
-        subtitle="Lista de productos planificados en esta producción"
+    <div className="container">
+      <div className="header-section">
+        <h2>Detalles de Producción #{ProductionId}</h2>
+        <p>Lista de productos planificados en esta producción</p>
+      </div>
+      <TableDetails
+        btnBack={true}
         columns={columns}
         data={productionDetails}
         loading={loading}
         emptyMessage="No se encontraron detalles para esta producción"
-      />   
+      />
     </div>
   );
 };

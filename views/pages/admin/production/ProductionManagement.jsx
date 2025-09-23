@@ -7,6 +7,7 @@ import { Modal, Form, Button } from "react-bootstrap";
 import DataTable from "../../../components/table-components/DataTable";
 import { useNavigate } from "react-router-dom";
 import TablePagination from "../../../components/table-components/TablePagination";
+import Swal from 'sweetalert2';
 
 
 export const AdminProductions = () => {
@@ -157,13 +158,26 @@ export const AdminProductions = () => {
   };
 
   const deleteProduction = async (idProduction) => {
-    try {
-      await axios.delete(`${VITE_API_URL}/produccion/production/${idProduction}`);
-      toast.success("Producción eliminada correctamente");
-      fetchProductions();
-    } catch (error) {
-      console.error("Error eliminando producción:", error);
-      toast.error("No se pudo eliminar la producción");
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta producción será eliminada y no podrás deshacer esta acción.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete(`${VITE_API_URL}/produccion/production/${idProduction}`);
+        toast.success('Producción eliminada correctamente');
+        fetchProductions();
+      } catch (error) {
+        console.error('Error eliminando producción:', error);
+        toast.error('No se pudo eliminar la producción');
+      }
     }
   };
 

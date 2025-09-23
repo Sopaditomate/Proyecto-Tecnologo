@@ -16,7 +16,8 @@ const Footer = forwardRef((props, ref) => {
     "/reset-password",
     "/forgot-password",
     "/admin",
-    "/productions"
+    "/productions",
+    "/orders"
   ];
 
   const handleGoToCatalog = () => {

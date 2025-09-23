@@ -1,3 +1,14 @@
-#action-btn{
-    max-width: 120px !important;
+.header-section {
+  text-align: center; /* Centra el texto horizontalmente */
+  margin-bottom: 20px; /* Espacio inferior para separación */
+  padding-top: 30px; /* Espacio superior para separación */
+}
+
+.header-section h2 {
+  margin: 0; /* Elimina el margen por defecto */
+}
+
+.header-section p {
+  margin: 0; /* Elimina el margen por defecto */
+  color: gray; /* Color gris para el texto del párrafo */
 }
